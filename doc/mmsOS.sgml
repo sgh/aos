@@ -1,0 +1,71 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.2//EN" 
+[
+	<!entity cpu SYSTEM "cpu.sgml">
+	<!entity ressource SYSTEM "ressource.sgml">
+	<!entity mm SYSTEM "memory.sgml">
+	<!entity init SYSTEM "init.sgml">
+	<!entity milestones SYSTEM "milestones.sgml">
+	<!entity sh CDATA "Søren Galsgård Holm">
+	<!entity mj CDATA "Martin Lykke Rytter Jensen">
+	<!entity mb CDATA "Michael Banzon">
+]>
+
+<book lang="da">	
+	<bookinfo>
+		<title>Implementering af et operativsystem til en mikrocontroller</title>
+		
+		<authorgroup>
+			<author>
+				<firstname>Søren</firstname>
+				<surname>Holm</surname>
+			</author>
+		</authorgroup>
+		
+		<abstract>
+			<para>
+			Formålet er at lave et lille multitasking operativsystem til en
+			mikrocontroller. Det skal være muligt at udføre flere processer samtidigt
+			samt deling af ressourcer (CAN-controller, AD-converter, Seriel-porte
+			osv.) mellem disse. Der skal være mulighed for dynamisk allokering af
+			hukommelse. Process-skift skal kunne ske både tvungent og frivilligt.
+			</para>
+			<para>
+			Projektet vil være bygget op om ARM7-arkitekturen
+			</para>
+			<para>
+			Sideløbende med operativsystem-delen vil det evt. være muligt for andre kan
+			skrive applikationer til operativsystemet.
+			</para>
+		</abstract>
+	</bookinfo>
+	
+	<chapter>
+		<title>Planlægning</title>
+	
+		&milestones;
+		
+	</chapter>
+
+	
+	<chapter>
+		<title>Arkitekturrelevante problemstillinger</title>
+		<abstract>
+			<para>
+			I det følgende behandles en række problemstillinger, og aktuelle løsninger,
+			i forbindelse med de forskellige dele i operativsystemet.
+			</para>
+		</abstract>
+
+		&cpu;
+
+		&mm;
+
+		&ressource;
+
+		&init;
+		
+		
+	</chapter>
+
+
+</book>
