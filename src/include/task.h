@@ -2,7 +2,7 @@
 #define _TASK_H_
 
 #include <types.h>
-#include <queue.h>
+#include <list.h>
 
 struct task_t {
 	char* name;								// The name of the task

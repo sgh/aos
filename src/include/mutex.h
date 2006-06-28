@@ -1,7 +1,7 @@
 #ifndef MUTEX_H
 #define MUTEX_H
 
-#include <queue.h>
+#include <list.h>
 
 typedef struct {
 	uint32 spinlock;

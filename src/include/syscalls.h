@@ -4,7 +4,7 @@
 #include <kernel.h>
 #include <semaphore.h>
 #include <task.h>
-#include <queue.h>
+#include <list.h>
 
 /* Syscall numbers */
 #define _NR_yield       0
