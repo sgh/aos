@@ -2,7 +2,7 @@
 #define SEMAPHORE_H
 
 #include <types.h>
-#include <queue.h>
+#include <list.h>
 
 struct semaphore_t {
 	int16 counter;

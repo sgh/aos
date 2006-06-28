@@ -1,6 +1,6 @@
 .SILENT: deps
 
-SOURCES = main.c startup.s context.s syscalls.c queue.c timer_interrupt.c semaphore.c vic.c uart.c mutex.c spinlock.c atomic.s kernel.c
+SOURCES = main.c startup.s context.s syscalls.c list.c timer_interrupt.c semaphore.c vic.c uart.c mutex.c spinlock.c atomic.s kernel.c
 
 CFLAGS = -mcpu=arm7tdmi -mapcs -O0 -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall 
 # -ffunction-sections -fdata-sections

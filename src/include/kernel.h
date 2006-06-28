@@ -4,7 +4,7 @@
 #include <macros.h>
 #include <task.h>
 #include <types.h>
-#include <queue.h>
+#include <list.h>
 #include <syscalls.h>
 #include <context.h>
 #include <string.h>

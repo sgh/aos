@@ -1,6 +1,6 @@
 #include <semaphore.h>
 #include <kernel.h>
-#include <queue.h>
+#include <list.h>
 
 /**
  * \brief Semaphore syscall definitions
