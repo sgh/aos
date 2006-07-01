@@ -1,7 +1,7 @@
 #include "core.h"
 
 #include "spi.h"
-#include <queue.h>
+#include <list.h>
 #include <macros.h>
 
 struct bus_type spi_bus_type;
