@@ -1,6 +1,6 @@
 
 #include <stdio.h>
-#include <queue.h>
+#include <list.h>
 #include <macros.h>
 
 #include "core.h"
@@ -37,10 +37,13 @@ struct gpio testio = {
 };
 
 
+struct driver_class testclass = {
+	.name = "Test driver-class",
+};
+
 int main() {
 	struct list_head* l;
 	struct list_head* d;
-	uint32 dat;
 	do_initcalls();
 
 	spi_device_register(&inclitiometer);
@@ -82,6 +85,14 @@ int main() {
 		printf(")\n");
 	}
 	
+	devclass_register(&testclass);
+	
+	printf("Classes:\n");
+	list_for_each(l, &global_class_list) {
+		printf("%s\n", container_of(l,struct driver_class, g_list)->name);
+	}
+	
+	printf("\n");
 	bus_for_each_drv(&spi_bus_type,  container_of(spi_bus_type.drivers.next, struct device_driver, bus_driver_list) , 0, 0);
 	
 	return 0;

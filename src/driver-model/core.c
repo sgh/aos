@@ -1,6 +1,6 @@
 #include "core.h"
 #include "spi.h"
-#include "queue.h"
+#include "list.h"
 #include "macros.h"
 
 LIST_HEAD(global_device_list);
@@ -8,6 +8,8 @@ LIST_HEAD(global_device_list);
 LIST_HEAD(global_bus_list);
 
 LIST_HEAD(global_driver_list);
+
+LIST_HEAD(global_class_list);
 
 
 void device_register(struct device* dev) {
@@ -39,9 +41,14 @@ void driver_register(struct device_driver* drv) {
 	list_push_back(&global_driver_list, &drv->g_list);
 }
 
+void devclass_register(struct driver_class* cls) {
+	list_push_back(&global_class_list, &cls->g_list);
+}
+
 
 
 int bus_for_each_dev(struct bus_type * bus, struct device * start, void * data, int (*fn)(struct device *, void *)) {
+	return 0;
 }
 
 int bus_for_each_drv(struct bus_type * bus, struct device_driver * start, void * data, int (*fn)(struct device_driver *, void *)) {

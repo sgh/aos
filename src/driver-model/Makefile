@@ -1,6 +1,6 @@
 
 
-SOURCES = main.c ../kernel/queue.c spi.c core.c spi_testdevice.c
+SOURCES = main.c ../kernel/list.c spi.c core.c spi_testdevice.c
 
 
 
