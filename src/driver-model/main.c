@@ -7,6 +7,7 @@
 #include "gpio.h"
 #include "spi.h"
 #include "deviceids.h"
+#include "interfaces.h"
 
 #define SJA1000_DEVID 1
 #define TLE2903_DEVID 2
@@ -36,10 +37,6 @@ struct gpio testio = {
 	.shifts = 1,
 };
 
-
-struct driver_class testclass = {
-	.name = "Test driver-class",
-};
 
 int main() {
 	struct list_head* l;
@@ -85,11 +82,10 @@ int main() {
 		printf(")\n");
 	}
 	
-	devclass_register(&testclass);
 	
-	printf("Classes:\n");
-	list_for_each(l, &global_class_list) {
-		printf("%s\n", container_of(l,struct driver_class, g_list)->name);
+	printf("Inclination Interfaces provided by theese drivers:\n");
+	list_for_each(l, &inclitiometer_sensors) {
+		printf("%s\n", container_of(l,struct inclination_sensor_interface, node)->driver->name);
 	}
 	
 	printf("\n");

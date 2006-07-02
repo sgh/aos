@@ -13,7 +13,7 @@ extern struct list_head global_bus_list;
 
 extern struct list_head global_driver_list;
 
-extern struct list_head global_class_list;
+extern struct list_head global_interface_list;
 
 struct bus_type;
 struct device;
@@ -33,7 +33,8 @@ struct device {
 	
  	struct bus_type* bus;					/**< \brief The bus this device is on */
 	void* driver_data;						/**< \brief Driver-specific data. Drivers must use this for whatever per device stats. */
-	void* platform_data;					/**< \brief Platform specific-data. This will typicati be a pointer to a struct gpio */
+	void* platform_data;					/**< \brief Platform specific-data. This will typically be a pointer to a struct gpio */
+	void* class_data;							/**< \brief Class specific-data. */
 	
 	uint8 current_state;					/**< \brief The current state of the device. */
 	
@@ -54,7 +55,7 @@ struct device_driver {
 	struct list_head bus_driver_list;		/**< \brief Node in bus' driver list */
 	struct list_head devices;						/**< \brief List of owned devices */
 	
-	struct driver_class* devclass;
+	struct driver_interface* devintf;
 	
 	struct bus_type* bus;
 	int (*probe)(struct device * dev);
@@ -63,7 +64,7 @@ struct device_driver {
 	int (*resume)(struct device * dev);
 };
 
-struct driver_class {
+struct driver_interface {
 	char *name;
 	struct list_head g_list;				/**< \brief Node in global class list */
 	struct list_head drivers;				/**< \brief List of drivers belonging to this class */
@@ -76,7 +77,7 @@ void device_register(struct device* dev);
 
 void driver_register(struct device_driver* drv);
 
-void devclass_register(struct driver_class* cls);
+void devintf_register(struct driver_interface* cls);
 
 int bus_for_each_dev(struct bus_type * bus, struct device * start, void * data, int (*fn)(struct device *, void *));
 

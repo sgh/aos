@@ -1,0 +1,5 @@
+* Device-api
+	struct device* acquire_<device_type>(num)
+	retval apifunc(struct device*)
+
+constant time implementation of api-function on basis of device-pointer
