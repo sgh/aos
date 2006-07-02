@@ -2,8 +2,11 @@
 #include "spi.h"
 #include "deviceids.h"
 #include "macros.h"
+#include "spi_testdevice.h"
+#include "interfaces.h"
 
 extern struct spi_device_driver sca61t_device_driver;
+extern struct inclination_sensor_interface sca61t_interface;
 
 static int sca61t_probe(struct device* dev) {
 	struct spi_device *spi = container_of( dev, struct spi_device, dev);
@@ -20,10 +23,19 @@ static int sca61t_remove(struct device* dev) {
 
 void sca61t_init() {
 	spi_driver_register(&sca61t_device_driver);
+	inclination_sensor_register(&sca61t_interface);
+}
+
+static uint32 sca61t_inclination(struct device* dev) {
+	return 666;
 }
 
 static uint8 sca61xx_ids[] = {6,5,4,DEV_SCA61T_ID,0};
 
+struct inclination_sensor_interface sca61t_interface = {
+	.inclination = sca61t_inclination,
+	.driver = &sca61t_device_driver.driver
+};
 
 struct spi_device_driver sca61t_device_driver = {
 	.id_table = sca61xx_ids,
@@ -34,3 +46,5 @@ struct spi_device_driver sca61t_device_driver = {
 		.remove = sca61t_remove,
 	},
 };
+
+
