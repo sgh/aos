@@ -3,3 +3,26 @@
 	retval apifunc(struct device*)
 
 constant time implementation of api-function on basis of device-pointer
+
+
+
+Board-support lag med funktion til hver portpind/dataport
+
+en form for standart-registrering af moduler med hook-funktioner (init,sleep,exit)
+driver-hooks. forskellige klasser af drivere. serielport, can-controller, eeprom
+
+	struct device* acquire_inclination_sensor(nr)
+	get_inclination(struct inclination
+
+identifikation af flere ens-artede enheder- can0, can1 - hvordan gøres det på en let dterministisk måde
+
+* metode til at eje tiden på en sikker måde
+
+* præcision af sleeps
+	måling af interrupt-latency ved opstart
+	skift af tidsquantim ved contex-skift
+	evt. busywait eks. ved få us wait
+
+* Tæller på fragment store så størrelse på fri plads mv. er O(1)
+
+* Design
