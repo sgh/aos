@@ -29,9 +29,7 @@ static int spi_match(struct device* dev, struct device_driver* drv) {
 	while (id && *id != 0) {
 // 		printf("%d\n",*id);
 		if (dev->device_id == *id && drv->probe(dev)) {
-			dev->driver = drv;
-			list_push_back(&drv->devices, &dev->bus_list);
-			printf("%s bound to %s\n",dev->name,drv->name);
+			printf("%s will be bound to %s\n",dev->name,drv->name);
 			return 1;
 		}
 		id++;
