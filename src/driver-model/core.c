@@ -41,10 +41,6 @@ void driver_register(struct device_driver* drv) {
 	list_push_back(&global_driver_list, &drv->g_list);
 }
 
-void devintf_register(struct driver_interface* cls) {
-	list_push_back(&global_interface_list, &cls->g_list);
-}
-
 
 
 int bus_for_each_dev(struct bus_type * bus, struct device * start, void * data, int (*fn)(struct device *, void *)) {
