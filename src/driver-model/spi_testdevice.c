@@ -27,6 +27,7 @@ void sca61t_init() {
 }
 
 static uint32 sca61t_inclination(struct device* dev) {
+	printf("inclination called dev=%lu\n",(uint32)dev);
 	return 666;
 }
 
