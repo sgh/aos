@@ -67,7 +67,7 @@ int main() {
 		struct list_head *drivers = &container_of(l,struct bus_type,g_list)->drivers;
 		printf("   %s (",container_of(l,struct bus_type,g_list)->name);
 		list_for_each(d, drivers)
-			printf("%s ",container_of(d,struct device_driver,bus_driver_list)->name);
+			printf("\"%s\" ",container_of(d,struct device_driver,bus_driver_list)->name);
 
 		printf(")\n");
 	}
@@ -78,15 +78,25 @@ int main() {
 		struct device_driver* drv = container_of(l,struct device_driver,g_list);
 		printf("   %s (",drv->name);
 		list_for_each(d, &drv->devices)
-			printf("%s ",container_of(d,struct device,driver_list)->name);
+			printf("\"%s\" ",container_of(d,struct device,driver_list)->name);
 		printf(")\n");
 	}
 	
 	
-	printf("Inclination Interfaces provided by theese drivers:\n");
+	printf("Inclination devices:\n");
 	list_for_each(l, &inclitiometer_sensors) {
-		printf("%s\n", container_of(l,struct inclination_sensor_interface, node)->driver->name);
+		struct device_driver* drv = container_of(l,struct inclination_sensor_interface, node)->driver;
+// 		struct list_head* d;
+		printf("   %s (",drv->name);
+		list_for_each(d, &drv->devices) {
+			printf("dev: %s\n",container_of(d, struct device, driver_list)->name);
+		}
 	}
+	
+// 	if (container_of(l,struct inclination_sensor_interface, node)->driver == 
+// 		container_of(l,struct inclination_sensor_interface, node)->inclination(0);
+	
+	
 	
 	printf("\n");
 	bus_for_each_drv(&spi_bus_type,  container_of(spi_bus_type.drivers.next, struct device_driver, bus_driver_list) , 0, 0);
