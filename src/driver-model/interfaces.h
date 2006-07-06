@@ -5,6 +5,8 @@
 
 extern struct list_head inclitiometer_sensors;
 
+
+
 struct inclination_sensor_interface {
 	uint32 (*inclination)(struct device* dev);
 		
