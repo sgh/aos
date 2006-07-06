@@ -38,6 +38,24 @@ struct gpio testio = {
 };
 
 
+uint32 inclination(uint16 num) {
+	struct list_head* it;
+	struct list_head *d;
+	int i = num;
+	list_for_each(it, &inclitiometer_sensors) {
+		struct device_driver* drv = container_of(it,struct inclination_sensor_interface, node)->driver;
+		printf("drv: %s\n",drv->name);
+		list_for_each(d, &drv->devices) {
+			struct device* dev = container_of(d, struct device, driver_list);
+			printf("dev: %s\n",dev->name);
+		}
+		if (!i)
+			break;
+		i--;
+	}
+}
+
+
 int main() {
 	struct list_head* l;
 	struct list_head* d;
@@ -52,6 +70,8 @@ int main() {
 	gpio_lowimpedance(&testio);
 	gpio_data(&testio,2);*/
 	
+	
+	inclination(0);
 	
 	printf("Devices:\n");
 	list_for_each(l,&global_device_list) {
@@ -89,8 +109,9 @@ int main() {
 // 		struct list_head* d;
 		printf("   %s (",drv->name);
 		list_for_each(d, &drv->devices) {
-			printf("dev: %s\n",container_of(d, struct device, driver_list)->name);
+			printf(" %s ",container_of(d, struct device, driver_list)->name);
 		}
+		printf(")");
 	}
 	
 // 	if (container_of(l,struct inclination_sensor_interface, node)->driver == 
