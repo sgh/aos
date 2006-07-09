@@ -10,7 +10,7 @@
 .global timer_interrupt
 .global uart0_interrupt
 
-.include "macros.s"
+.include "kernel/macros.s"
 
 get_sp:
 	MOV r0, SP
