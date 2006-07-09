@@ -1,3 +1,62 @@
+.SILENT: deps
 
-all:
-	make -C kernel
+APP = armOS
+
+
+KERNEL_SOURCES = main.c startup.s context.s syscalls.c list.c timer_interrupt.c semaphore.c vic.c uart.c mutex.c spinlock.c atomic.s kernel.c
+
+SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES))
+
+CFLAGS = -mcpu=arm7tdmi -mapcs -O0 -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall 
+# -ffunction-sections -fdata-sections
+
+LDFLAGS = 
+#--gc-sections
+	
+LINKERSCRIPT = kernel/linkerscript.ld
+
+LIBS = -lc -lm -lgcc
+
+##
+# Tools
+##
+ARM_PREFIX=arm-elf
+GCC = $(ARM_PREFIX)-gcc
+AS = $(ARM_PREFIX)-as
+LD = $(ARM_PREFIX)-ld
+SIZE = $(ARM_PREFIX)-size
+OBJCOPY = $(ARM_PREFIX)-objcopy
+
+##
+# Includes
+##
+INCLUDE_DIRS = include
+INCLUDE = $(addprefix -I,$(INCLUDE_DIRS))
+
+OBJS := $(patsubst %.c,%.o,$(SOURCES))
+OBJS := $(patsubst %.s,%.o,$(OBJS))
+DEPS := $(patsubst %.o,%.d,$(OBJS))
+
+
+all: deps application
+	$(GCC) $(CFLAGS) -Wl,-Map=$(APP).map  -T $(LINKERSCRIPT) -o $(APP).elf $(OBJS) $(LIBS)
+	$(OBJCOPY) -O ihex $(APP).elf $(APP).hex
+	$(OBJCOPY) -O binary $(APP).elf $(APP).bin
+
+%.o: %.c
+	$(GCC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
+
+%.o: %.s
+	$(GCC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
+
+application: $(OBJS)
+
+clean:
+	rm -f $(OBJS)
+	rm -f $(DEPS)
+	rm -f $(APP).elf $(APP).map $(APP).hex $(APP).bin
+
+deps: $(SOURCES)
+	#$(GCC) -M -E $(SOURCES) $(INCLUDE) > /dev/null
+
+-include kernel/*.d

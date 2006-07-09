@@ -12,7 +12,7 @@ typedef signed int int32;
 typedef void (*funcPtr)(void);
 
 /* Derived types */
-//typedef uint32 size_t;
+typedef uint32 size_t;
 typedef uint32 REGISTER_TYPE;
 
 #ifndef NULL
