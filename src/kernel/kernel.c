@@ -12,7 +12,7 @@ void sched(void) {
 	}
 	
 #ifdef SHARED_STACK
-	/* Copy stack away from shared stack */
+	/* Copy stack away from shared system stack */
 	if (current) {
 		uint32 len = (void*)&Top_Stack - get_usermode_sp();
 		void* dst = current->stacksave;
