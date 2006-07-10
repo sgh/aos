@@ -39,7 +39,7 @@ struct task_t {
 	 * \brief  This will hold the process' complete stack if this process is uses a seperate stack. ÆØÅæøå
 	 * If running with shared stack this space only contains the saved processor-state.
 	 */
-	uint8 stacksave[500]; /**< @todo convert this to at pointer to the memory-space */
+	uint8 stacksave[500]; /**< @todo convert this to a pointer to the memory-space */
 };
 
 #define get_struct_task(Q) (container_of(Q,struct task_t,q))
