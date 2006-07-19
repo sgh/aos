@@ -23,7 +23,7 @@ static int sca61t_remove(struct device* dev) {
 
 void sca61t_init() {
 	spi_driver_register(&sca61t_device_driver);
-	inclination_sensor_register(&sca61t_interface);
+// 	inclination_sensor_register(&sca61t_interface);
 }
 
 static uint32 sca61t_inclination(struct device* dev) {
@@ -33,10 +33,10 @@ static uint32 sca61t_inclination(struct device* dev) {
 
 static uint8 sca61xx_ids[] = {6,5,4,DEV_SCA61T_ID,0};
 
-struct inclination_sensor_interface sca61t_interface = {
-	.inclination = sca61t_inclination,
-	.driver = &sca61t_device_driver.driver
-};
+// struct inclination_sensor_interface sca61t_interface = {
+// 	.inclination = sca61t_inclination,
+// 	.driver = &sca61t_device_driver.driver
+// };
 
 struct spi_device_driver sca61t_device_driver = {
 	.id_table = sca61xx_ids,

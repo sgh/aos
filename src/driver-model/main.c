@@ -37,23 +37,21 @@ struct gpio testio = {
 	.shifts = 1,
 };
 
-
-uint32 inclination(uint16 num) {
-	struct list_head* it;
-	struct list_head *d;
-	int i = num;
-	list_for_each(it, &inclitiometer_sensors) {
-		struct device_driver* drv = container_of(it,struct inclination_sensor_interface, node)->driver;
-		printf("drv: %s\n",drv->name);
-		list_for_each(d, &drv->devices) {
-			struct device* dev = container_of(d, struct device, driver_list);
-			printf("dev: %s\n",dev->name);
-		}
-		if (!i)
-			break;
-		i--;
-	}
+void func(int n) {
+	printf("call %d\n",n);
 }
+
+
+
+struct structfunc {
+	int dev;
+	void (*call)(int n);
+};
+
+
+struct structfunc f = {
+	.call = func
+};
 
 
 int main() {
@@ -70,12 +68,10 @@ int main() {
 	gpio_lowimpedance(&testio);
 	gpio_data(&testio,2);*/
 	
-	
-	inclination(0);
+	exit(0);
 	
 	printf("Devices:\n");
 	list_for_each(l,&global_device_list) {
-// 	for (l=global_device_list.next; l!=NULL; l=l->next) {
 		struct device_driver *driver = container_of(l,struct device,g_list)->driver;
 		printf("   %s owned by \"%s\"\n", container_of(l,struct device,g_list)->name, driver?driver->name:"none");
 	}
@@ -103,16 +99,15 @@ int main() {
 	}
 	
 	
-	printf("Inclination devices:\n");
-	list_for_each(l, &inclitiometer_sensors) {
-		struct device_driver* drv = container_of(l,struct inclination_sensor_interface, node)->driver;
-// 		struct list_head* d;
-		printf("   %s (",drv->name);
-		list_for_each(d, &drv->devices) {
-			printf(" %s ",container_of(d, struct device, driver_list)->name);
-		}
-		printf(")");
-	}
+// 	printf("Inclination devices:\n");
+// 	list_for_each(l, &inclitiometer_sensors) {
+// 		struct device_driver* drv = container_of(l,struct inclination_sensor_interface, node)->driver;
+// 		printf("   %s (",drv->name);
+// 		list_for_each(d, &drv->devices) {
+// 			printf(" %s ",container_of(d, struct device, driver_list)->name);
+// 		}
+// 		printf(")");
+// 	}
 	
 // 	if (container_of(l,struct inclination_sensor_interface, node)->driver == 
 // 		container_of(l,struct inclination_sensor_interface, node)->inclination(0);
