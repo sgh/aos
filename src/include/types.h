@@ -1,6 +1,8 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
 
+#include <stddef.h>
+
 /* Basic int definitions */
 typedef unsigned char uint8;
 typedef signed char int8;
@@ -12,7 +14,7 @@ typedef signed int int32;
 typedef void (*funcPtr)(void);
 
 /* Derived types */
-typedef uint32 size_t;
+// typedef uint32 size_t;
 typedef uint32 REGISTER_TYPE;
 
 #ifndef NULL

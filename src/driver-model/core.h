@@ -37,7 +37,6 @@ struct device {
 	void* class_data;							/**< \brief Class specific-data. */
 	
 	uint8 current_state;					/**< \brief The current state of the device. */
-	
 };
 
 struct bus_type {
