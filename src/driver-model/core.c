@@ -22,6 +22,7 @@ void device_register(struct device* dev) {
 			
 		if (dev->bus && dev->bus->match) {
 			if (dev->bus->match(dev,drv)) {
+				dev->driver = drv;
 				list_push_back(&drv->devices, &dev->driver_list);
 			}
 		}

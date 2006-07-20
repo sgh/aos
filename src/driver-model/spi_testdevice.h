@@ -3,10 +3,10 @@
 
 #include <types.h>
 #include "core.h"
+#include "interfaces.h"
 
-struct inclitiometer_interface {
-	uint32 (*inclination)(struct device*);
-};
+
+
 
 #endif
 
