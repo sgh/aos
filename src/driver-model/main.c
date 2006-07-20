@@ -53,10 +53,12 @@ struct structfunc f = {
 	.call = func
 };
 
+	
 
 int main() {
 	struct list_head* l;
 	struct list_head* d;
+	struct inclitiometer* incl;
 	do_initcalls();
 
 	spi_device_register(&inclitiometer);
@@ -67,8 +69,6 @@ int main() {
 	gpio_highimpedance(&testio);
 	gpio_lowimpedance(&testio);
 	gpio_data(&testio,2);*/
-	
-	exit(0);
 	
 	printf("Devices:\n");
 	list_for_each(l,&global_device_list) {
@@ -99,15 +99,23 @@ int main() {
 	}
 	
 	
-// 	printf("Inclination devices:\n");
-// 	list_for_each(l, &inclitiometer_sensors) {
-// 		struct device_driver* drv = container_of(l,struct inclination_sensor_interface, node)->driver;
-// 		printf("   %s (",drv->name);
-// 		list_for_each(d, &drv->devices) {
-// 			printf(" %s ",container_of(d, struct device, driver_list)->name);
-// 		}
-// 		printf(")");
-// 	}
+	printf("Inclination devices:\n");
+	list_for_each(l, &inclitiometer_sensors) {
+		struct device_driver* drv = container_of(l,struct inclitiometer, node)->dev->driver;
+		printf("   %s (",drv->name);
+		list_for_each(d, &drv->devices) {
+			printf(" %s ",container_of(d, struct device, driver_list)->name);
+		}
+		printf(")");
+	}
+	
+	uint32 val;
+	
+	if ((incl = inclitiometer_acquire(0)) == NULL)
+		printf("failed\n");
+	get_inclination(incl,&val);
+	printf("return %d\n",val);
+	
 	
 // 	if (container_of(l,struct inclination_sensor_interface, node)->driver == 
 // 		container_of(l,struct inclination_sensor_interface, node)->inclination(0);
@@ -115,7 +123,7 @@ int main() {
 	
 	
 	printf("\n");
-	bus_for_each_drv(&spi_bus_type,  container_of(spi_bus_type.drivers.next, struct device_driver, bus_driver_list) , 0, 0);
+// 	bus_for_each_drv(&spi_bus_type,  container_of(spi_bus_type.drivers.next, struct device_driver, bus_driver_list) , 0, 0);
 	
 	return 0;
 }
