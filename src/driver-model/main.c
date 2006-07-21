@@ -23,9 +23,16 @@ void do_initcalls() {
 
 
 
-struct spi_device inclitiometer = {
+struct spi_device inclitiometer1 = {
 	.dev = {
-		.name = "SCA61T inclitiometer",
+		.name = "SCA61T inclitiometer 0",
+		.device_id = DEV_SCA61T_ID,
+	}
+};
+
+struct spi_device inclitiometer2 = {
+	.dev = {
+		.name = "SCA61T inclitiometer 1",
 		.device_id = DEV_SCA61T_ID,
 	}
 };
@@ -61,7 +68,8 @@ int main() {
 	struct inclitiometer* incl;
 	do_initcalls();
 
-	spi_device_register(&inclitiometer);
+	spi_device_register(&inclitiometer1);
+	spi_device_register(&inclitiometer2);
 	
 	/*gpio_set(&testio);
 	gpio_clear(&testio);
@@ -101,20 +109,17 @@ int main() {
 	
 	printf("Inclination devices:\n");
 	list_for_each(l, &inclitiometer_sensors) {
-		struct device_driver* drv = container_of(l,struct inclitiometer, node)->dev->driver;
-		printf("   %s (",drv->name);
-		list_for_each(d, &drv->devices) {
-			printf(" %s ",container_of(d, struct device, driver_list)->name);
-		}
-		printf(")");
+		struct device* dev = container_of(l,struct inclitiometer, node)->dev;
+		printf("   %s ( %s )\n",dev->name, dev->driver->name);
 	}
+	printf("\n");
 	
 	uint32 val;
-	
 	if ((incl = inclitiometer_acquire(0)) == NULL)
 		printf("failed\n");
-	get_inclination(incl,&val);
-	printf("return %d\n",val);
+	else
+		get_inclination(incl,&val);
+	printf("return %ld\n",val);
 	
 	
 // 	if (container_of(l,struct inclination_sensor_interface, node)->driver == 

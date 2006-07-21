@@ -20,7 +20,7 @@ struct inclitiometer {
 };
 
 static inline uint32 get_inclination(struct inclitiometer* inclmeter, uint32* inclination) {
-	return inclmeter->fops->get_inclination(inclmeter->dev, inclination);	
+	return inclmeter->fops->get_inclination(inclmeter->dev, inclination);
 }
 /** TRY THIS */
 
