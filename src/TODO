@@ -1,20 +1,10 @@
-* Device-api
-	struct device* acquire_<device_type>(num)
-	retval apifunc(struct device*)
-
-constant time implementation of api-function on basis of device-pointer
-
-
+* Integration of memory-management layer
 
 Board-support lag med funktion til hver portpind/dataport
 
-en form for standart-registrering af moduler med hook-funktioner (init,sleep,exit)
-driver-hooks. forskellige klasser af drivere. serielport, can-controller, eeprom
 
 	struct device* acquire_inclination_sensor(nr)
 	get_inclination(struct inclination
-
-identifikation af flere ens-artede enheder- can0, can1 - hvordan gøres det på en let dterministisk måde
 
 * metode til at eje tiden på en sikker måde
 
