@@ -6,15 +6,20 @@
 #include "interfaces.h"
 
 extern struct spi_device_driver sca61t_device_driver;
-extern struct inclitiometer sca61t_inclitiometer;
+extern struct inclitiometer_fops sca61t_inclitiometer_fops;
 
 static int sca61t_probe(struct device* dev) {
 	struct spi_device *spi = container_of( dev, struct spi_device, dev);
+	struct inclitiometer* inclitiometer;
 	if (spi->master)
 		spi->master->test(dev);
-	printf("sca61t ptobe\n");
-	sca61t_inclitiometer.dev = dev;
-	inclitiometer_register(&sca61t_inclitiometer);
+	printf("sca61t probe\n");
+	
+	inclitiometer = malloc(sizeof(struct inclitiometer));
+	memset(inclitiometer,0,sizeof(struct inclitiometer));
+	inclitiometer->dev = dev;
+	inclitiometer->fops = &sca61t_inclitiometer_fops;
+	inclitiometer_register(inclitiometer);
 	return 1;
 }
 
@@ -28,19 +33,15 @@ void sca61t_init() {
 }
 
 static int32 sca61t_inclination(struct device* dev, uint32* inclination) {
-	printf("inclination called dev=%lu\n",(uint32)dev);
+	printf("inclination called (%s)\n",dev->name);
 	*inclination = 666;
 	return 0;
 }
 
 static uint8 sca61xx_ids[] = {6,5,4,DEV_SCA61T_ID,0};
 
-struct inclitiometer_fops fops = {
+struct inclitiometer_fops sca61t_inclitiometer_fops = {
 	.get_inclination = sca61t_inclination
-};
-
-struct inclitiometer sca61t_inclitiometer = {
-	.fops = &fops
 };
 
 struct spi_device_driver sca61t_device_driver = {
