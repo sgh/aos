@@ -7,12 +7,15 @@
 #include "gpio.h"
 #include "spi.h"
 #include "deviceids.h"
-#include "interfaces.h"
+#include "driver_class.h"
 
 #define SJA1000_DEVID 1
 #define TLE2903_DEVID 2
 
 void do_initcalls() {
+	// Init classes
+	classes_init();
+
 	// Init busses
 	init_spi();
 	
@@ -20,8 +23,6 @@ void do_initcalls() {
 	sca61t_init();
 	
 }
-
-
 
 struct spi_device inclitiometer1 = {
 	.dev = {
@@ -60,13 +61,17 @@ struct structfunc f = {
 	.call = func
 };
 
-	
+
+
+
 
 int main() {
 	struct list_head* l;
 	struct list_head* d;
-	struct inclitiometer* incl;
+	uint32 inclination;
+	struct inclitiometer incl;
 	do_initcalls();
+	
 
 	spi_device_register(&inclitiometer1);
 	spi_device_register(&inclitiometer2);
@@ -85,6 +90,12 @@ int main() {
 	}
 	
 	
+	printf("Classes:\n");
+	list_for_each(l,&global_class_list) {
+		struct driver_class *cls = container_of(l,struct driver_class,g_list);
+		printf("   %s ", cls->name);
+	}
+	printf("\n");
 	
 	printf("Busses:\n");
 	list_for_each(l,&global_bus_list) {
@@ -106,21 +117,13 @@ int main() {
 		printf(")\n");
 	}
 	
+	printf("Testing inclitiometer api\n");
 	
-	printf("Inclination devices:\n");
-	list_for_each(l, &inclitiometer_sensors) {
-		struct device* dev = container_of(l,struct inclitiometer, node)->dev;
-		printf("   %s ( %s )\n",dev->name, dev->driver->name);
-	}
-	printf("\n");
-	
-	uint32 val;
-	if ((incl = inclitiometer_acquire(0)) == NULL)
-		printf("failed\n");
-	else
-		get_inclination(incl,&val);
-	printf("return %ld\n",val);
-	
+	if (acquire_inclitiometer(0, &incl) == 0) {
+		if (get_inclination(&incl,&inclination))
+			printf("inclination failed\n");
+	} else
+		printf("No such inclitiometer\n");
 	
 // 	if (container_of(l,struct inclination_sensor_interface, node)->driver == 
 // 		container_of(l,struct inclination_sensor_interface, node)->inclination(0);
