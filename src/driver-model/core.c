@@ -9,7 +9,7 @@ LIST_HEAD(global_bus_list);
 
 LIST_HEAD(global_driver_list);
 
-LIST_HEAD(global_interface_list);
+LIST_HEAD(global_class_list);
 
 
 void device_register(struct device* dev) {
@@ -40,6 +40,12 @@ void bus_register(struct bus_type* bus) {
 void driver_register(struct device_driver* drv) {
 	INIT_LIST_HEAD(&drv->devices);
 	list_push_back(&global_driver_list, &drv->g_list);
+}
+
+void class_register(struct driver_class* cls) {
+	printf("Class register: %s\n",cls->name);
+	INIT_LIST_HEAD(&cls->class_fops);
+	list_push_back(&global_class_list,&cls->g_list);
 }
 
 
