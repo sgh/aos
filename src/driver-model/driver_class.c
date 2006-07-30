@@ -5,15 +5,6 @@
 #include "errno.h"
 #include <macros.h>
 
-struct driver_class inclitiometer_class = {
-.name = "Inclitiometers",
-};
-
-
-void classes_init() {
-	class_register(&inclitiometer_class);
-}
-
 int class_fops_register(struct driver_class* cls, struct driver_class_fops* fops) {
 	printf("%s driver fops registered from device driver \"%s\"\n",cls->name, fops->driver->name);
 	list_push_back(&cls->class_fops, &fops->node);
