@@ -1,7 +1,7 @@
-#include "core.h"
+#include <core.h>
 #include "spi.h"
-#include "list.h"
-#include "macros.h"
+#include <list.h>
+#include <macros.h>
 
 LIST_HEAD(global_device_list);
 
