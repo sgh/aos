@@ -1,9 +1,10 @@
-#include <core.h>
+#include <driver_core.h>
+#include <driver_class.h>
+#include <inclitiometer.h>
 #include "spi.h"
 #include "deviceids.h"
 #include "macros.h"
-#include "driver_class.h"
-#include "spi_testdevice.h"
+#include "sca61t.h"
 #include "errno.h"
 
 extern struct spi_device_driver sca61t_device_driver;
@@ -23,7 +24,8 @@ static int sca61t_remove(struct device* dev) {
 }
 
 
-static void _init_ sca61t_init() {
+void sca61t_init() {
+	printf("sca61t init\n");
 	spi_driver_register(&sca61t_device_driver);
 	class_fops_register(&inclitiometer_class, &sca61t_inclination_driver_fops);
 }
@@ -47,6 +49,11 @@ struct driver_class_fops sca61t_inclination_driver_fops = {
 	.driver = &sca61t_device_driver.driver
 };
 
+static int sca61t_ioctl(struct device* dev, int request, ...) {
+	printf("IOCTL %d\n",request);
+	return 0;
+}
+
 
 struct spi_device_driver sca61t_device_driver = {
 	.id_table = sca61xx_ids,
@@ -55,6 +62,7 @@ struct spi_device_driver sca61t_device_driver = {
 		.bus = &spi_bus_type,
 		.probe = sca61t_probe,
 		.remove = sca61t_remove,
+		.ioctl = sca61t_ioctl,
 	},
 };
 
