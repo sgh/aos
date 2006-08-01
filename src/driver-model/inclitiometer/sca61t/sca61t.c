@@ -1,4 +1,4 @@
-#include "core.h"
+#include <core.h>
 #include "spi.h"
 #include "deviceids.h"
 #include "macros.h"
@@ -23,7 +23,7 @@ static int sca61t_remove(struct device* dev) {
 }
 
 
-void sca61t_init() {
+static void _init_ sca61t_init() {
 	spi_driver_register(&sca61t_device_driver);
 	class_fops_register(&inclitiometer_class, &sca61t_inclination_driver_fops);
 }
