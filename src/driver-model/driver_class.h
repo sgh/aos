@@ -1,7 +1,7 @@
 #ifndef DRIVER_CLASS_H
 #define DRIVER_CLASS_H
 
-#include "core.h"
+#include <core.h>
 #include <types.h>
 #include <list.h>
 
