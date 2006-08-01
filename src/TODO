@@ -1,4 +1,4 @@
-* ioctrl in struct device_driver. This enables us to do ioctl on all devices without having functionpointer in
+* ioctl in struct device_driver. This enables us to do ioctl on all devices without having functionpointer in
 	class-specific fops.
 	Implementation:
 	

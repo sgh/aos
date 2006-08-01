@@ -1,10 +1,10 @@
 
 #include <inclitiometer.h>
 
-static struct driver_class inclitiometer_class = {
+struct driver_class inclitiometer_class = {
 .name = "Inclitiometers"
 };
 
-void inclitiometer_class_init() {
+static void _init_ inclitiometer_class_init() {
 	class_register(&inclitiometer_class);
 }

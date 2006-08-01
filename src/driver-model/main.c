@@ -3,24 +3,25 @@
 #include <list.h>
 #include <macros.h>
 
-#include "core.h"
-#include "gpio.h"
-#include "spi.h"
-#include "deviceids.h"
-#include "driver_class.h"
+#include <core.h>
+#include <gpio.h>
+#include <spi.h>
+#include <deviceids.h>
+#include <driver_class.h>
+#include <inclitiometer.h>
 
 #define SJA1000_DEVID 1
 #define TLE2903_DEVID 2
 
 void do_initcalls() {
 	// Init classes
-	classes_init();
+// 	inclitiometer_class_init();
 
 	// Init busses
-	init_spi();
+// 	init_spi();
 	
 	// Init drivers
-	sca61t_init();
+// 	sca61t_init();
 	
 }
 
