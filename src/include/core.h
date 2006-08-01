@@ -1,8 +1,11 @@
+
 #ifndef CORE_H
 #define CORE_H
 
-#include "gpio.h"
+#include <gpio.h>
 #include <list.h>
+#include <macros.h>
+#include <deviceids.h>
 
 #define DEVICE_NAME_SIZE 32
 #define BUS_ID_SIZE 32
@@ -164,9 +167,9 @@ void driver_register(struct device_driver* drv);
  */
 void class_register(struct driver_class* cls);
 
-int bus_for_each_dev(struct bus_type * bus, struct device * start, void * data, int (*fn)(struct device *, void *));
+/*int bus_for_each_dev(struct bus_type * bus, struct device * start, void * data, int (*fn)(struct device *, void *));
 
-int bus_for_each_drv(struct bus_type * bus, struct device_driver * start, void * data, int (*fn)(struct device_driver *, void *));
+int bus_for_each_drv(struct bus_type * bus, struct device_driver * start, void * data, int (*fn)(struct device_driver *, void *));*/
 
 
 #endif

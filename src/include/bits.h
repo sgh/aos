@@ -1,4 +1,5 @@
-
+#ifndef BITS_H
+#define BITS_H
 
 #define BIT0  0x00000001
 #define BIT1  0x00000002 
@@ -32,3 +33,5 @@
 #define BIT29 0x20000000
 #define BIT30 0x40000000
 #define BIT31 0x80000000
+
+#endif

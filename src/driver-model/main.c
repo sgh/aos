@@ -1,14 +1,9 @@
 
-#include <stdio.h>
-#include <list.h>
-#include <macros.h>
 
-#include <core.h>
-#include <gpio.h>
+#include <stdio.h>
 #include <spi.h>
-#include <deviceids.h>
-#include <driver_class.h>
 #include <inclitiometer.h>
+#include <driver_core.h>
 
 #define SJA1000_DEVID 1
 #define TLE2903_DEVID 2
