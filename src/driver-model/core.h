@@ -7,6 +7,8 @@
 #define DEVICE_NAME_SIZE 32
 #define BUS_ID_SIZE 32
 
+#define _init_ __attribute__((constructor))
+
 /**
  * \brief This list holds all the devices attached to the system.
  */
