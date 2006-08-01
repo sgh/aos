@@ -1,4 +1,4 @@
-#include "core.h"
+#include <core.h>
 
 #include "spi.h"
 #include <list.h>
@@ -8,7 +8,7 @@ struct bus_type spi_bus_type;
 
 struct spi_master master;
 
-void init_spi() {
+void _init_ init_spi() {
 	bus_register(&spi_bus_type);
 }
 

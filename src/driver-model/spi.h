@@ -2,7 +2,7 @@
 #define SPI_H
 
 #include <types.h>
-#include "core.h"
+#include <core.h>
 
 extern struct bus_type spi_bus_type;
 
