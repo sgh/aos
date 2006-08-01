@@ -2,7 +2,7 @@
 #include <inclitiometer.h>
 
 struct driver_class inclitiometer_class = {
-.name = "Inclitiometers"
+.name = "Inclitiometers",
 };
 
 static void _init_ inclitiometer_class_init() {

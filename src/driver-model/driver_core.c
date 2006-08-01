@@ -1,4 +1,4 @@
-#include <core.h>
+#include <driver_core.h>
 #include "spi.h"
 #include <list.h>
 #include <macros.h>

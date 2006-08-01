@@ -123,6 +123,14 @@ struct device_driver {
 	 * @return 0 when device resumed succesfull.
 	 */
 	int (*resume)(struct device* dev);
+	
+	/**
+	 * \brief Generic ioctl-call to use when setting driver-specific settings on owned devices.
+	 * @param dev Pointer to the device to execute ioctl on.
+	 * @param request The actual request to execute. See the driver documentation.
+	 * @return 0 when ioctl succceded.
+	 */
+	int (*ioctl)(struct device* dev, int request, ...);
 };
 
 /**

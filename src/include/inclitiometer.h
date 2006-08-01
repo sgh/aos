@@ -1,7 +1,7 @@
 #ifndef INCLITIOMETER_H
 #define INCLITIOMETER_H
 
-#include <core.h>
+#include <driver_core.h>
 #include <driver_class.h>
 
 struct inclitiometer_class_fops {
