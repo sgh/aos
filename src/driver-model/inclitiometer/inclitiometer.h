@@ -1,7 +1,8 @@
 #ifndef INCLITIOMETER_H
 #define INCLITIOMETER_H
 
-#include <device.h>
+#include <core.h>
+#include <driver_class.h>
 
 struct inclitiometer_class_fops {
 	int32 (*inclination)(struct device* dev, uint32* inclination);
