@@ -1,14 +1,5 @@
-* ioctl in struct device_driver. This enables us to do ioctl on all devices without having functionpointer in
-	class-specific fops.
-	Implementation:
-	
-	static int driver_ioctrl(struct device* dev, int request, ..) {
-		dev->driver->ioctrl(dev,request, ..);
-	}
-	
-	#define ioctrl(devfops,request,var1,var2,var3,var4,..) driver_ioctrl(devfops,request,var1,var2,...);
-	
-	
+* Place IOCTL the right place
+*	Figure out how to specify which drivers, and how to derive the required classes.
 * Integration of memory-management layer
 * Methode to monopolize the time in a same manner.
 * precision of sleeps
