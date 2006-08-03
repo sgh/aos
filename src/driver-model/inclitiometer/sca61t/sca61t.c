@@ -1,7 +1,7 @@
 #include <driver_core.h>
 #include <driver_class.h>
 #include <inclitiometer.h>
-#include "spi.h"
+#include <spi.h>
 #include "deviceids.h"
 #include "macros.h"
 #include "sca61t.h"
