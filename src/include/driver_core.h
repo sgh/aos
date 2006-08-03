@@ -6,6 +6,7 @@
 #include <list.h>
 #include <macros.h>
 #include <deviceids.h>
+#include <errno.h>
 
 #define DEVICE_NAME_SIZE 32
 #define BUS_ID_SIZE 32
@@ -32,9 +33,11 @@ extern struct list_head global_driver_list;
  */
 extern struct list_head global_class_list;
 
+
 struct bus_type;
 struct device;
 struct device_driver;
+
 
 /**
  * \brief Represents a sinde device in the system
@@ -58,6 +61,7 @@ struct device {
 	
 	uint8 current_state;					/**< \brief The current state of the device. */
 };
+
 
 struct bus_type {
 	struct list_head g_list;									/**< \brief Node in global devicelist. */
@@ -85,6 +89,7 @@ struct bus_type {
 	 */
 	int (*match)(struct device *dev, struct device_driver *drv);
 };
+
 
 struct device_driver {
 	char* name;
@@ -133,6 +138,7 @@ struct device_driver {
 	int (*ioctl)(struct device* dev, int request, ...);
 };
 
+
 /**
  * \brief Entry in the global class-list. There exists only one instance pr. class of this structure.
  */
@@ -141,6 +147,7 @@ struct driver_class {
 	struct list_head g_list;						/**< \brief Node in global class list. */
 	struct list_head class_fops;				/**< \brief List of driver_class_fops. */
 };
+
 
 /**
  * \brief This structure defines a pr. driver implementation of a class..
@@ -151,11 +158,13 @@ struct driver_class_fops {
 	struct list_head node;					/**< \brief Node in driver_class::class_fops. */
 };
 
+
 /**
  * \brief Register a bus with the core.
  * @param bus Pointer to a struct bus_type
  */
 void bus_register(struct bus_type* bus);
+
 
 /**
  * \brief Register a device with the core.
@@ -163,11 +172,13 @@ void bus_register(struct bus_type* bus);
  */
 void device_register(struct device* dev);
 
+
 /**
  * \brief Register a driver with the core.
  * @param drv Pointer to a struct device_driver
  */
 void driver_register(struct device_driver* drv);
+
 
 /**
  * \brief Register a driver-class with the core.
@@ -179,5 +190,10 @@ void class_register(struct driver_class* cls);
 
 int bus_for_each_drv(struct bus_type * bus, struct device_driver * start, void * data, int (*fn)(struct device_driver *, void *));*/
 
+static __inline__ int device_ioctl(struct device* dev, int request) {
+	if (!dev)
+		return ENOIOCTL;
+	return dev->driver->ioctl(dev,request);
+}
 
 #endif

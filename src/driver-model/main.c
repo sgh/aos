@@ -58,10 +58,7 @@ struct structfunc f = {
 
 
 
-static __inline__ int driver_ioctl(struct device* dev, int request, ...) {
-	if (!dev) return 1;
-	return dev->driver->ioctl(dev,request);
-}
+
 
 
 int main() {
@@ -128,9 +125,9 @@ int main() {
 // 		container_of(l,struct inclination_sensor_interface, node)->inclination(0);
 	
 	
-#define ioctl(devfops,request) driver_ioctl((devfops)->dev,request)
 
-	ioctl(&incl,5);
+
+	device_ioctl(incl.dev,5);
 	
 	printf("\n");
 // 	bus_for_each_drv(&spi_bus_type,  container_of(spi_bus_type.drivers.next, struct device_driver, bus_driver_list) , 0, 0);

@@ -1,4 +1,3 @@
-* Place IOCTL the right place
 *	Figure out how to specify which drivers, and how to derive the required classes.
 * Integration of memory-management layer
 * Methode to monopolize the time in a same manner.
