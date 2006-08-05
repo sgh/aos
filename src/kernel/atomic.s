@@ -8,3 +8,4 @@ atomic_xchg:
 	SWP r0, r1, [r3]
 	LDMFD SP!,{r1-r3}
 	MOV PC, LR
+

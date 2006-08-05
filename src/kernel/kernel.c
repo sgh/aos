@@ -1,6 +1,9 @@
 #include <kernel.h>
 #include <arm/lpc2119.h>
 
+LIST_HEAD(readyQ);
+LIST_HEAD(msleepQ);
+LIST_HEAD(usleepQ);
 
 uint8 do_task_switch = 0; /**< \brief Shall we do proccess-shift */
 
@@ -46,7 +49,7 @@ void sys_yield(void) {
 
 void sys_msleep(uint16 ms) {	
 	current->sleep_time = ms*1000 + T1_TC;
-	list_erase(&readyQ,&current->q);
+// 	list_erase(&readyQ,&current->q);
 	list_push_back(&msleepQ,&current->q);
 
 	current->state = BLOCKED;
@@ -56,7 +59,7 @@ void sys_msleep(uint16 ms) {
 
 void sys_usleep(uint16 us) {
 	current->sleep_time = us + T1_TC;
-	list_erase(&readyQ,&current->q);
+// 	list_erase(&readyQ,&current->q);
 	list_push_front(&msleepQ,&current->q);
 
 	current->state = BLOCKED;

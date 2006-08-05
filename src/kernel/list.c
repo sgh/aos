@@ -4,13 +4,10 @@
 #include <stdio.h>
 #include <types.h>
 
-struct list_head readyQ;
-struct list_head msleepQ;
-struct list_head usleepQ;
 
 void list_push_front(struct list_head *q, struct list_head* qe) {
 // 	if (q->next)
-		q->next->prev = qe;	// Point front back to new front
+	q->next->prev = qe;	// Point front back to new front
 	qe->next = q->next;		// Point new front to old front
 	qe->prev = q;			// Point new front back to list_head
 	q->next = qe;					// Set new front to qe
@@ -116,13 +113,12 @@ int main () {
 	list_push_front(&readyQ, &two.q);
 	list_push_front(&readyQ, &three.q);
 	
-	list_erase(&readyQ,&two.q);
+// 	list_erase(&readyQ,&two.q);
 	
-	list_push_back(&readyQ, &two.q);
+// 	list_push_front(&readyQ, &two.q);
 	
-	e = readyQ.next;
-	while ((e = list_get_front(&readyQ)) != &readyQ) {
-		list_erase(&readyQ, e);
+	list_for_each(e,&readyQ) {
+// 		list_erase(&readyQ, e);
 		t = container_of(e,struct task_t,q);
 		printf("%s\n",t->name);
 // 		list_push_back(&readyQ, &t->q);

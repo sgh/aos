@@ -28,8 +28,8 @@ mutex_t mymutex;
 void task1(void) {
 	uint8 c;
 	for (;;) {
-		mutex_lock(&mymutex);
-		mutex_unlock(&mymutex);
+		/*mutex_lock(&mymutex);
+		mutex_unlock(&mymutex);*/
 		GPIO1_IOSET = BIT22;
 		msleep(30);
 		GPIO1_IOCLR = BIT22;
@@ -106,6 +106,7 @@ int main(void) {
 	init_task(&idle_cd,idle_task,idle_stack);
 	
 	GPIO1_IODIR |= BIT24|BIT23|BIT22;
+	
 
 	init_timer_interrupt();
 	enable_timer_interrupt();
