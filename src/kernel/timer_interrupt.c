@@ -47,6 +47,7 @@ void timer_interrupt_routine() {
 	uint32 past_time;
 	static uint8 count= 0;
 	static uint8 onoff = 0;
+	uint8 restart = 0;
 	 
 	T0_IR = BIT0; /* Clear interrupt */
 	VICVectAddr = 0; /* Update priority hardware */
@@ -62,24 +63,28 @@ void timer_interrupt_routine() {
 
 	count++;
 	
-	e =  msleepQ.next;
-	while (e) {
-		t = get_struct_task(e);
-		e = e->next;
-		
-		past_time = T1_TC;
-		if (t->sleep_time) {
-			if (t->sleep_time > past_time)
-				t->sleep_time -= past_time;
-			else
-				t->sleep_time = 0;
+	do {
+		restart = 0;
+		list_for_each(e,&msleepQ) {
+			t = get_struct_task(e);
+	// 		e = e->next;
+			
+			past_time = T1_TC;
+			if (t->sleep_time) {
+				if (t->sleep_time > past_time)
+					t->sleep_time -= past_time;
+				else
+					t->sleep_time = 0;
+			}
+	
+			if (t->sleep_time == 0) {
+				list_erase(&msleepQ,&t->q);
+				list_push_front(&readyQ,&t->q);
+				restart = 1;
+				break;
+			}
 		}
-
-		if (t->sleep_time == 0) {
-			list_erase(&msleepQ,&t->q);
-			list_push_front(&readyQ,&t->q);
-		}
-	}
+	} while (restart);
 	
 	do_task_switch = 1;
 	T1_TC = 0;

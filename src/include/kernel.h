@@ -10,7 +10,7 @@
 #include <string.h>
 #include <semaphore.h>
 
-#define SHARED_STACK
+// #define SHARED_STACK
 
 extern uint32 Top_Stack;
 
