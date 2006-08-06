@@ -40,26 +40,6 @@ struct gpio testio = {
 	.shifts = 1,
 };
 
-void func(int n) {
-	printf("call %d\n",n);
-}
-
-
-
-struct structfunc {
-	int dev;
-	void (*call)(int n);
-};
-
-
-struct structfunc f = {
-	.call = func
-};
-
-
-
-
-
 
 int main() {
 	struct list_head* l;

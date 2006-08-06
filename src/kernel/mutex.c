@@ -30,7 +30,7 @@ void mutex_unlock(mutex_t* m) {
 	}
 
 	next = get_struct_task(list_get_front(&m->waiting));
-	list_erase(&m->waiting, &next->q);
+	list_erase(/*&m->waiting,*/ &next->q);
 	spinlock_unlock(&m->spinlock);
 	
 	unblock(next);

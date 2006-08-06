@@ -74,12 +74,12 @@ SWI_Handler:
 	Calculation of context store:
 		This routine returns the address where we can store
 		registers from current context.
-		
+
 		r0 and r1 is considered to be scratch
 */
 _get_current_context_store:
-	/* Get address of current process-stack */
-	LDR r0, =stack_offset
+	/* Get address of current process-context */
+	LDR r0, =context_offset
 	LDR r0, [r0]
 	LDR r1, =current
 	LDR r1, [r1]	
@@ -119,7 +119,7 @@ timer_interrupt:
 
 /*
 	Common interrupt escape routine:
-		Returns correctly from SWI and IRQ.
+		Returns correctly from SWIs and IRQs.
 		Does context-switching if do_context_switch != 0
 */
 return_from_interrupt:
@@ -127,13 +127,13 @@ return_from_interrupt:
 	STMFD SP!,{r0}
 	
 	/* Are we going to witch tasks */
-	LDR r0, =do_task_switch
+	LDR r0, =do_context_switch
 	LDR r0, [r0]
 	CMP r0, #0
 	BEQ _no_task_switch
 
-	/* The do_context_switch to 0 */
-	LDR r0, =do_task_switch	
+	/* Set do_context_switch to 0 */
+	LDR r0, =do_context_switch	
 	MOV r1, #0
 	STR r1, [r0]
 
@@ -143,7 +143,7 @@ return_from_interrupt:
 	CMP r1, #0
 	BEQ _after_task_save	
 	
-	/* Save r1 since the next routine-call will destroy it */
+	/* Save r1 on stack since the next routine-call will destroy it */
 	STMFD SP!,{r1}
 	
 	/*
@@ -159,12 +159,15 @@ return_from_interrupt:
 
 
 /*
-	In the following we do the actual context-save and -restore
+	In the following we do the actual context-save and -restore.
+	The memory in which the registers are save looks like this.
+
+	Entrypoiny,SP,LR,r0,SPSR,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12
 */
 	
 	/*
-		Store LR (the addres at which we must return
-		to when this process is to run again)
+		Store LR - the addres at which we must return
+		to when this process is to run again.
 	*/
 	STR LR, [r0]
 		
@@ -205,7 +208,7 @@ return_from_interrupt:
 	MOV r9, r10
 	MSR CPSR, r9
 	
-	/* Save r2-r3 at [r0 + 4] */
+	/* Save r2-r3 (SP, LR) at [r0 + 4] */
 	ADD r0, r0, #4
 	STMIA r0,{r2-r3}
 

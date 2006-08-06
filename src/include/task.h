@@ -4,6 +4,9 @@
 #include <types.h>
 #include <list.h>
 
+/**
+ * \brief A process
+ */
 struct task_t {
 	/**
 	 * \brief The name of the task.
@@ -25,9 +28,9 @@ struct task_t {
 	funcPtr entrypoint;
 	
 	/**
-	 * \brief Pointer to the process' saved stack. if the process is using the systems shared stack.
+	 * \brief Pointer to the process's saved CPU-state.
 	 */
-	REGISTER_TYPE *stack;
+	REGISTER_TYPE *context;
 	
 	/**
 	 * \brief Size of the space pointed to by *stack
@@ -36,10 +39,14 @@ struct task_t {
 	uint16 stack_size;
 	
 	/**
-	 * \brief  This will hold the process' complete stack if this process is uses a seperate stack. ÆØÅæøå
-	 * If running with shared stack this space only contains the saved processor-state.
+	 * \brief  This will hold the process's complete stack.
+	 * The content does differ a bit depending of the stack-type
+	 * - Seperate stack: The memor hold the process's running stack.
+	 * - Shared stack: The process's stack is stored here a context-switch.
+	 * 
+	 * The latter is the most common setup for most applications.
 	 */
-	uint8 stacksave[500]; /**< @todo convert this to a pointer to the memory-space */
+	uint8 stack[600]; /**< @todo convert this to a pointer to the memory-space */
 };
 
 #define get_struct_task(Q) (container_of(Q,struct task_t,q))
