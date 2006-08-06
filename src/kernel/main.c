@@ -18,7 +18,7 @@ struct task_t idle_cd;
 
 
 // const uint32 entrypoint_offset = offsetof(struct task_t,entrypoint);
-const uint32 stack_offset = offsetof(struct task_t,stack);
+const uint32 context_offset = offsetof(struct task_t,context);
 
 uint32 global_int = 0;
 
@@ -27,7 +27,18 @@ mutex_t mymutex;
 
 void task1(void) {
 	uint8 c;
+	char a[500];
+	int i;
+
 	for (;;) {
+		
+		for (i=0; i<sizeof(a); i++)
+			a[i] = '1';
+
+		for (i=0; i<sizeof(a); i++)
+			if (a[i] != '1')
+				for (;;);
+		
 		/*mutex_lock(&mymutex);
 		mutex_unlock(&mymutex);*/
 		GPIO1_IOSET = BIT22;
@@ -43,8 +54,18 @@ uint32 val = 1;
 void task2(void) {
 	uint32 old_val = 0;
 	uint32 timer = 10000;
+	char a[500];
+	int i;
+	
 	for(;;) {
+		
+		for (i=0; i<sizeof(a); i++)
+			a[i] = '2';
 
+		for (i=0; i<sizeof(a); i++)
+			if (a[i] != '2')
+				for (;;);
+			
 		if (timer == 10000) {
 			old_val = atomic_xchg( &val, old_val);
 
@@ -65,30 +86,30 @@ void task2(void) {
 	}
 }
 
-static void __attribute__((constructor))  init_task(struct task_t* task,funcPtr entrypoint,REGISTER_TYPE* stack) {
+static void init_task(struct task_t* task,funcPtr entrypoint,REGISTER_TYPE* stack) {
 	memset((void*)stack,0,1024);
-	task->stack = stack;
-	task->stack[0] = (uint32)(entrypoint);                                  // Entrypoint
+	task->context = stack;
+	task->context[0] = (uint32)(entrypoint);                                  // Entrypoint
 #ifdef SHARED_STACK
-	task->stack[1] = (uint32)&Top_Stack;  // Shared stack SP
+	task->context[1] = (uint32)&Top_Stack;  // Shared stack SP
 #else
-	task->stack[1] = (uint32)task->stack + (1024 * sizeof(REGISTER_TYPE));  // Seperate stack SP
+	task->context[1] = (uint32)task->context + (1024 * sizeof(REGISTER_TYPE));  // Seperate stack SP
 #endif
-	task->stack[2] = 0x12345678;
-	task->stack[3] = 0; // r0
-	task->stack[4] = 0x60000010;  // SPSR User-mode
-	task->stack[5] = 0x1; // r1
-	task->stack[6] = 0x2; // r2
-	task->stack[7] = 0x3; // r3
-	task->stack[8] = 0x4; // r4
-	task->stack[9] = 0x5; // r5
-	task->stack[10] = 0x6; // r6
-	task->stack[11] = 0x7; // r7
-	task->stack[12] = 0x8; // r8
-	task->stack[13] = 0x9; // r9
-	task->stack[14] = 0x10; // r10
-	task->stack[15] = 0x11; // r11
-	task->stack[16] = 0x12; // r12
+	task->context[2] = 0x12345678; // LR
+	task->context[3] = 0; // r0
+	task->context[4] = 0x60000010;  // SPSR User-mode
+	task->context[5] = 0x1; // r1
+	task->context[6] = 0x2; // r2
+	task->context[7] = 0x3; // r3
+	task->context[8] = 0x4; // r4
+	task->context[9] = 0x5; // r5
+	task->context[10] = 0x6; // r6
+	task->context[11] = 0x7; // r7
+	task->context[12] = 0x8; // r8
+	task->context[13] = 0x9; // r9
+	task->context[14] = 0x10; // r10
+	task->context[15] = 0x11; // r11
+	task->context[16] = 0x12; // r12
 	task->state = READY;
 	list_push_back(&readyQ,&task->q);
 }

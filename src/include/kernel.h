@@ -10,7 +10,12 @@
 #include <string.h>
 #include <semaphore.h>
 
-// #define SHARED_STACK
+#define SHARED_STACK
+
+/**
+ * \brief The size, in bytes, of a saved process-context.
+ */
+#define CONTEXT_SIZE
 
 extern uint32 Top_Stack;
 
@@ -29,7 +34,11 @@ void sem_P(struct semaphore_t* s);
 void sem_V(struct semaphore_t* s);
 
 extern struct task_t* current;
-extern uint8 do_task_switch;
+extern uint8 do_context_switch;
 
+extern struct list_head readyQ;
+extern struct list_head readyQ;
+extern struct list_head msleepQ;
+extern struct list_head usleepQ;
 
 #endif // _KERNEL_H_

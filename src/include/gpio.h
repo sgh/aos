@@ -5,10 +5,22 @@
 #include <stdio.h>
 #include <types.h>
 
+/**
+ * \brief General Inpu-Output pin range.
+ * 
+ * Example: Port 2,  BIT4 to BIT6
+ * <pre>
+ * struct gpio testio = {
+ *   .port = 2,
+ *   .range = 3,
+ *   .shifts = 4,
+ * };
+ * </pre>
+ */
 struct gpio {
-	uint8 port;			// IO-port
-	uint8 range;		// Length of bit-range
-	uint8 shifts;		// Number of positions to shift the range
+	uint8 port;			/**< \brief IO-port. */
+	uint8 range;		/**< \brief Length of bit-range. */
+	uint8 shifts;		/**< \brief Number of positions to shift the range. */
 };
 
 // #define __inline__  __attribute__((always_inline))

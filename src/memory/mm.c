@@ -1,6 +1,6 @@
-#include <sys/time.h>
+// #include <sys/time.h>
 #include <stdio.h>
-#include <assert.h>
+// #include <assert.h>
 
 // #define NULL 0
 
@@ -35,22 +35,17 @@ void mm_status(void) {
 	mm_header_t* header;
 	unsigned int total_size = 0;
 	int i;
-	
-// 	printf("\n");
-// 	for (i=0; i<sizeof(memory); i++) {
-// 		printf ("0x%.2X ",memory[i]);
-// 	}
-	
+
 	do {
 		header = (mm_header_t*)ptr;
 		total_size += header->size + sizeof(mm_header_t);
-		printf("Segment %d: %4d bytes (%s)\n",segment,header->size,header->free?"F":"U");
+// 		printf("Segment %d: %4d bytes (%s)\n",segment,header->size,header->free?"F":"U");
 		ptr = ptr + header->size + sizeof(mm_header_t);
 		segment++;
 	} while (ptr<mm_end);
-	printf("Total size : %4d\n",total_size);
-	assert(total_size == sizeof(memory));
-	printf("\n");
+// 	printf("Total size : %4d\n",total_size);
+// 	assert(total_size == sizeof(memory));
+// 	printf("\n");
 }
 
 void mm_init(void* start, unsigned short len) {
@@ -65,7 +60,7 @@ void mm_init(void* start, unsigned short len) {
 // 	mm_status();
 }
 
-void* mm_alloc(unsigned short size)
+void* malloc(unsigned short size)
 {
 	unsigned int segmentsize;
 	unsigned char* ptr = (unsigned char*)mm_start;
@@ -112,7 +107,7 @@ void* mm_alloc(unsigned short size)
 	return NULL;
 }
 
-void mm_free(void* segment) {
+void free(void* segment) {
 	mm_header_t* header =  segment - sizeof(mm_header_t);
 	unsigned char *ptr = (unsigned char*)header;
 	mm_header_t* prev_header = NULL;
@@ -130,7 +125,7 @@ void mm_free(void* segment) {
 }
 
 
-#define MEM_POOL_SIZE 1000
+/*#define MEM_POOL_SIZE 1000
 
 int main(int argc, char** argv) {
 // 	void *ptr[MEM_POOL_SIZE];
@@ -150,7 +145,7 @@ int main(int argc, char** argv) {
 	for (i=0; i<MEM_POOL_SIZE; i++)
 		mem[i] = 0;
 	
-	/*mm_status();*/
+	//mm_status();
 	while (1) {
 		void* ptr;
 		
@@ -196,4 +191,4 @@ int main(int argc, char** argv) {
 	}
 	
 	return 0;
-}
+}*/

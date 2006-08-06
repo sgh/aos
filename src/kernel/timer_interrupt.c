@@ -78,7 +78,7 @@ void timer_interrupt_routine() {
 			}
 	
 			if (t->sleep_time == 0) {
-				list_erase(&msleepQ,&t->q);
+				list_erase(/*&msleepQ,*/&t->q);
 				list_push_front(&readyQ,&t->q);
 				restart = 1;
 				break;
@@ -86,6 +86,6 @@ void timer_interrupt_routine() {
 		}
 	} while (restart);
 	
-	do_task_switch = 1;
+	do_context_switch = 1;
 	T1_TC = 0;
 }

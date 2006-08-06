@@ -40,7 +40,7 @@ struct device_driver;
 
 
 /**
- * \brief Represents a sinde device in the system
+ * \brief Represents a single device in the system
  */
 struct device {
 	struct list_head g_list;			/**< \brief Node in the global device-list. */
@@ -63,6 +63,9 @@ struct device {
 };
 
 
+/**
+ * \brief Represents a bus in the system.
+ */
 struct bus_type {
 	struct list_head g_list;									/**< \brief Node in global devicelist. */
 	struct list_head drivers;									/**< \brief List of owned drivers. */
@@ -91,6 +94,9 @@ struct bus_type {
 };
 
 
+/**
+ * \brief A driver for at specific type of device.
+ */
 struct device_driver {
 	char* name;
 	struct list_head g_list;						/**< \brief Node in global driver list. */

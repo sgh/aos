@@ -14,9 +14,9 @@ void sys_sem_P(struct semaphore_t* s) {
 	
 	if (s->counter < 0) {
 		current->state = BLOCKED;
-		list_erase(&readyQ,&current->q);
+		list_erase(/*&readyQ,*/&current->q);
 		list_push_back(&s->waiting, &current->q);
-		do_task_switch = 1;
+		do_context_switch = 1;
 	}
 }
 
@@ -29,7 +29,7 @@ void sys_sem_V(struct semaphore_t* s) {
 		task = get_struct_task(list_get_front(&s->waiting));
 		task->state = READY;
 		list_push_front(&readyQ,&task->q);
-		do_task_switch = 1;
+		do_context_switch = 1;
 	}
 	
 }
