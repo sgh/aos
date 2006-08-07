@@ -1,3 +1,4 @@
+* Finish ioctl. Need variable number of arguments.
 * Process exit routine. Posibility of starting, joining and waiting on processes.
 * Abstraction of interrupt-code.
 * Central entry-point for EVERY interrupt. This way we can do context-switch in conjunction with all interrupts.
