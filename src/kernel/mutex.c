@@ -3,6 +3,7 @@
 #include <mutex.h>
 #include <task.h>
 #include <syscalls.h>
+#include <list.h>
 
 void mutex_lock(mutex_t* m) {
 	spinlock_lock(&m->spinlock);
@@ -16,14 +17,18 @@ void mutex_lock(mutex_t* m) {
 	spinlock_unlock(&m->spinlock);
 	
 	block(&m->waiting);
+
 }
 
+void mutex_init(mutex_t* m) {
+	INIT_LIST_HEAD(&m->waiting);
+}
 
 void mutex_unlock(mutex_t* m) {
 	struct task_t* next;
 	
 	spinlock_lock(&m->spinlock);
-	if (list_isempty(&m->waiting)) { // If noone is waiting
+	if (list_isempty(&m->waiting)) { // If none is waiting
 		m->lock = 0;
 		spinlock_unlock(&m->spinlock);
 		return;

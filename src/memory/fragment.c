@@ -1,17 +1,11 @@
-#include <stdio.h>
+#include <fragment.h>
+// #include <string.h>
 #include <string.h>
+#include <driver_core.h>
 
 #define ciel(var,val) (var>val?val:var)
 
-#define FRAGMENT_SIZE 32
-
-struct fragment_store {
-	struct fragment_store* next;	/** Pointer to next fragment */
-	unsigned char size;
-	unsigned char data[FRAGMENT_SIZE];
-};
-
-struct fragment_store storage[4];
+struct fragment_store storage[50];
 
 struct fragment_store* free_list;
 
@@ -19,29 +13,29 @@ struct fragment_store* free_list;
 
 struct fragment_store* store_fragment(const unsigned char* data, unsigned int size) {
 	struct fragment_store* retval = free_list;
-	struct fragment_store* prevfrag;
+	struct fragment_store* prevfrag = 0;
 	
-	printf("storing: ");
+//  	printf("storing: ");
 	while (size>0 && free_list) {
 		free_list->size = ciel(size,FRAGMENT_SIZE);
 		size -= free_list->size;
-		printf("%d ",free_list->size);
+// 		printf("%d ",free_list->size);
 		memcpy(free_list->data,data,free_list->size);
 		data += free_list->size;
 		prevfrag = free_list;
 		free_list = free_list->next;
 	}
-	printf("\n");
-	if (retval) prevfrag->next = 0;
+//  	printf("\n");
+	if (retval && prevfrag) prevfrag->next = 0;
 	return retval;
 }
 
 void load_fragment(unsigned char* data, struct fragment_store* fragment) {
 	struct fragment_store* prevfrag;
 
-	printf("loading: ");
+// 	printf("loading: ");
 	while (fragment) {
-		printf(" %d",fragment->size);
+// 		printf(" %d",fragment->size);
 		memcpy(data,fragment->data,fragment->size);
 		data += fragment->size;
 		prevfrag = fragment;
@@ -51,12 +45,13 @@ void load_fragment(unsigned char* data, struct fragment_store* fragment) {
 		prevfrag->next = free_list;
 		free_list = prevfrag;
 	}
-	printf("\n");
+// 	printf("\n");
 }
 
-void init_fragment_store() {
+void  init_fragment_store() {
+	int i;
 	int num_fragments = sizeof(storage)/sizeof(storage[0]);
-	for (int i=1; i<num_fragments; i++) {
+	for (i=1; i<num_fragments; i++) {
 		storage[i-1].next = &storage[i];
 		storage[i].next = 0;
 	}
@@ -73,12 +68,12 @@ unsigned int free_fragments() {
 	return count;
 }
 
-
+/*
 int main() {
 	struct fragment_store* frag1;
 	struct fragment_store* frag2;
-	unsigned char arr1[48] = "array 1  1 array 1  1 array 1  1 array 1 1 1 1 \0";
-	unsigned char arr2[48] = "array 2  2 array 2  2 array 2  2 array 2 2 2 2 \0";
+	unsigned char arr1[200] = "array 1  1 array 1  1 array 1  1 array 1 1 1 1 \0";
+	unsigned char arr2[200] = "array 2  2 array 2  2 array 2  2 array 2 2 2 2 \0";
 	init_fragment_store();
 	
 	printf("Free fragments: %d\n",free_fragments());
@@ -100,3 +95,5 @@ int main() {
 	printf("%s\n",arr2);
 	
 }
+
+*/
