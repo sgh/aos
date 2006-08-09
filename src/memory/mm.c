@@ -1,11 +1,12 @@
 // #include <sys/time.h>
 #include <stdio.h>
 // #include <assert.h>
+#include <driver_core.h>
 
 // #define NULL 0
 
 /* The memory we allocate from */
-char __attribute__((aligned(4))) memory[8*1024];
+// char __attribute__((aligned(4))) memory[8*1024];
 
 
 /* MM defines */

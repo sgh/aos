@@ -25,7 +25,7 @@ uint32 global_int = 0;
 
 mutex_t mymutex;
 
-void task1(void) {
+void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task1(void) {
 	uint8 c;
 	char a[500];
 	int i;
@@ -39,8 +39,8 @@ void task1(void) {
 			if (a[i] != '1')
 				for (;;);
 		
-		/*mutex_lock(&mymutex);
-		mutex_unlock(&mymutex);*/
+		mutex_lock(&mymutex);
+		mutex_unlock(&mymutex);
 		GPIO1_IOSET = BIT22;
 		msleep(30);
 		GPIO1_IOCLR = BIT22;
@@ -50,8 +50,7 @@ void task1(void) {
 
 uint32 val = 1;
 
-
-void task2(void) {
+void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 	uint32 old_val = 0;
 	uint32 timer = 10000;
 	char a[500];
@@ -76,7 +75,7 @@ void task2(void) {
 
 			if (old_val == 1) {
 				GPIO1_IOSET = BIT23;
-			} else {			
+			} else {
 				GPIO1_IOCLR = BIT23;
 			}
 			
@@ -115,12 +114,21 @@ static void init_task(struct task_t* task,funcPtr entrypoint,REGISTER_TYPE* stac
 }
 
 
-void __attribute__((weak)) idle_task()  {
+void /*__attribute__((weak)) __attribute__((noreturn)) __attribute__((nothrow))*/ idle_task()  {
 	for (;;) {
 	}
 }
 
-int main(void) {
+char __attribute__((aligned(4))) dmem[4*1024];
+
+void mm_init(void* start, unsigned short len);
+void init_fragment_store();
+
+
+int /*__attribute__((noreturn)) __attribute__((nothrow))*/  main(void) {
+	
+	mm_init(dmem, sizeof(dmem));
+	init_fragment_store();
 	
 	init_task(&task1_cd,task1,task1_stack);
 	init_task(&task2_cd,task2,task2_stack);
@@ -128,7 +136,8 @@ int main(void) {
 	
 	GPIO1_IODIR |= BIT24|BIT23|BIT22;
 	
-
+	mutex_init(&mymutex);
+	
 	init_timer_interrupt();
 	enable_timer_interrupt();
 	

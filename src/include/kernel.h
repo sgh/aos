@@ -19,7 +19,7 @@
 
 extern uint32 Top_Stack;
 
-uint32 get_usermode_sp();
+uint32 __inline__ get_usermode_sp();
 
 uint32 get_sp();
 
