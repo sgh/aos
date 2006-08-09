@@ -20,7 +20,7 @@ void list_push_back(struct list_head* list, struct list_head* node) {
 }
 
 uint8 list_isempty(struct list_head* list) {
-	return !(list->next == list);
+	return (list->next == list);
 }
 
 struct list_head* list_get_back(struct list_head* list) {
@@ -39,8 +39,8 @@ void list_erase(struct list_head* node) {
 	node->prev->next = node->next;
 
 	/* Then we reset the actual entry's next and prev */
-	node->next = 0;
-	node->prev = 0;
+// 	node->next = 0;
+// 	node->prev = 0;
 
 }
 
