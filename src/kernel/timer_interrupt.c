@@ -52,14 +52,14 @@ void timer_interrupt_routine() {
 	T0_IR = BIT0; /* Clear interrupt */
 	VICVectAddr = 0; /* Update priority hardware */
 	
-	if (count == 20) {
-		if (onoff)
-			GPIO1_IOSET = BIT24;
-		else
-			GPIO1_IOCLR = BIT24;
-		count = 0;
-		onoff ^= 1;
-	}
+// 	if (count == 20) {
+// 		if (onoff)
+// 			GPIO1_IOSET = BIT24;
+// 		else
+// 			GPIO1_IOCLR = BIT24;
+// 		count = 0;
+// 		onoff ^= 1;
+// 	}
 
 	count++;
 	

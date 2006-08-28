@@ -30,8 +30,6 @@ void unblock(struct task_t* task);
 void yield();
 void msleep(uint16 ms);
 void usleep(uint16 us);
-void sem_P(struct semaphore_t* s);
-void sem_V(struct semaphore_t* s);
 
 extern struct task_t* current;
 extern uint8 do_context_switch;

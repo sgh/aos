@@ -1,5 +1,6 @@
 // #include <sys/time.h>
 #include <stdio.h>
+#include <string.h>
 // #include <assert.h>
 #include <driver_core.h>
 
@@ -35,7 +36,7 @@ void mm_status(void) {
 	unsigned char* ptr = (unsigned char*)mm_start;
 	mm_header_t* header;
 	unsigned int total_size = 0;
-	int i;
+// 	int i;
 
 	do {
 		header = (mm_header_t*)ptr;
