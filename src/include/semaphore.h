@@ -9,6 +9,7 @@ struct semaphore_t {
 	struct list_head waiting;
 };
 
-
+void sem_P(struct semaphore_t* s);
+void sem_V(struct semaphore_t* s);
 
 #endif

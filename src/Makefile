@@ -3,11 +3,11 @@
 APP = armOS
 
 
-KERNEL_SOURCES = main.c startup.s context.s syscalls.c list.c timer_interrupt.c semaphore.c vic.c uart.c mutex.c spinlock.c atomic.s kernel.c 
+KERNEL_SOURCES = main.c startup.s context.s syscalls.c list.c timer_interrupt.c semaphore.c interrupt.c uart.c mutex.c spinlock.c atomic.s kernel.c 
 
 SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES))  memory/mm.c memory/fragment.c
 
-CFLAGS = -mcpu=arm7tdmi -mapcs -O0 -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall 
+CFLAGS = -mcpu=arm7tdmi -mapcs -O0 -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall -Werror-implicit-function-declaration
 # -ffunction-sections -fdata-sections
 
 LDFLAGS = 

@@ -3,6 +3,7 @@
 #include <bits.h>
 #include <semaphore.h>
 #include <vic.h>
+#include <kernel.h>
 
 /* Interrupt_routine */
 void uart0_interrupt();
@@ -23,7 +24,9 @@ void uart0_interrupt_routine() {
 	uart0_buffer.buf[uart0_buffer.pidx] = UART0_RBR;
 	uart0_buffer.pidx++;
 	uart0_buffer.pidx %= sizeof(uart0_buffer.buf);
-	
+
+	GPIO1_IOPIN ^= BIT24;
+
 	sem_V(&uart0_sem);
 	
 	VICVectAddr = 0; /* Update priority hardware */
@@ -31,8 +34,8 @@ void uart0_interrupt_routine() {
 
 
 void uart_init(void) {
-	uint8 c;
-	uint32 bit;
+// 	uint8 c;
+// 	uint32 bit;
 	GPIO1_IODIR |= BIT23|BIT22;
 	uint8 uart_vector;
 	uint32 divisor = 15000000/(38400*16);

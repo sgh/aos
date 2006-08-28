@@ -1,11 +1,16 @@
+* Implement initcalls-section and run through initcall during startup.
+* UART-driver
+* set_stdint() and set_stdout() manupulate task-struct
+* printf så write to the task stdout
+
 * Finish ioctl. Need variable number of arguments.
 * Process exit routine. Posibility of starting, joining and waiting on processes.
 * Abstraction of interrupt-code.
-* Central entry-point for EVERY interrupt. This way we can do context-switch in conjunction with all interrupts.
+* Central entry-point for selected interrupts. This way we can do context-switch in conjunction with all interrupts.
 		It will improve interaction-response times.
 * Fragment-store should allocate FRAGMENT_SEGMENTS with malloc.
 * Integration of memory-management layer
-* Methode to monopolize the time in a same manner.
+* Methode to monopolize the time in a safe manner.
 * precision of sleeps
 * meassuring of  interrupt-latencies runtime
 * set timequantum at contex-shidt

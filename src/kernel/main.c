@@ -1,3 +1,4 @@
+#include <string.h>
 #include <kernel.h>
 #include <arm/lpc2119.h>
 #include <bits.h>
@@ -5,7 +6,6 @@
 #include <vic.h>
 #include <mutex.h>
 #include <atomic.h>
-#include <string.h>
 
 struct task_t* current = NULL;
 REGISTER_TYPE task1_stack[1024/sizeof(REGISTER_TYPE)];
@@ -26,7 +26,7 @@ uint32 global_int = 0;
 mutex_t mymutex;
 
 void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task1(void) {
-	uint8 c;
+// 	uint8 c;
 	char a[500];
 	int i;
 
@@ -123,12 +123,14 @@ char __attribute__((aligned(4))) dmem[4*1024];
 
 void mm_init(void* start, unsigned short len);
 void init_fragment_store();
+void uart_init(void);
 
 
 int /*__attribute__((noreturn)) __attribute__((nothrow))*/  main(void) {
 	
 	mm_init(dmem, sizeof(dmem));
 	init_fragment_store();
+	uart_init();
 	
 	init_task(&task1_cd,task1,task1_stack);
 	init_task(&task2_cd,task2,task2_stack);
