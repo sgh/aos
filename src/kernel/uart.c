@@ -4,6 +4,7 @@
 #include <semaphore.h>
 #include <vic.h>
 #include <kernel.h>
+#include <driver_core.h>
 
 /* Interrupt_routine */
 void uart0_interrupt();
@@ -62,3 +63,4 @@ void uart_init(void) {
 	vic_irq_enable(6);
 }
 
+MODULE_INIT(uart_init);

@@ -13,6 +13,8 @@
 
 #define _init_ __attribute__((constructor))
 
+#define MODULE_INIT(function) void* __attribute__((section("initcalls"))) initcall_##function = function;
+
 /**
  * \brief This list holds all the devices attached to the system.
  */
