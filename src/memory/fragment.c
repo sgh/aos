@@ -97,3 +97,4 @@ int main() {
 }
 
 */
+MODULE_INIT(init_fragment_store);

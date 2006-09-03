@@ -119,18 +119,39 @@ void /*__attribute__((weak)) __attribute__((noreturn)) __attribute__((nothrow))*
 	}
 }
 
+// Linker provides theese
+extern void __start_initcalls;
+extern void __stop_initcalls;
+
+void do_initcalls() {
+	void (*initcall)();
+	
+	initcall = &__start_initcalls;
+	while (initcall != &__stop_initcalls) {
+		initcall();
+		initcall++;
+	}
+
+	// Init classes
+// 	inclitiometer_class_init();
+
+	// Init busses
+// 	init_spi();
+	
+	// Init drivers
+// 	sca61t_init();
+}
+
+
 char __attribute__((aligned(4))) dmem[4*1024];
 
 void mm_init(void* start, unsigned short len);
-void init_fragment_store();
-void uart_init(void);
-
 
 int /*__attribute__((noreturn)) __attribute__((nothrow))*/  main(void) {
 	
 	mm_init(dmem, sizeof(dmem));
-	init_fragment_store();
-	uart_init();
+	
+	do_initcalls();
 	
 	init_task(&task1_cd,task1,task1_stack);
 	init_task(&task2_cd,task2,task2_stack);

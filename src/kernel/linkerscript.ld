@@ -18,7 +18,7 @@ SECTIONS
 
     *(.glue_7t) *(.glue_7)
 
-  } >FLASH =0
+  } > FLASH =0
 
   . = ALIGN(4);
 
@@ -26,7 +26,15 @@ SECTIONS
   .rodata :
   {
     *(.rodata)
-  } >FLASH
+  } > FLASH
+
+  . = ALIGN(4);
+
+
+	.initcalls :
+	{
+		*(.initcalls)
+	} > FLASH
 
   . = ALIGN(4);
 
