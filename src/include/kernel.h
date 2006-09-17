@@ -17,22 +17,22 @@
  */
 #define CONTEXT_SIZE
 
-extern uint32 Top_Stack;
+extern uint32_t Top_Stack;
 
-uint32 __inline__ get_usermode_sp();
+uint32_t __inline__ get_usermode_sp();
 
-uint32 get_sp();
+uint32_t get_sp();
 
-void set_interrupt_mask(uint8 i);
+void set_interrupt_mask(uint8_t i);
 
 void block();
 void unblock(struct task_t* task);
 void yield();
-void msleep(uint16 ms);
-void usleep(uint16 us);
+void msleep(uint16_t ms);
+void usleep(uint16_t us);
 
 extern struct task_t* current;
-extern uint8 do_context_switch;
+extern uint8_t do_context_switch;
 
 extern struct list_head readyQ;
 extern struct list_head readyQ;

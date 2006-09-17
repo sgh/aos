@@ -6,6 +6,9 @@
 #include <vic.h>
 #include <mutex.h>
 #include <atomic.h>
+#include <driver_core.h>
+#include <platform.h>
+#include <serio.h>
 
 struct task_t* current = NULL;
 REGISTER_TYPE task1_stack[1024/sizeof(REGISTER_TYPE)];
@@ -18,9 +21,9 @@ struct task_t idle_cd;
 
 
 // const uint32 entrypoint_offset = offsetof(struct task_t,entrypoint);
-const uint32 context_offset = offsetof(struct task_t,context);
+const uint32_t context_offset = offsetof(struct task_t,context);
 
-uint32 global_int = 0;
+uint32_t global_int = 0;
 
 
 mutex_t mymutex;
@@ -48,13 +51,16 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task1(void) {
 	}
 }
 
-uint32 val = 1;
+uint32_t val = 1;
 
 void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
-	uint32 old_val = 0;
-	uint32 timer = 10000;
+	uint32_t old_val = 0;
+	uint32_t timer = 10000;
 	char a[500];
+	struct serio console;
 	int i;
+	
+	acquire_serio(0,&console);
 	
 	for(;;) {
 		
@@ -70,6 +76,9 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 
 			if (old_val == 1) mutex_lock(&mymutex);
 			msleep(500);
+			
+			serio_put(&console,a,1);
+			
 			if (old_val == 1) mutex_unlock(&mymutex);
 
 
@@ -88,11 +97,11 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 static void init_task(struct task_t* task,funcPtr entrypoint,REGISTER_TYPE* stack) {
 	memset((void*)stack,0,1024);
 	task->context = stack;
-	task->context[0] = (uint32)(entrypoint);                                  // Entrypoint
+	task->context[0] = (uint32_t)(entrypoint);                                  // Entrypoint
 #ifdef SHARED_STACK
-	task->context[1] = (uint32)&Top_Stack;  // Shared stack SP
+	task->context[1] = (uint32_t)&Top_Stack;  // Shared stack SP
 #else
-	task->context[1] = (uint32)task->context + (1024 * sizeof(REGISTER_TYPE));  // Seperate stack SP
+	task->context[1] = (uint32_t)task->context + (1024 * sizeof(REGISTER_TYPE));  // Seperate stack SP
 #endif
 	task->context[2] = 0x12345678; // LR
 	task->context[3] = 0; // r0
@@ -119,27 +128,32 @@ void /*__attribute__((weak)) __attribute__((noreturn)) __attribute__((nothrow))*
 	}
 }
 
+typedef void (*funcptr)();
+
 // Linker provides theese
-extern void __start_initcalls;
-extern void __stop_initcalls;
+extern funcptr __start_initcalls[];
+extern funcptr __stop_initcalls[];
+
+
 
 void do_initcalls() {
-	void (*initcall)();
+	funcptr* initcall;
 	
-	initcall = &__start_initcalls;
-	while (initcall != &__stop_initcalls) {
-		initcall();
+	// Init classes
+	serio_class_init();
+	
+	// Init busses
+	init_platform();
+	
+	
+	initcall = __start_initcalls;
+	while (initcall != __stop_initcalls) {
+		(*initcall)();
 		initcall++;
 	}
 
-	// Init classes
-// 	inclitiometer_class_init();
-
-	// Init busses
-// 	init_spi();
-	
 	// Init drivers
-// 	sca61t_init();
+// 	lpcuart_init();
 }
 
 
@@ -147,17 +161,25 @@ char __attribute__((aligned(4))) dmem[4*1024];
 
 void mm_init(void* start, unsigned short len);
 
+struct device lpcuart = {
+	.name = "lpcuart",
+	.bus = &platform_bus_type,
+	.device_id = 1,
+};
+
 int /*__attribute__((noreturn)) __attribute__((nothrow))*/  main(void) {
+	
+	GPIO1_IODIR |= BIT24|BIT23|BIT22;
+	
+	do_initcalls();
 	
 	mm_init(dmem, sizeof(dmem));
 	
-	do_initcalls();
+	device_register(&lpcuart);
 	
 	init_task(&task1_cd,task1,task1_stack);
 	init_task(&task2_cd,task2,task2_stack);
 	init_task(&idle_cd,idle_task,idle_stack);
-	
-	GPIO1_IODIR |= BIT24|BIT23|BIT22;
 	
 	mutex_init(&mymutex);
 	

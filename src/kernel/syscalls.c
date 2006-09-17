@@ -17,8 +17,8 @@ void* sys_call_table[] =
 /* Syscall definitions */
 
 
-_syscall1(void,msleep, uint16, ms);
-_syscall1(void,usleep, uint16, us);
+_syscall1(void,msleep, uint16_t, ms);
+_syscall1(void,usleep, uint16_t, us);
 _syscall1(void,unblock, struct task_t*, task);
 _syscall1(void,block, struct list_head*, q);
 _syscall0(void,yield);

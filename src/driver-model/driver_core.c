@@ -11,13 +11,11 @@ LIST_HEAD(global_driver_list);
 
 LIST_HEAD(global_class_list);
 
-
 void device_register(struct device* dev) {
 	struct list_head* it;
 	struct device_driver* drv;
 
 	list_for_each(it, &dev->bus->drivers) {
-	
 		drv = container_of(it,struct device_driver,bus_driver_list);
 			
 		if (dev->bus && dev->bus->match) {
@@ -43,7 +41,7 @@ void driver_register(struct device_driver* drv) {
 }
 
 void class_register(struct driver_class* cls) {
-	printf("Class register: %s\n",cls->name);
+// 	printf("Class register: %s\n",cls->name);
 	INIT_LIST_HEAD(&cls->class_fops);
 	list_push_back(&global_class_list,&cls->g_list);
 }
@@ -57,7 +55,7 @@ int bus_for_each_dev(struct bus_type * bus, struct device * start, void * data, 
 int bus_for_each_drv(struct bus_type * bus, struct device_driver * start, void * data, int (*fn)(struct device_driver *, void *)) {
 	struct list_head* drv;
 	list_for_each_from(drv, &bus->drivers, &start->bus_driver_list) {
-		printf("driver: %s\n", container_of(drv, struct device_driver, bus_driver_list)->name);
+// 		printf("driver: %s\n", container_of(drv, struct device_driver, bus_driver_list)->name);
 	}
 	return 0;
 }

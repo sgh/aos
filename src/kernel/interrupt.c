@@ -2,12 +2,12 @@
 #include <types.h>
 #include <bits.h>
 
-static uint16 vic_address_map;
+static uint16_t vic_address_map;
 
-int8 vic_request_vector(uint32 func, uint8 irqnum) {
-	uint8 i = 0;
-	uint32* vector_address = (void*)&VICVectAddr0; // Address of first Vector-Address-Register
-	uint32* vector_control = (void*)&VICVectCntl0; // Address of first Vector-Control-Register
+int8_t vic_request_vector(uint32_t func, uint8_t irqnum) {
+	uint8_t i = 0;
+	uint32_t* vector_address = (void*)&VICVectAddr0; // Address of first Vector-Address-Register
+	uint32_t* vector_control = (void*)&VICVectCntl0; // Address of first Vector-Control-Register
 	
 	do {
 		if ((vic_address_map & (BIT0<<i)) == 0) {
@@ -29,8 +29,8 @@ int8 vic_request_vector(uint32 func, uint8 irqnum) {
 }
 
 
-void vic_vector_enable(uint8 vectornum) {
-	uint32* vector_control = (void*)&VICVectCntl0; // Address of first Vector-Control-Register
+void vic_vector_enable(uint8_t vectornum) {
+	uint32_t* vector_control = (void*)&VICVectCntl0; // Address of first Vector-Control-Register
 	if (vectornum>15)
 		return;
 	 vector_control += vectornum;
@@ -38,8 +38,8 @@ void vic_vector_enable(uint8 vectornum) {
 }
 
 
-void vic_vector_disable(uint8 vectornum) {
-	uint32* vector_control = (void*)&VICVectCntl0; // Address of first Vector-Control-Register
+void vic_vector_disable(uint8_t vectornum) {
+	uint32_t* vector_control = (void*)&VICVectCntl0; // Address of first Vector-Control-Register
 	if (vectornum>15)
 		return;
 	 vector_control += vectornum;
@@ -47,14 +47,14 @@ void vic_vector_disable(uint8 vectornum) {
 }
 
 
-void vic_irq_enable(uint8 irqnum) {
+void vic_irq_enable(uint8_t irqnum) {
 	if (irqnum>31)
 		return;
 	VICIntEnable |= BIT0<<irqnum; /* Enable Interrrupt */
 }
 
 
-void vic_irq_disable(uint8 irqnum) {
+void vic_irq_disable(uint8_t irqnum) {
 	if (irqnum>31)
 		return;
 	VICIntEnable &= ~(BIT0<<irqnum); /* Enable Interrrupt */

@@ -6,7 +6,7 @@ LIST_HEAD(readyQ);
 LIST_HEAD(msleepQ);
 LIST_HEAD(usleepQ);
 
-uint8 do_context_switch = 0; /**< \brief Shall we do proccess-shift */
+uint8_t do_context_switch = 0; /**< \brief Shall we do proccess-shift */
 
 
 void free(void* segment);
@@ -21,8 +21,8 @@ void sched(void) {
 #ifdef SHARED_STACK
 	/* Copy stack away from shared system stack */
 	if (current) {
-		uint32 len = (REGISTER_TYPE)&Top_Stack - get_usermode_sp();
-		void* dst = current->stack;
+		uint32_t len = (REGISTER_TYPE)&Top_Stack - get_usermode_sp();
+// 		void* dst = current->stack;
 		void* src = (void*)&Top_Stack - len;
 		
 		// DMEM
@@ -44,9 +44,9 @@ void sched(void) {
 #ifdef SHARED_STACK
 	/* Copy stack to shared stack */
 	if (current) {
-		uint32 len = current->stack_size;
+		uint32_t len = current->stack_size;
 		void* dst = (void*)&Top_Stack - len;
-		void* src = current->stack;
+// 		void* src = current->stack;
 		
 		// DMEM
 // 		if (current->malloc_stack) {
@@ -76,7 +76,7 @@ void sys_yield(void) {
 }
 
 
-void sys_msleep(uint16 ms) {	
+void sys_msleep(uint16_t ms) {	
 	current->sleep_time = ms*1000 + T1_TC;
 // 	list_erase(&readyQ,&current->q);
 	list_push_back(&msleepQ,&current->q);
@@ -86,7 +86,7 @@ void sys_msleep(uint16 ms) {
 }
 
 
-void sys_usleep(uint16 us) {
+void sys_usleep(uint16_t us) {
 	current->sleep_time = us + T1_TC;
 // 	list_erase(&readyQ,&current->q);
 	list_push_front(&msleepQ,&current->q);

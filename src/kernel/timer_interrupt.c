@@ -8,7 +8,7 @@
 
 #define TIMER0_IRQ 4
 
-static int8 vector_num;
+static int8_t vector_num;
 
 void init_timer_interrupt() {
 	T0_PR = 15000000/1000;		/* Scale to 1 ms steps */
@@ -16,7 +16,7 @@ void init_timer_interrupt() {
 	
 // 	VICVectCntl0 = 4 + BIT5;
 // 	VICVectAddr0 = (uint32)timer_interrupt;
-	vector_num = vic_request_vector((uint32)timer_interrupt, TIMER0_IRQ);
+	vector_num = vic_request_vector((uint32_t)timer_interrupt, TIMER0_IRQ);
 	
 	if ( vector_num ==-1)
 		for (;;);
@@ -44,10 +44,10 @@ void reset_timer_interrupt() {
 void timer_interrupt_routine() {
 	struct task_t* t;
 	struct list_head* e;
-	uint32 past_time;
-	static uint8 count= 0;
-	static uint8 onoff = 0;
-	uint8 restart = 0;
+	uint32_t past_time;
+	static uint8_t count= 0;
+// 	static uint8 onoff = 0;
+	uint8_t restart = 0;
 	 
 	T0_IR = BIT0; /* Clear interrupt */
 	VICVectAddr = 0; /* Update priority hardware */

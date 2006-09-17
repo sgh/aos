@@ -48,9 +48,13 @@ void load_fragment(unsigned char* data, struct fragment_store* fragment) {
 // 	printf("\n");
 }
 
+#include <bits.h>
+#include <arm/lpc2119.h>
+
 void  init_fragment_store() {
 	int i;
 	int num_fragments = sizeof(storage)/sizeof(storage[0]);
+	
 	for (i=1; i<num_fragments; i++) {
 		storage[i-1].next = &storage[i];
 		storage[i].next = 0;

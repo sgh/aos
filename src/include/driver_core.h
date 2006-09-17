@@ -49,7 +49,7 @@ struct device {
 	struct list_head bus_list;		/**< \brief Node in the bus' device-list. */
 	struct list_head driver_list;	/**< \brief Node in the drivers' device-list. */
 	
-	uint8 device_id;							/**< \brief Device-ID. Since PnP is not available, ID's must be hardcoded. */
+	uint8_t device_id;							/**< \brief Device-ID. Since PnP is not available, ID's must be hardcoded. */
 	
 	struct device_driver* driver;	/**< \brief The driver that owns this device. */
 	
@@ -61,7 +61,7 @@ struct device {
 	void* platform_data;					/**< \brief Platform specific-data. This will typically be a pointer to a struct gpio. */
 	void* class_data;							/**< \brief Class specific-data. */
 	
-	uint8 current_state;					/**< \brief The current state of the device. */
+	uint8_t current_state;					/**< \brief The current state of the device. */
 };
 
 

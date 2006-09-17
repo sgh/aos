@@ -18,9 +18,9 @@
  * </pre>
  */
 struct gpio {
-	uint8 port;			/**< \brief IO-port. */
-	uint8 range;		/**< \brief Length of bit-range. */
-	uint8 shifts;		/**< \brief Number of positions to shift the range. */
+	uint8_t port;			/**< \brief IO-port. */
+	uint8_t range;		/**< \brief Length of bit-range. */
+	uint8_t shifts;		/**< \brief Number of positions to shift the range. */
 };
 
 // #define __inline__  __attribute__((always_inline))
@@ -35,7 +35,7 @@ static void __inline__ gpio_clear(struct gpio* io) {
 	printf("GPIO%u_IOCLR = 0x%X;\n",io->port, ((1<<io->range)-1) << io->shifts);
 }
 
-static void __inline__ gpio_get(struct gpio* io, uint32* data) {
+static void __inline__ gpio_get(struct gpio* io, uint32_t* data) {
 	printf("port: %u  range: %u   shifts: %u\n",io->port,io->range,io->shifts);
 	printf("*data = ((GPIO%u_PIN >> %u) & %u);\n",io->port, io->shifts, ((1<<io->range)-1));
 }
@@ -50,7 +50,7 @@ static void __inline__ gpio_lowimpedance(struct gpio* io) {
 	printf("GPIO%u_IODIR |= (%u << %u);\n",io->port, ((1<<io->range)-1), io->shifts);
 }
 
-static void __inline__ gpio_data(struct gpio* io, uint32 data) {
+static void __inline__ gpio_data(struct gpio* io, uint32_t data) {
 	printf("port: %u  range: %u   shifts: %u\n",io->port,io->range,io->shifts);
 	printf("GPIO%u_IOSET = ((data & %u) << %u);\n",io->port, ((1<<io->range)-1), io->shifts);
 	printf("GPIO%u_IOCLR = (((~data) & %u) << %u);\n",io->port, ((1<<io->range)-1), io->shifts);
