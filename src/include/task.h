@@ -23,7 +23,7 @@ struct task_t {
 	/**
 	 * \brief  useconds to sleep.
 	 */
-	uint32 sleep_time;
+	uint32_t sleep_time;
 	
 	funcPtr entrypoint;
 	
@@ -36,7 +36,7 @@ struct task_t {
 	 * \brief Size of the space pointed to by *stack
 	 * If the size is greater than zero, the process is using shared stacks.
 	 */
-	uint16 stack_size;
+	uint16_t stack_size;
 	
 	/**
 	 * \brief  This will hold the process's complete stack.
@@ -46,7 +46,7 @@ struct task_t {
 	 * 
 	 * The latter is the most common setup for most applications.
 	 */
-	uint8 stack[600]; /**< @todo convert this to a pointer to the memory-space */
+	uint8_t stack[600]; /**< @todo convert this to a pointer to the memory-space */
 	
 	void* malloc_stack;
 	struct fragment_store* fragment;

@@ -19,7 +19,7 @@ void list_push_back(struct list_head* list, struct list_head* node) {
 	list->prev = node;					// Set new back to node
 }
 
-uint8 list_isempty(struct list_head* list) {
+uint8_t list_isempty(struct list_head* list) {
 	return (list->next == list);
 }
 

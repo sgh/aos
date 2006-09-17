@@ -7,7 +7,7 @@
 extern struct bus_type spi_bus_type;
 
 struct spi_device_driver {
-	const uint8 *id_table;
+	const uint8_t *id_table;
 	struct device_driver driver;
 };
 

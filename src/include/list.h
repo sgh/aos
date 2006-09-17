@@ -96,7 +96,7 @@ void list_erase(struct list_head* node);
  * @param list The list in question.
  * @return 0 if the list is not empty.
  */
-uint8 list_isempty(struct list_head* list);
+uint8_t list_isempty(struct list_head* list);
 
 
 #endif // _QUEUE_H_

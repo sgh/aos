@@ -21,8 +21,8 @@
 void sys_unblock(struct task_t* task);
 void sys_block(struct list_head* q);
 void sys_yield();
-void sys_msleep(uint16 ms);
-void sys_usleep(uint16 us);
+void sys_msleep(uint16_t ms);
+void sys_usleep(uint16_t us);
 void sys_sem_P(struct semaphore_t* s);
 void sys_sem_V(struct semaphore_t* s);
 
@@ -45,7 +45,7 @@ rettype func(void) \
 #define _syscall1(rettype,func,type0,arg0) \
 rettype func(type0 arg0) \
 { \
-	register uint32 __r0 __asm__("r0") = (uint32)arg0;\
+	register uint32_t __r0 __asm__("r0") = (uint32_t)arg0;\
 	__asm__ ("swi " __syscallnr(func) : : "r" (__r0) ); \
 }
 
@@ -53,8 +53,8 @@ rettype func(type0 arg0) \
 #define _syscall2(rettype,func,type0,arg0,type1,arg1) \
 rettype func(type0 arg0,type1 arg1) \
 { \
-	register uint32 __r0 __asm__("r0") = (uint32)arg0;\
-	register uint32 __r1 __asm__("r1") = (uint32)arg1;\
+	register uint32_t __r0 __asm__("r0") = (uint32_t)arg0;\
+	register uint32_t __r1 __asm__("r1") = (uint32_t)arg1;\
 	__asm__ ("swi " __syscallnr(func) : :"r"(__r0),"r"(__r1) ); \
 }
 
@@ -62,10 +62,10 @@ rettype func(type0 arg0,type1 arg1) \
 #define _syscall4(rettype,func,type0,arg0,type1,arg1,type2,arg2,type3,arg3) \
 rettype func(type0 arg0,type1 arg1,type2 arg2,type3 arg3) \
 { \
-	register uint32 __r0 __asm__("r0") = (uint32)arg0;\
-	register uint32 __r1 __asm__("r1") = (uint32)arg1;\
-	register uint32 __r2 __asm__("r2") = (uint32)arg2;\
-	register uint32 __r3 __asm__("r3") = (uint32)arg3;\
+	register uint32_t __r0 __asm__("r0") = (uint32_t)arg0;\
+	register uint32_t __r1 __asm__("r1") = (uint32_t)arg1;\
+	register uint32_t __r2 __asm__("r2") = (uint32_t)arg2;\
+	register uint32_t __r3 __asm__("r3") = (uint32_t)arg3;\
 	__asm__ ("swi " __syscallnr(func) : :"r"(__r0),"r"(__r1),"r"(__r2),"r"(__r3)); \
 }
 

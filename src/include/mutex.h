@@ -4,8 +4,8 @@
 #include <list.h>
 
 typedef struct {
-	uint32 spinlock;
-	uint8 lock;
+	uint32_t spinlock;
+	uint8_t lock;
 	struct list_head waiting;
 } mutex_t;
 

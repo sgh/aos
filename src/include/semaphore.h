@@ -5,7 +5,7 @@
 #include <list.h>
 
 struct semaphore_t {
-	int16 counter;
+	int16_t counter;
 	struct list_head waiting;
 };
 

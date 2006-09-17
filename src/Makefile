@@ -5,9 +5,14 @@ APP = armOS
 
 KERNEL_SOURCES = main.c startup.s context.s syscalls.c list.c timer_interrupt.c semaphore.c interrupt.c uart.c mutex.c spinlock.c atomic.s kernel.c 
 
-SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES))  memory/mm.c memory/fragment.c
+DRIVER_SOURCES =  driver_core.c driver_class.c serio/serio.c platform/platform.c
 
-CFLAGS = -mcpu=arm7tdmi -mapcs -O0 -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall -Werror-implicit-function-declaration
+MM_SOURCES = mm.c fragment.c 
+
+SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES))  $(addprefix memory/,$(MM_SOURCES))  $(addprefix driver-model/,$(DRIVER_SOURCES))
+
+CFLAGS = -mcpu=arm7tdmi -mapcs -O0 -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall
+#-Werror-implicit-function-declaration
 # -ffunction-sections -fdata-sections
 
 LDFLAGS = 

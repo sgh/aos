@@ -4,18 +4,18 @@
 #include <stddef.h>
 
 /* Basic int definitions */
-typedef unsigned char uint8;
-typedef signed char int8;
-typedef unsigned short int uint16;
-typedef signed short int int16;
-typedef long unsigned int uint32;
-typedef signed int int32;
+typedef unsigned char uint8_t;
+typedef signed char int8_t;
+typedef unsigned short int uint16_t;
+typedef signed short int int16_t;
+typedef long unsigned int uint32_t;
+typedef signed int int32_t;
 
 typedef void (*funcPtr)(void);
 
 /* Derived types */
 // typedef uint32 size_t;
-typedef uint32 REGISTER_TYPE;
+typedef uint32_t REGISTER_TYPE;
 
 #ifndef NULL
 	#define NULL 0
