@@ -67,4 +67,4 @@ struct spi_device_driver sca61t_device_driver = {
 };
 
 
-MODULE_INIT(sca61t_init);
+DRIVER_MODULE_INIT(sca61t_init);

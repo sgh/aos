@@ -101,4 +101,4 @@ int main() {
 }
 
 */
-MODULE_INIT(init_fragment_store);
+DRIVER_MODULE_INIT(init_fragment_store);

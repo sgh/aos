@@ -9,4 +9,4 @@ static void  inclitiometer_class_init() {
 	class_register(&inclitiometer_class);
 }
 
-MODULE_INIT(inclitiometer_class_init);
+DRIVER_MODULE_INIT(inclitiometer_class_init);

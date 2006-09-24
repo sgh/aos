@@ -20,7 +20,7 @@ LDFLAGS =
 	
 LINKERSCRIPT = kernel/linkerscript.ld
 
-LIBS = -lc -lm -lgcc
+LIBS = -lc -lm -lgcc -lnosys
 
 ##
 # Tools
