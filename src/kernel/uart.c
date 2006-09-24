@@ -19,26 +19,64 @@ extern struct driver_class_fops lpcuart_serio_driver_fops;
 
 struct semaphore_t uart0_sem = { .counter = 0 };
 
-struct {
-	uint8_t buf[8];
+
+struct fifo_buffer {
+	uint8_t buf[128];
 	uint8_t pidx;
 	uint8_t gidx;
-} uart0_buffer;
+	uint8_t num;
+};
+ 
+struct fifo_buffer uart0_rxbuffer;
+
+struct fifo_buffer uart0_txbuffer;
+
+static void put_fifo(struct fifo_buffer* fifo, char c) {
+	if (fifo->num == sizeof(fifo->buf))
+		return;
+	fifo->buf[fifo->pidx] = c;
+	fifo->pidx++;
+	fifo->pidx %= sizeof(fifo->buf);
+	fifo->num++;
+}
+
+static char get_fifo(struct fifo_buffer* fifo, char* c) {
+	if (fifo->num == 0)
+		return 0;
+	*c = fifo->buf[fifo->gidx];
+	fifo->gidx++;
+	fifo->gidx %= sizeof(fifo->buf);
+	fifo->num--;
+	return 1;
+}
+
+static void init_fifo(struct fifo_buffer* fifo) {
+	memset(fifo,0,sizeof(struct fifo_buffer));
+}
 
 
 void uart0_interrupt_routine() {
 	uint32_t iir;
-	uint8_t c;
+	char c;
 	iir = UART0_IIR;
 	
-	c = UART0_RBR;
-	uart0_buffer.buf[uart0_buffer.pidx] = c;
-	uart0_buffer.pidx++;
-	uart0_buffer.pidx %= sizeof(uart0_buffer.buf);
+	
+	switch (iir&0x0E) {
+		case 2: // THRE Interrupt
+			if (UART0_LSR&0x20) { // Transmit FIFO empty
+				int fifoready = 16;
+				while (fifoready-- && get_fifo(&uart0_txbuffer,&c))
+					UART0_THR = c;
+			}
+			break;
 
-	GPIO1_IOPIN ^= BIT24;
-
-	sem_V(&uart0_sem);	
+		case 4: // RDA Receive data interrupt
+			c = UART0_RBR;
+			put_fifo(&uart0_rxbuffer,c);
+			GPIO1_IOPIN ^= BIT24;
+			sem_V(&uart0_sem);	
+			break;
+	}
 	
 	VICVectAddr = 0; /* Update priority hardware */
 }
@@ -50,6 +88,10 @@ void lpcuart_init(void) {
 	GPIO1_IODIR |= BIT23|BIT22;
 	uint8_t uart_vector;
 	uint32_t divisor = 15000000/(38400*16);
+	
+	// Init fifos
+	init_fifo(&uart0_rxbuffer);
+	init_fifo(&uart0_txbuffer);
 	
 	// Pinselect to UART0
 	PCB_PINSEL0 &= 0xF;
@@ -67,8 +109,8 @@ void lpcuart_init(void) {
 	uart_vector = vic_request_vector((uint32_t)uart0_interrupt,6);
 	vic_vector_enable(uart_vector);
 
-	// RXD interrupt
-	UART0_IER |= BIT0;
+	// RXD interrupt and THRE interrupt
+	UART0_IER |= BIT0|BIT1;
 
 // 	vic_irq_enable(6);
 	
@@ -79,7 +121,16 @@ void lpcuart_init(void) {
 
 
 static void lpcuart_put(struct device* dev, char* src, size_t len) {
-	UART0_THR = *src;
+	if (UART0_LSR&0x20) {
+		UART0_THR = *src;
+		src++;
+		len--;
+	}
+	
+	while (len--) {
+		put_fifo(&uart0_txbuffer, *src);
+		src++;
+	}
 }
 
 
@@ -111,4 +162,4 @@ struct driver_class_fops lpcuart_serio_driver_fops = {
 };
 
 
-MODULE_INIT(lpcuart_init);
+DRIVER_MODULE_INIT(lpcuart_init);
