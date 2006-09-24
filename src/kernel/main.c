@@ -11,9 +11,9 @@
 #include <serio.h>
 
 struct task_t* current = NULL;
-REGISTER_TYPE task1_stack[1024/sizeof(REGISTER_TYPE)];
-REGISTER_TYPE task2_stack[1024/sizeof(REGISTER_TYPE)];
-REGISTER_TYPE idle_stack[1024/sizeof(REGISTER_TYPE)];
+REGISTER_TYPE task1_stack[64/sizeof(REGISTER_TYPE)];
+REGISTER_TYPE task2_stack[64/sizeof(REGISTER_TYPE)];
+REGISTER_TYPE idle_stack[64/sizeof(REGISTER_TYPE)];
 
 struct task_t task1_cd;
 struct task_t task2_cd;
@@ -57,6 +57,7 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 	uint32_t old_val = 0;
 	uint32_t timer = 10000;
 	char a[500];
+	char buf[40];
 	struct serio console;
 	int i;
 	
@@ -77,7 +78,8 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 			if (old_val == 1) mutex_lock(&mymutex);
 			msleep(500);
 			
-			serio_put(&console,a,1);
+			snprintf(buf,sizeof(buf),"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n");
+			serio_put(&console,buf,strlen(buf));
 			
 			if (old_val == 1) mutex_unlock(&mymutex);
 
@@ -95,7 +97,7 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 }
 
 static void init_task(struct task_t* task,funcPtr entrypoint,REGISTER_TYPE* stack) {
-	memset((void*)stack,0,1024);
+	memset((void*)stack,0,64);
 	task->context = stack;
 	task->context[0] = (uint32_t)(entrypoint);                                  // Entrypoint
 #ifdef SHARED_STACK
@@ -131,8 +133,12 @@ void /*__attribute__((weak)) __attribute__((noreturn)) __attribute__((nothrow))*
 typedef void (*funcptr)();
 
 // Linker provides theese
-extern funcptr __start_initcalls[];
-extern funcptr __stop_initcalls[];
+extern funcptr __start_driver_initcalls[];
+extern funcptr __stop_driver_initcalls[];
+extern funcptr __start_bus_initcalls[];
+extern funcptr __stop_bus_initcalls[];
+extern funcptr __start_class_initcalls[];
+extern funcptr __stop_class_initcalls[];
 
 
 
@@ -140,20 +146,26 @@ void do_initcalls() {
 	funcptr* initcall;
 	
 	// Init classes
-	serio_class_init();
+	initcall = __start_class_initcalls;
+	while (initcall != __stop_class_initcalls) {
+		(*initcall)();
+		initcall++;
+	}
 	
 	// Init busses
-	init_platform();
+	initcall = __start_bus_initcalls;
+	while (initcall != __stop_bus_initcalls) {
+		(*initcall)();
+		initcall++;
+	}
 	
-	
-	initcall = __start_initcalls;
-	while (initcall != __stop_initcalls) {
+	// Init drivers
+	initcall = __start_driver_initcalls;
+	while (initcall != __stop_driver_initcalls) {
 		(*initcall)();
 		initcall++;
 	}
 
-	// Init drivers
-// 	lpcuart_init();
 }
 
 
@@ -167,8 +179,7 @@ struct device lpcuart = {
 	.device_id = 1,
 };
 
-int /*__attribute__((noreturn)) __attribute__((nothrow))*/  main(void) {
-	
+void main(void) {
 	GPIO1_IODIR |= BIT24|BIT23|BIT22;
 	
 	do_initcalls();
@@ -190,7 +201,5 @@ int /*__attribute__((noreturn)) __attribute__((nothrow))*/  main(void) {
 	T1_TCR = BIT0;							/* Enable timer0 */
 	
 	current = NULL;
-	__asm__("swi 0");
-	
-	//i = test(1,2,3,4);
+	yield();
 }
