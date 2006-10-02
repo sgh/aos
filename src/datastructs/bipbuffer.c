@@ -55,7 +55,7 @@ char* bipbuffer_reserve(struct bipbuffer* bip, uint16_t size, uint16_t* reserved
 		printf("rightfree : %d\n", rightfree);
 
 		// If the space on the left size of the segment is largest, use next segment
-		if (leftfree > rightfree && bip->segment_b.size == 0) {
+		if (leftfree > rightfree && bip->segment_b.size == 0) { // TODO allocated from right if the requested size fits within free space
 			printf("USE NEW SEGMENT\n");
 			bip->reserved = leftfree;
 			segment = &bip->segment_b;
