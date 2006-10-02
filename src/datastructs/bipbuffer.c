@@ -79,7 +79,7 @@ char* bipbuffer_reserve(struct bipbuffer* bip, uint16_t size, uint16_t* reserved
 	*reserved = bip->reserved;
 
 	printf("reserved : %d\n", *reserved);
-	return bip->alloc + bip->segment_a.idx + bip->segment_a.size;
+	return bip->alloc + segment->idx + segment->size;
 }
 
 /**
@@ -117,6 +117,11 @@ char* bipbuffer_getblock(struct bipbuffer* bip, uint16_t* size) {
 	return bip->alloc + bip->segment_a.idx;
 }
 
+/**
+ * \brief Consume data from the buffer
+ * @param bip 
+ * @param size 
+ */
 void bipbuffer_decommit(struct bipbuffer* bip, uint16_t size) {
 	assert(size <= bip->segment_a.size);
 
@@ -126,7 +131,7 @@ void bipbuffer_decommit(struct bipbuffer* bip, uint16_t size) {
 	if (bip->segment_a.size == 0) {
 		printf("segment_a empty\n");
 		memcpy(&bip->segment_a, &bip->segment_b, sizeof(struct bipsegment));
-		memset(&bip->segment_b, 0, sizeof(struct bipbuffer));
+		memset(&bip->segment_b, 0, sizeof(struct bipsegment));
 	}
 	printf("decommit %d\n", size, bip->segment);
 }
@@ -135,13 +140,22 @@ void bipbuffer_decommit(struct bipbuffer* bip, uint16_t size) {
 struct bipbuffer biptest;
 char testbuffer[64];
 
+void output(char* ptr, int size) {
+	printf("DATA: ");
+	while (size--) {
+		printf(":%c", *ptr);
+		ptr++;
+	}
+	printf("\n");
+}
+
 int main() {
 	uint16_t reserved;
 	char* ptr;
 	uint16_t size;
 	int i;
 	char* str = "hello worldhello worldhello worldhello world";
-	char* smallstr = "hello world";
+	char* smallstr = "abcdefghijkl";
 	
 	
 
@@ -152,16 +166,18 @@ int main() {
 	bipbuffer_commit(&biptest, strlen(str));
 	
 	ptr = bipbuffer_getblock(&biptest, &size);
-// 	printf("blocksize %d\n", size);
-		
+	output(ptr, size>>1);
 	bipbuffer_decommit(&biptest, size>>1);
 	
+	printf("\n\n\n");
 	ptr = bipbuffer_reserve(&biptest,0,&reserved);
-	memcpy(ptr, str, strlen(smallstr));
+// 	printf("PTR: %u\n", ptr);
+	memcpy(ptr, smallstr, strlen(smallstr));
 	bipbuffer_commit(&biptest, strlen(smallstr));
 
-	ptr = bipbuffer_getblock(&biptest, &size);
-	bipbuffer_decommit(&biptest, size);
-	ptr = bipbuffer_getblock(&biptest, &size);
-	bipbuffer_decommit(&biptest, size);
+	while (ptr = bipbuffer_getblock(&biptest, &size)) {
+// 		printf("PTR: %u\n", ptr);
+		output(ptr,size);
+		bipbuffer_decommit(&biptest, size);
+	}
 }
