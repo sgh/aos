@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
+
+#define DEBUG
 
 struct bipsegment {
 	uint16_t idx;
@@ -51,34 +54,42 @@ char* bipbuffer_reserve(struct bipbuffer* bip, uint16_t size, uint16_t* reserved
 		leftfree = bip->segment_a.idx;
 		rightfree = bip->size - bip->segment_a.idx - bip->segment_a.size;
 		
-		printf("leftfree : %d\n", leftfree);
-		printf("rightfree : %d\n", rightfree);
+// 		printf("leftfree : %d\n", leftfree);
+// 		printf("rightfree : %d\n", rightfree);
 
 		// If the space on the left size of the segment is largest, use next segment
 		if (leftfree > rightfree && bip->segment_b.size == 0) { // TODO allocated from right if the requested size fits within free space
+#ifdef DEBUG
 			printf("USE NEW SEGMENT\n");
+#endif
 			bip->reserved = leftfree;
 			segment = &bip->segment_b;
 			bip->segment_b.idx = 0;
 			bip->segment_b.size = 0;
 			bip->segment = 1;
 		} else {
+#ifdef DEBUG
 			printf("USE SEGMENT A\n");
+#endif
 			bip->reserved = rightfree;
 			segment = &bip->segment_a;
 			bip->segment = 0;
 		}
 
 	} else {
+#ifdef DEBUG
 		printf("USE SEGMENT B\n");
-		bip->reserved = bip->segment_a.idx - (bip->segment_b.idx + bip->segment_b.size - 1);
+#endif
+		bip->reserved = bip->segment_a.idx - (bip->segment_b.idx + bip->segment_b.size);
 		segment = &bip->segment_b;
 		bip->segment = 1;
 	}
 
 	*reserved = bip->reserved;
 
+#ifdef DEBUG
 	printf("reserved : %d\n", *reserved);
+#endif
 	return bip->alloc + segment->idx + segment->size;
 }
 
@@ -96,7 +107,9 @@ void bipbuffer_commit(struct bipbuffer* bip, uint16_t size) {
 		bip->segment_b.size += size;
 
 	bip->reserved = 0;
+#ifdef DEBUG
 	printf("commit : %d [%d]\n",size, bip->segment);
+#endif
 }
 
 
@@ -110,7 +123,7 @@ char* bipbuffer_getblock(struct bipbuffer* bip, uint16_t* size) {
 
 	*size = bip->segment_a.size;
 
-	printf("getblock %d\n", *size);
+// 	printf("getblock %d\n", *size);
 			
 	if (*size == 0)
 		return (void*)0;
@@ -129,11 +142,19 @@ void bipbuffer_decommit(struct bipbuffer* bip, uint16_t size) {
 	bip->segment_a.size -= size;
 
 	if (bip->segment_a.size == 0) {
-		printf("segment_a empty\n");
+// 		printf("segment_a empty\n");
 		memcpy(&bip->segment_a, &bip->segment_b, sizeof(struct bipsegment));
 		memset(&bip->segment_b, 0, sizeof(struct bipsegment));
 	}
-	printf("decommit %d\n", size, bip->segment);
+#ifdef DEBUG
+	printf("decommit %d\n", size);
+#endif
+}
+
+void bipbuffer_status(struct bipbuffer* bip) {
+#ifdef DEBUG
+	printf("A: %d@%d   B: %d@%d\n", bip->segment_a.size, bip->segment_a.idx, bip->segment_b.size, bip->segment_b.idx);
+#endif
 }
 
 
@@ -141,12 +162,12 @@ struct bipbuffer biptest;
 char testbuffer[64];
 
 void output(char* ptr, int size) {
-	printf("DATA: ");
+// 	printf("::: DATA: ");
 	while (size--) {
-		printf(":%c", *ptr);
+		printf("%c", *ptr);
 		ptr++;
 	}
-	printf("\n");
+// 	printf("\n");
 }
 
 int main() {
@@ -154,30 +175,50 @@ int main() {
 	char* ptr;
 	uint16_t size;
 	int i;
+	int checkint = 0;
+	int gint = 0;
 	char* str = "hello worldhello worldhello worldhello world";
 	char* smallstr = "abcdefghijkl";
-	
-	
 
 	bipbuffer_init(&biptest, testbuffer, sizeof(testbuffer));
 	
-	ptr = bipbuffer_reserve(&biptest,0,&reserved);
+	while (gint < 300) {
+		int commitsize;
+		uint16_t reserved;
+		ptr = bipbuffer_reserve(&biptest,5,&reserved);
+		assert(ptr <= &testbuffer[64-reserved]);
+		if (ptr) {
+			commitsize = snprintf(ptr, reserved,"%d\n", gint);
+			if (reserved >= commitsize) {
+				bipbuffer_status(&biptest);
+#ifdef DEBUG
+				printf("commit: %d\n",gint);
+#endif
+				bipbuffer_commit(&biptest, commitsize);
+				bipbuffer_status(&biptest);
+				gint++;
+			}
+		} else
+			printf("BUFFER FULL\n");
+
+		bipbuffer_status(&biptest);
+
+		if (random() > RAND_MAX>>1)
+		if (ptr = bipbuffer_getblock(&biptest, &size)) {
+			int decommitsize = random() % size + 1;
+			output(ptr,decommitsize);
+			bipbuffer_decommit(&biptest, decommitsize);
+		}
+// 		usleep(100000);
+		
+	}
+
+	/*ptr = bipbuffer_reserve(&biptest,0,&reserved);
 	memcpy(ptr, str, strlen(str));
 	bipbuffer_commit(&biptest, strlen(str));
-	
-	ptr = bipbuffer_getblock(&biptest, &size);
-	output(ptr, size>>1);
-	bipbuffer_decommit(&biptest, size>>1);
-	
-	printf("\n\n\n");
-	ptr = bipbuffer_reserve(&biptest,0,&reserved);
-// 	printf("PTR: %u\n", ptr);
-	memcpy(ptr, smallstr, strlen(smallstr));
-	bipbuffer_commit(&biptest, strlen(smallstr));
-
 	while (ptr = bipbuffer_getblock(&biptest, &size)) {
 // 		printf("PTR: %u\n", ptr);
 		output(ptr,size);
 		bipbuffer_decommit(&biptest, size);
-	}
+}*/
 }
