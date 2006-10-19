@@ -6,14 +6,12 @@
 
 // #define DEBUG
 
-struct bipsegment
-{
+struct bipsegment {
 	uint16_t idx;
 	uint16_t size;
 };
 
-struct bipbuffer
-{
+struct bipbuffer {
 	uint8_t* alloc;
 	uint16_t size;
 	uint16_t reserved;
@@ -23,8 +21,7 @@ struct bipbuffer
 };
 
 
-void bipbuffer_status( struct bipbuffer* bip )
-{
+void bipbuffer_status( struct bipbuffer* bip ) {
 #ifdef DEBUG
 	printf( "A: %d@%d   B: %d@%d\n", bip->segment_a.size, bip->segment_a.idx, bip->segment_b.size, bip->segment_b.idx );
 #endif
@@ -36,8 +33,7 @@ void bipbuffer_status( struct bipbuffer* bip )
  * @param alloc
  * @param size
  */
-void bipbuffer_init( struct bipbuffer* bip, uint8_t* alloc, uint16_t size )
-{
+void bipbuffer_init( struct bipbuffer* bip, uint8_t* alloc, uint16_t size ) {
 	memset( alloc, 0, size );
 	bip->alloc = alloc;
 	bip->size = size;
@@ -51,13 +47,11 @@ void bipbuffer_init( struct bipbuffer* bip, uint8_t* alloc, uint16_t size )
  * @param reserved pointer to variable to store the size of memory actualy reserved
  * @return pointer to the memory reserved
  */
-char* bipbuffer_reserve( struct bipbuffer* bip, uint16_t size, uint16_t* reserved )
-{
+char* bipbuffer_reserve( struct bipbuffer* bip, uint16_t size, uint16_t* reserved ) {
 	struct bipsegment* segment;
 
 
-	if ( bip->segment_b.size == 0 )
-	{ // If segment B is not in use
+	if ( bip->segment_b.size == 0 ) { // If segment B is not in use
 		uint16_t leftfree;
 		uint16_t rightfree;
 
@@ -69,8 +63,7 @@ char* bipbuffer_reserve( struct bipbuffer* bip, uint16_t size, uint16_t* reserve
 		// 		printf("rightfree : %d\n", rightfree);
 
 		// If the space on the left size of the segment is largest, use next segment
-		if ( leftfree > rightfree && bip->segment_b.size == 0 )
-		{ // TODO allocated from right if the requested size fits within free space
+		if ( leftfree > rightfree && bip->segment_b.size == 0 ) { // TODO allocated from right if the requested size fits within free space
 #ifdef DEBUG
 			// 			printf("USE NEW SEGMENT\n");
 #endif
@@ -79,9 +72,7 @@ char* bipbuffer_reserve( struct bipbuffer* bip, uint16_t size, uint16_t* reserve
 			bip->segment_b.idx = 0;
 			bip->segment_b.size = 0;
 			// 			bip->segment = 1;
-		}
-		else
-		{
+		} else {
 #ifdef DEBUG
 			// 			printf("USE SEGMENT A\n");
 #endif
@@ -90,9 +81,7 @@ char* bipbuffer_reserve( struct bipbuffer* bip, uint16_t size, uint16_t* reserve
 			// 			bip->segment = 0;
 		}
 
-	}
-	else
-	{
+	} else {
 #ifdef DEBUG
 		// 		printf("USE SEGMENT B\n");
 #endif
@@ -119,8 +108,7 @@ char* bipbuffer_reserve( struct bipbuffer* bip, uint16_t size, uint16_t* reserve
  * @param bip
  * @param size the size to commit
  */
-void bipbuffer_commit( struct bipbuffer* bip, uint16_t size )
-{
+void bipbuffer_commit( struct bipbuffer* bip, uint16_t size ) {
 	assert( bip->reserved >= size );
 
 	if ( bip->segment == 0 )
@@ -145,8 +133,7 @@ void bipbuffer_commit( struct bipbuffer* bip, uint16_t size )
  * @param size
  * @return Pointer to the block
  */
-char* bipbuffer_getblock( struct bipbuffer* bip, uint16_t* size )
-{
+char* bipbuffer_getblock( struct bipbuffer* bip, uint16_t* size ) {
 
 	*size = bip->segment_a.size;
 
@@ -162,15 +149,13 @@ char* bipbuffer_getblock( struct bipbuffer* bip, uint16_t* size )
  * @param bip
  * @param size
  */
-void bipbuffer_decommit( struct bipbuffer* bip, uint16_t size )
-{
+void bipbuffer_decommit( struct bipbuffer* bip, uint16_t size ) {
 	assert( size <= bip->segment_a.size );
 
 	bip->segment_a.idx += size;
 	bip->segment_a.size -= size;
 
-	if ( bip->segment_a.size == 0 )
-	{
+	if ( bip->segment_a.size == 0 ) {
 #ifdef DEBUG
 		printf( "SWAPPING SEGMENTS\n" );
 #endif
@@ -189,19 +174,16 @@ void bipbuffer_decommit( struct bipbuffer* bip, uint16_t size )
 struct bipbuffer biptest;
 char testbuffer[ 16 ];
 
-void output( char* ptr, int size )
-{
+void output( char* ptr, int size ) {
 	// 	printf("::: DATA: \"");
-	while ( size-- )
-	{
+	while ( size-- ) {
 		printf( "%c", *ptr );
 		ptr++;
 	}
 	// 	printf("\"\n");
 }
 
-int main()
-{
+int main() {
 	uint16_t reserved;
 	char* ptr;
 	uint16_t size;
@@ -213,17 +195,14 @@ int main()
 
 	bipbuffer_init( &biptest, testbuffer, sizeof( testbuffer ) );
 
-	while ( gint < 999999 )
-	{
+	while ( gint < 999999 ) {
 		int commitsize;
 		uint16_t reserved;
 		ptr = bipbuffer_reserve( &biptest, 5, &reserved );
 		assert( ptr <= &testbuffer[ 64 - reserved ] );
-		if ( ptr )
-		{
+		if ( ptr ) {
 			commitsize = snprintf( ptr, reserved, "%d\n", gint );
-			if ( reserved > commitsize )
-			{
+			if ( reserved > commitsize ) {
 #ifdef DEBUG
 				output( biptest.alloc, biptest.size );
 				printf( "commit: %d\n", gint );
@@ -233,11 +212,10 @@ int main()
 				gint++;
 			}
 		} /*else
-		    			printf("BUFFER FULL\n");*/
+				    			printf("BUFFER FULL\n");*/
 
 		if ( random() > RAND_MAX >> 1 )
-			if ( ptr = bipbuffer_getblock( &biptest, &size ) )
-			{
+			if ( ptr = bipbuffer_getblock( &biptest, &size ) ) {
 				int decommitsize = random() % size + 1;
 				output( ptr, decommitsize );
 				bipbuffer_decommit( &biptest, decommitsize );
