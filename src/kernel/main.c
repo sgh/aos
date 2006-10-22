@@ -53,6 +53,7 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task1(void) {
 
 uint32_t val = 1;
 
+
 void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 	uint32_t old_val = 0;
 	uint32_t timer = 10000;
@@ -61,7 +62,7 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 	struct serio console;
 	int i;
 	
-	acquire_serio(0,&console);
+// 	acquire_serio(0,&console);
 	
 	for(;;) {
 		
@@ -78,8 +79,8 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 			if (old_val == 1) mutex_lock(&mymutex);
 			msleep(500);
 			
-			snprintf(buf,sizeof(buf),"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n");
-			serio_put(&console,buf,strlen(buf));
+// 			snprintf(buf,sizeof(buf),"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n");
+// 			serio_put(&console,buf,strlen(buf));
 			
 			if (old_val == 1) mutex_unlock(&mymutex);
 
@@ -89,7 +90,6 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 			} else {
 				GPIO1_IOCLR = BIT23;
 			}
-			
 		}
 		
 		yield();
@@ -97,8 +97,10 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 }
 
 static void init_task(struct task_t* task,funcPtr entrypoint,REGISTER_TYPE* stack) {
-	memset((void*)stack,0,64);
+	memset( (void*)stack, 0, 64);
+	memset(task, 0, sizeof(struct task_t));
 	task->context = stack;
+// 	task->fragment = NULL;
 	task->context[0] = (uint32_t)(entrypoint);                                  // Entrypoint
 #ifdef SHARED_STACK
 	task->context[1] = (uint32_t)&Top_Stack;  // Shared stack SP
@@ -126,7 +128,21 @@ static void init_task(struct task_t* task,funcPtr entrypoint,REGISTER_TYPE* stac
 
 
 void /*__attribute__((weak)) __attribute__((noreturn)) __attribute__((nothrow))*/ idle_task()  {
+	uint8_t onoff = 0;
+	uint32_t count = 0;
 	for (;;) {
+		if (count == 0xFFFFF) {
+			if (onoff)
+				GPIO1_IOSET = BIT24;
+			else
+				GPIO1_IOCLR = BIT24;
+			count = 0;
+			onoff ^= 1;
+		}
+		onoff ^= 1;
+		onoff ^= 1;
+ 		//yield();
+		count++;
 	}
 }
 
