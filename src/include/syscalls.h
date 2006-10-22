@@ -11,8 +11,8 @@
 #define _NR_test        1
 #define _NR_msleep      2
 #define _NR_usleep      3
-#define _NR_sem_P       4
-#define _NR_sem_V       5
+#define _NR_sem_down    4
+#define _NR_sem_up      5
 #define _NR_block       6
 #define _NR_unblock     7
 
@@ -23,8 +23,8 @@ void sys_block(struct list_head* q);
 void sys_yield();
 void sys_msleep(uint16_t ms);
 void sys_usleep(uint16_t us);
-void sys_sem_P(struct semaphore_t* s);
-void sys_sem_V(struct semaphore_t* s);
+void sys_sem_down(struct semaphore_t* s);
+void sys_sem_up(struct semaphore_t* s);
 
 
 #define str(s) #s
