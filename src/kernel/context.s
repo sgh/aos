@@ -133,14 +133,16 @@ return_from_interrupt:
 	BEQ _no_task_switch
 
 	/* Set do_context_switch to 0 */
+	STMFD SP!,{r1}	@ Store r1
 	LDR r0, =do_context_switch	
 	MOV r1, #0
 	STR r1, [r0]
+	LDMFD SP!,{r1} @ Restore r1
 
 	/* If current is 0, then we must not try so save current context */
-	LDR r1, =current
-	LDR r1, [r1]
-	CMP r1, #0
+	LDR r0, =current
+	LDR r0, [r0]
+	CMP r0, #0
 	BEQ _after_task_save	
 	
 	/* Save r1 on stack since the next routine-call will destroy it */
@@ -160,7 +162,7 @@ return_from_interrupt:
 
 /*
 	In the following we do the actual context-save and -restore.
-	The memory in which the registers are save looks like this.
+	The memory in which the registers are saved looks like this.
 
 	Entrypoiny,SP,LR,r0,SPSR,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12
 */
@@ -249,8 +251,10 @@ _after_task_save:
 	LDMIA r0,{r1-r12}
 
 	/* Restore SPSR process-cpu-flags @ r0 - 4 */
+	STMFD SP!,{r1} @ Store r1
 	LDR r1, [r0, #-4]
 	MSR SPSR, r1
+	LDMFD SP!,{r1} @ Restore r1
 
 	
 _no_task_switch:
