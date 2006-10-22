@@ -11,9 +11,8 @@ MM_SOURCES = mm.c fragment.c
 
 SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES))  $(addprefix memory/,$(MM_SOURCES))  $(addprefix driver-model/,$(DRIVER_SOURCES))
 
-CFLAGS = -mcpu=arm7tdmi -mapcs -O0 -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall
-#-Werror-implicit-function-declaration
-# -ffunction-sections -fdata-sections
+CFLAGS = -mcpu=arm7tdmi -mapcs -Os -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall -Werror-implicit-function-declaration
+#-ffunction-sections -fdata-sections
 
 LDFLAGS = 
 #--gc-sections
@@ -47,6 +46,8 @@ all: deps application
 	$(GCC) $(CFLAGS) -Wl,-Map=$(APP).map  -T $(LINKERSCRIPT) -o $(APP).elf $(OBJS) $(LIBS)
 	$(OBJCOPY) -O ihex $(APP).elf $(APP).hex
 	$(OBJCOPY) -O binary $(APP).elf $(APP).bin
+	$(SIZE) -t $(OBJS)
+	$(SIZE) $(APP).elf
 
 %.o: %.c
 	$(GCC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
