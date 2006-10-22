@@ -13,20 +13,23 @@ struct fragment_store* free_list;
 
 struct fragment_store* store_fragment(const unsigned char* data, unsigned int size) {
 	struct fragment_store* retval = free_list;
-	struct fragment_store* prevfrag = 0;
+	struct fragment_store* prevfrag = NULL;
+	
+	if (size == 0)
+		return NULL;
 	
 //  	printf("storing: ");
 	while (size>0 && free_list) {
 		free_list->size = ciel(size,FRAGMENT_SIZE);
 		size -= free_list->size;
-// 		printf("%d ",free_list->size);
-		memcpy(free_list->data,data,free_list->size);
+		memcpy(free_list->data, data, free_list->size);
 		data += free_list->size;
 		prevfrag = free_list;
 		free_list = free_list->next;
 	}
+
 //  	printf("\n");
-	if (retval && prevfrag) prevfrag->next = 0;
+	if (retval && prevfrag) prevfrag->next = NULL;
 	return retval;
 }
 
@@ -55,10 +58,9 @@ void  init_fragment_store() {
 	int i;
 	int num_fragments = sizeof(storage)/sizeof(storage[0]);
 	
-	for (i=1; i<num_fragments; i++) {
+	for (i=1; i<num_fragments; i++)
 		storage[i-1].next = &storage[i];
-		storage[i].next = 0;
-	}
+	storage[num_fragments-1].next = NULL;
 	free_list = &storage[0];
 }
 
@@ -72,33 +74,35 @@ unsigned int free_fragments() {
 	return count;
 }
 
-/*
-int main() {
+
+/*int main() {
 	struct fragment_store* frag1;
 	struct fragment_store* frag2;
 	unsigned char arr1[200] = "array 1  1 array 1  1 array 1  1 array 1 1 1 1 \0";
 	unsigned char arr2[200] = "array 2  2 array 2  2 array 2  2 array 2 2 2 2 \0";
 	init_fragment_store();
 	
-	printf("Free fragments: %d\n",free_fragments());
+	for (int i = 0; i<10; i++) {
+		printf("Free fragments: %d\n",free_fragments());
+		
+		frag1 = store_fragment(arr1,sizeof(arr1));
+		frag2 = store_fragment(arr2,sizeof(arr2));
+		
+		memset(arr1,0,sizeof(arr1));
+		memset(arr2,0,sizeof(arr2));
+		
+		printf("Free fragments: %d\n",free_fragments());
+		
+		load_fragment(arr1,frag1);
+		load_fragment(arr2,frag2);
+		
+		printf("Free fragments: %d\n",free_fragments());
+		
+		printf("%s\n",arr1);
+		printf("%s\n",arr2);
+	}
 	
-	frag1 = store_fragment(arr1,sizeof(arr1));
-	frag2 = store_fragment(arr2,sizeof(arr2));
-	
-	memset(arr1,0,sizeof(arr1));
-	memset(arr2,0,sizeof(arr2));
-	
-	printf("Free fragments: %d\n",free_fragments());
-	
-	load_fragment(arr1,frag1);
-	load_fragment(arr2,frag2);
-	
-	printf("Free fragments: %d\n",free_fragments());
-	
-	printf("%s\n",arr1);
-	printf("%s\n",arr2);
-	
-}
+}*/
 
-*/
+
 DRIVER_MODULE_INIT(init_fragment_store);
