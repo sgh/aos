@@ -5,11 +5,11 @@
 /**
  * \brief Semaphore syscall definitions
  */
-_syscall1(void,sem_P, struct semaphore_t*, s);
-_syscall1(void,sem_V, struct semaphore_t*, s);
+_syscall1(void,sem_down, struct semaphore_t*, s);
+_syscall1(void,sem_up, struct semaphore_t*, s);
 
 
-void sys_sem_P(struct semaphore_t* s) {
+void sys_sem_down(struct semaphore_t* s) {
 	s->counter--;
 	
 	if (s->counter < 0) {
@@ -21,7 +21,7 @@ void sys_sem_P(struct semaphore_t* s) {
 }
 
 
-void sys_sem_V(struct semaphore_t* s) {
+void sys_sem_up(struct semaphore_t* s) {
 	struct task_t* task;
 	s->counter++;
 		

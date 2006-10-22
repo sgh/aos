@@ -74,7 +74,7 @@ void uart0_interrupt_routine() {
 			c = UART0_RBR;
 			put_fifo(&uart0_rxbuffer,c);
 			GPIO1_IOPIN ^= BIT24;
-			sem_V(&uart0_sem);	
+			sem_up(&uart0_sem);
 			break;
 	}
 	
