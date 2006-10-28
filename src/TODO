@@ -1,4 +1,4 @@
-* UART-driver
+* Finish UART-driver
 * Set_stdint() and set_stdout() manupulate task-struct
 * Printf to write to the task stdout
 
