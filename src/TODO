@@ -16,5 +16,3 @@
 * Process-priority reverse proportinal with average cpu-burst
 * Counter on fragment-store to allow for O(1) size determination
 
- compile : -ffunction-sections -fdata-sections
- link : -Wl,--gc-sections. 
