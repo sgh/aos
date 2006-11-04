@@ -17,7 +17,7 @@ extern struct serio_class_fops lpcuart_serio_fops;
 
 extern struct driver_class_fops lpcuart_serio_driver_fops;
 
-struct semaphore_t uart0_sem = { .counter = 0 };
+struct semaphore_t uart0_sem;
 
 
 struct fifo_buffer {
@@ -85,6 +85,8 @@ void uart0_interrupt_routine() {
 void lpcuart_init(void) {
 // 	uint8 c;
 // 	uint32 bit;
+
+	sem_init(&uart0_sem, 0);
 	GPIO1_IODIR |= BIT23|BIT22;
 	uint8_t uart_vector;
 	uint32_t divisor = 15000000/(38400*16);

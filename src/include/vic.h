@@ -13,5 +13,8 @@ void vic_irq_enable(uint8_t irqnum);
 
 void vic_irq_disable(uint8_t irqnum);
 
+void enable_irqs();
+
+void disable_irqs();
 
 #endif
