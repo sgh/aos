@@ -13,11 +13,6 @@ void free(void* segment);
 void* malloc(unsigned short size);
 	
 void sched(void) {
-	if (current && current->state == RUNNING) {
-		current->state = READY;
-		list_push_back(&readyQ,&current->q);
-	}
-	
 #ifdef SHARED_STACK
 	/* Copy stack away from shared system stack */
 	if (current) {
@@ -34,7 +29,14 @@ void sched(void) {
 		
 		// Fragmem
 		current->fragment = store_fragment(src,len);
+		if ((current->fragment == NULL) && (len > 0)) // This indicates OOM
+			current->state = CRASHED;
 		current->stack_size = len;
+		
+		if (current->state == RUNNING) {
+			current->state = READY;
+			list_push_back(&readyQ,&current->q);
+		}
 	}
 #endif
 	
