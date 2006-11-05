@@ -18,7 +18,7 @@ struct task_t {
 	 */
 	struct list_head q;	
 	
-	enum task_state {RUNNING, READY, BLOCKED} state;
+	enum task_state {RUNNING, READY, BLOCKED, CRASHED} state;
 	
 	/**
 	 * \brief  useconds to sleep.

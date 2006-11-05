@@ -1,31 +1,38 @@
 #include <fragment.h>
-// #include <string.h>
 #include <string.h>
 #include <driver_core.h>
+#include <mm.h>
 
 #define ciel(var,val) (var>val?val:var)
 
-struct fragment_store storage[50];
-
-struct fragment_store* free_list;
-
-
 
 struct fragment_store* store_fragment(const unsigned char* data, unsigned int size) {
-	struct fragment_store* retval = free_list;
+	struct fragment_store* fragment;
+	struct fragment_store* retval = NULL;
 	struct fragment_store* prevfrag = NULL;
 	
 	if (size == 0)
 		return NULL;
 	
 //  	printf("storing: ");
-	while (size>0 && free_list) {
-		free_list->size = ciel(size,FRAGMENT_SIZE);
-		size -= free_list->size;
-		memcpy(free_list->data, data, free_list->size);
-		data += free_list->size;
-		prevfrag = free_list;
-		free_list = free_list->next;
+	while (size>0) {
+		fragment = (struct fragment_store*)malloc(sizeof(struct fragment_store));
+		if (!fragment) // If malloc did not succeded
+			break;
+		if (!retval)
+			retval = fragment;
+		else
+			prevfrag->next = fragment;
+		fragment->size = ciel(size,FRAGMENT_SIZE);
+		size -= fragment->size;
+		memcpy(fragment->data, data, fragment->size);
+		data += fragment->size;
+		prevfrag = fragment;
+	}
+	
+	if (size > 0) { // This only happenes if we run out of memory
+		free_fragment(retval);
+		return NULL;
 	}
 
 //  	printf("\n");
@@ -45,45 +52,58 @@ void load_fragment(unsigned char* data, struct fragment_store* fragment) {
 		fragment = fragment->next;
 		
 		/* Free prevfragment */
-		prevfrag->next = free_list;
-		free_list = prevfrag;
+		free(prevfrag);
+		prevfrag = NULL;
 	}
 // 	printf("\n");
 }
 
-#include <bits.h>
-#include <arm/lpc2119.h>
+void free_fragment(struct fragment_store* fragment) {
+	struct fragment_store* prevfrag;
 
-void  init_fragment_store() {
-	int i;
-	int num_fragments = sizeof(storage)/sizeof(storage[0]);
-	
-	for (i=1; i<num_fragments; i++)
-		storage[i-1].next = &storage[i];
-	storage[num_fragments-1].next = NULL;
-	free_list = &storage[0];
-}
-
-unsigned int free_fragments() {
-	struct fragment_store* fragptr = free_list;
-	unsigned int count = 0;
-	while (fragptr) {
-		count++;
-		fragptr = fragptr->next;
+	while (fragment) {
+		free(prevfrag);
+		fragment = fragment->next;
 	}
-	return count;
 }
 
+
+// void  init_fragment_store() {
+// 	int i;
+// 	int num_fragments = sizeof(storage)/sizeof(storage[0]);
+	
+// 	for (i=1; i<num_fragments; i++)
+// 		storage[i-1].next = &storage[i];
+// 	storage[num_fragments-1].next = NULL;
+// 	free_list = &storage[0];
+// }
+
+// unsigned int free_fragments() {
+// 	struct fragment_store* fragptr = free_list;
+// 	unsigned int count = 0;
+// 	while (fragptr) {
+// 		count++;
+// 		fragptr = fragptr->next;
+// 	}
+// 	return count;
+// }
+
+
+void mm_init(void* start, uint16_t len);
+
+char __attribute__((aligned(4))) dmem[4*1024];
 
 /*int main() {
 	struct fragment_store* frag1;
 	struct fragment_store* frag2;
 	unsigned char arr1[200] = "array 1  1 array 1  1 array 1  1 array 1 1 1 1 \0";
 	unsigned char arr2[200] = "array 2  2 array 2  2 array 2  2 array 2 2 2 2 \0";
-	init_fragment_store();
+// 	init_fragment_store();
 	
-	for (int i = 0; i<10; i++) {
-		printf("Free fragments: %d\n",free_fragments());
+	mm_init(dmem, sizeof(dmem));
+	
+	for (int i = 0; i<100000; i++) {
+// 		printf("Free fragments: %d\n",free_fragments());
 		
 		frag1 = store_fragment(arr1,sizeof(arr1));
 		frag2 = store_fragment(arr2,sizeof(arr2));
@@ -91,18 +111,18 @@ unsigned int free_fragments() {
 		memset(arr1,0,sizeof(arr1));
 		memset(arr2,0,sizeof(arr2));
 		
-		printf("Free fragments: %d\n",free_fragments());
+// 		printf("Free fragments: %d\n",free_fragments());
 		
 		load_fragment(arr1,frag1);
 		load_fragment(arr2,frag2);
 		
-		printf("Free fragments: %d\n",free_fragments());
+// 		printf("Free fragments: %d\n",free_fragments());
 		
-		printf("%s\n",arr1);
-		printf("%s\n",arr2);
+// // 		printf("%d:: %s\n", i, arr1);
+// // 		printf("%d:: %s\n", i, arr2);
 	}
 	
 }*/
 
 
-DRIVER_MODULE_INIT(init_fragment_store);
+// DRIVER_MODULE_INIT(init_fragment_store);
