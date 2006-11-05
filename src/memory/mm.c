@@ -1,13 +1,6 @@
-// #include <sys/time.h>
 #include <stdio.h>
 #include <string.h>
-// #include <assert.h>
 #include <driver_core.h>
-
-// #define NULL 0
-
-/* The memory we allocate from */
-// char __attribute__((aligned(4))) memory[8*1024];
 
 
 /* MM defines */
@@ -16,26 +9,28 @@
 #define UPPER_BYTE 0xFF00
 #define LOWER_BYTE 0x00FF
 
+// uint32_t memory_size = 0;
+// uint32_t largest_segmentnum = 0;
 
 /* MM status variables */
-unsigned char* mm_start;
-unsigned char* mm_end;
-unsigned char* mm_ptr;
+uint8_t* mm_start;
+uint8_t* mm_end;
+uint8_t* mm_ptr;
 
 typedef struct mm_header mm_header_t;
 struct mm_header {
 	/*unsigned char free:1;
 	unsigned short size:15;*/
-	unsigned char free:1;
-	unsigned char padding:2;
-	unsigned short size:13;
+	uint8_t free:1;
+	uint8_t padding:2;
+	uint16_t size:13;
 };
 
 void mm_status(void) {
 	int segment = 0;
-	unsigned char* ptr = (unsigned char*)mm_start;
+	uint8_t* ptr = (unsigned char*)mm_start;
 	mm_header_t* header;
-	unsigned int total_size = 0;
+	uint32_t total_size = 0;
 // 	int i;
 
 	do {
@@ -43,18 +38,22 @@ void mm_status(void) {
 		total_size += header->size + sizeof(mm_header_t);
 // 		printf("Segment %d: %4d bytes (%s)\n",segment,header->size,header->free?"F":"U");
 		ptr = ptr + header->size + sizeof(mm_header_t);
+// 		if (segment > largest_segmentnum)
+// 			largest_segmentnum = segment;
 		segment++;
 	} while (ptr<mm_end);
 // 	printf("Total size : %4d\n",total_size);
-// 	assert(total_size == sizeof(memory));
+// 	printf("Largest segmentnum: %d\n", largest_segmentnum);
+// 	assert(total_size == memory_size);
 // 	printf("\n");
 }
 
-void mm_init(void* start, unsigned short len) {
+void mm_init(void* start, uint16_t len) {
 	struct mm_header* head;
 	mm_start =  start;
 	mm_end = mm_start + len;	
 	memset(mm_start,0x0,len);
+// 	memory_size = len;
 
 	head = (struct mm_header*)mm_start;
 	head->free=1;
@@ -62,20 +61,20 @@ void mm_init(void* start, unsigned short len) {
 // 	mm_status();
 }
 
-void* malloc(unsigned short size)
+void* malloc(uint16_t size)
 {
-	unsigned int segmentsize;
-	unsigned char* ptr = (unsigned char*)mm_start;
+	uint32_t segmentsize;
+	uint8_t* ptr = (uint8_t*)mm_start;
 	mm_header_t* header;
 	mm_header_t* next_header;
 	
-// 	mm_status();
+//  	mm_status();
 	do {
 		header = (mm_header_t*)ptr;
 		next_header = (mm_header_t*)(ptr + header->size + sizeof(mm_header_t));
 		
 		/* Join Segments */
-		if (header->free==1 && (unsigned char*)next_header<mm_end && next_header->free==1) {
+		if (header->free==1 && (uint8_t*)next_header<mm_end && next_header->free==1) {
 // 			printf("Joining segments\n");
 // 			mm_status();
 			header->size += next_header->size + sizeof(mm_header_t);
@@ -94,7 +93,7 @@ void* malloc(unsigned short size)
 				header->size = segmentsize;
 			else { /* IF there is space free for at least a zero-byte segment */
 				header = (mm_header_t*) (ptr + sizeof(mm_header_t) + size);
-				if ((unsigned char*)header<mm_end) {
+				if ((uint8_t*)header<mm_end) {
 					header->free = 1;
 					header->size = segmentsize - size - sizeof(mm_header_t);
 				}
@@ -103,7 +102,7 @@ void* malloc(unsigned short size)
 			return ptr + sizeof(mm_header_t);
 		}
 		ptr += header->size + sizeof(mm_header_t);
-	} while ((unsigned char*)ptr<mm_end);
+	} while ((uint8_t*)ptr<mm_end);
 // 	printf("Not enough memory\n");
 // 	mm_status();
 	return NULL;
@@ -111,9 +110,11 @@ void* malloc(unsigned short size)
 
 void free(void* segment) {
 	mm_header_t* header =  segment - sizeof(mm_header_t);
-	unsigned char *ptr = (unsigned char*)header;
+	uint8_t *ptr = (uint8_t*)header;
 	mm_header_t* prev_header = NULL;
 
+// 	mm_status();
+	
 	header->free=1;
 	do {
 		header = (mm_header_t*)ptr;
@@ -122,7 +123,7 @@ void free(void* segment) {
 		}	else
 			prev_header = header;
 		ptr += header->size + sizeof(mm_header_t);
-	}	while (header->free==1 && ptr<=(unsigned char*)mm_end - sizeof(mm_header_t));	
+	}	while (header->free==1 && ptr<=(uint8_t*)mm_end - sizeof(mm_header_t));	
 // 	mm_status();
 }
 
