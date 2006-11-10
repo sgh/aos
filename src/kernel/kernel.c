@@ -78,20 +78,42 @@ void sys_yield(void) {
 }
 
 
-void sys_msleep(uint16_t ms) {	
-	current->sleep_time = ms*1000 + T1_TC;
-// 	list_erase(&readyQ,&current->q);
-	list_push_back(&msleepQ,&current->q);
-
-	current->state = BLOCKED;
-	do_context_switch = 1;
+void sys_msleep(uint16_t ms) {
+	sys_usleep(ms*1000);
 }
 
 
-void sys_usleep(uint16_t us) {
-	current->sleep_time = us + T1_TC;
-// 	list_erase(&readyQ,&current->q);
-	list_push_front(&msleepQ,&current->q);
+void sys_usleep(uint32_t us) {
+	struct list_head* e;
+	struct list_head* insertion_point = NULL;
+	uint32_t time = us + T1_TC;
+	
+	// TODO: Implement busywait here if delay is smaller than interrupt latency.
+	if (us == 0)
+		return;
+
+	/* Run through alle sleeping processes all decrement the time our current
+	processs wants to sleep. If a longer-sleeping process i reached, the
+	current process should be interted before that process.
+	*/
+	list_for_each(e,&msleepQ) {
+		struct task_t* t = NULL;
+		t = get_struct_task(e);
+		if (time > t->sleep_time)
+			time -= t->sleep_time;
+		else {
+			t->sleep_time -= time;
+			insertion_point = e;
+		}
+	}
+
+	current->sleep_time = time;
+
+	if (insertion_point == NULL) {
+		list_push_back(&msleepQ,&current->q);
+	} else {
+		list_push_back(insertion_point,&current->q);
+	}
 
 	current->state = BLOCKED;
 	do_context_switch = 1;
