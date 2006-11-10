@@ -11,9 +11,9 @@
 #include <serio.h>
 
 struct task_t* current = NULL;
-REGISTER_TYPE task1_stack[64/sizeof(REGISTER_TYPE)];
-REGISTER_TYPE task2_stack[64/sizeof(REGISTER_TYPE)];
-REGISTER_TYPE idle_stack[64/sizeof(REGISTER_TYPE)];
+REGISTER_TYPE task1_stack[17];
+REGISTER_TYPE task2_stack[17];
+REGISTER_TYPE idle_stack[17];
 
 struct task_t task1_cd;
 struct task_t task2_cd;
@@ -97,7 +97,7 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 }
 
 static void init_task(struct task_t* task,funcPtr entrypoint,REGISTER_TYPE* stack) {
-	memset( (void*)stack, 0, 64);
+// 	memset( (void*)stack, 0, 64);
 	memset(task, 0, sizeof(struct task_t));
 	task->context = stack;
 // 	task->fragment = NULL;
@@ -185,7 +185,7 @@ void do_initcalls() {
 }
 
 
-char __attribute__((aligned(4))) dmem[4*1024];
+char __attribute__((aligned(4))) dmem[5*1024];
 
 void mm_init(void* start, unsigned short len);
 
