@@ -22,7 +22,7 @@ void sys_unblock(struct task_t* task);
 void sys_block(struct list_head* q);
 void sys_yield();
 void sys_msleep(uint16_t ms);
-void sys_usleep(uint16_t us);
+void sys_usleep(uint32_t us);
 void sys_sem_down(struct semaphore_t* s);
 void sys_sem_up(struct semaphore_t* s);
 

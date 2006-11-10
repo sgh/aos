@@ -18,7 +18,7 @@ void* sys_call_table[] =
 
 
 _syscall1(void,msleep, uint16_t, ms);
-_syscall1(void,usleep, uint16_t, us);
+_syscall1(void,usleep, uint32_t, us);
 _syscall1(void,unblock, struct task_t*, task);
 _syscall1(void,block, struct list_head*, q);
 _syscall0(void,yield);
