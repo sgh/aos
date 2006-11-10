@@ -16,17 +16,25 @@ struct fragment_store* store_fragment(const unsigned char* data, unsigned int si
 	
 //  	printf("storing: ");
 	while (size>0) {
+		uint16_t fragment_size = ciel(size,FRAGMENT_SIZE);
+		
 		fragment = (struct fragment_store*)malloc(sizeof(struct fragment_store));
 		if (!fragment) // If malloc did not succeded
 			break;
-		if (!retval)
+		
+		
+		
+		if (!retval) { // First time
 			retval = fragment;
-		else
+			fragment->size = size;
+		} else {
 			prevfrag->next = fragment;
-		fragment->size = ciel(size,FRAGMENT_SIZE);
-		size -= fragment->size;
-		memcpy(fragment->data, data, fragment->size);
-		data += fragment->size;
+			fragment->size = fragment_size;
+		}
+
+		size -= fragment_size;
+		memcpy(fragment->data, data, fragment_size);
+		data += fragment_size;
 		prevfrag = fragment;
 	}
 	
@@ -45,9 +53,10 @@ void load_fragment(unsigned char* data, struct fragment_store* fragment) {
 
 // 	printf("loading: ");
 	while (fragment) {
+		uint16_t fragment_size = ciel(fragment->size, FRAGMENT_SIZE);
 // 		printf(" %d",fragment->size);
-		memcpy(data,fragment->data,fragment->size);
-		data += fragment->size;
+		memcpy(data,fragment->data, fragment_size);
+		data += fragment_size;
 		prevfrag = fragment;
 		fragment = fragment->next;
 		
@@ -65,6 +74,10 @@ void free_fragment(struct fragment_store* fragment) {
 		free(prevfrag);
 		fragment = fragment->next;
 	}
+}
+
+uint16_t size_fragment(struct fragment_store* fragment) {
+	return fragment->size;
 }
 
 
