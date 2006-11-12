@@ -71,8 +71,9 @@ void free_fragment(struct fragment_store* fragment) {
 	struct fragment_store* prevfrag;
 
 	while (fragment) {
-		free(prevfrag);
+		prevfrag = fragment;
 		fragment = fragment->next;
+		free(prevfrag);
 	}
 }
 
