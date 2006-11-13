@@ -62,11 +62,11 @@ void timer_interrupt_routine() {
 // 	count++;
 	
 
+		// If someone is sleeping
 		if (!list_isempty(&msleepQ)) {
 			e = list_get_front(&msleepQ);
 			t = get_struct_task(e);
 	
-			
 			past_time = T1_TC;
 			if (t->sleep_time) { // If process had time left to sleep
 				if (t->sleep_time > past_time)
@@ -82,6 +82,6 @@ void timer_interrupt_routine() {
 			}
 		}
 	
-	T1_TC = 0;
+	T1_TC = 0;	// Reset timer to zero
 	do_context_switch = 1;
 }
