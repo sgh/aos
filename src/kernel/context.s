@@ -128,22 +128,28 @@ return_from_interrupt:
 	
 	/* Are we going to witch tasks */
 	LDR r0, =do_context_switch
-	LDR r0, [r0]
+	LDRB r0, [r0]
+	CMP r0, #0
+	BEQ _no_task_switch
+
+	/* If allow_context_switch is 0, then we must not do context_switch this time */
+	LDR r0, =allow_context_switch
+	LDRB r0, [r0]
 	CMP r0, #0
 	BEQ _no_task_switch
 
 	/* Set do_context_switch to 0 */
 	STMFD SP!,{r1}	@ Store r1
-	LDR r0, =do_context_switch	
+	LDR r0, =do_context_switch
 	MOV r1, #0
-	STR r1, [r0]
+	STRB r1, [r0]
 	LDMFD SP!,{r1} @ Restore r1
 
 	/* If current is 0, then we must not try so save current context */
 	LDR r0, =current
-	LDR r0, [r0]
+	LDRB r0, [r0]
 	CMP r0, #0
-	BEQ _after_task_save	
+	BEQ _after_task_save
 	
 	/* Save r1 on stack since the next routine-call will destroy it */
 	STMFD SP!,{r1}
@@ -162,7 +168,7 @@ return_from_interrupt:
 
 /*
 	In the following we do the actual context-save and -restore.
-	The memory in which the registers are saved looks like this.
+	The memory in which the 17 registers are saved looks like this.
 
 	Entrypoiny,SP,LR,r0,SPSR,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12
 */

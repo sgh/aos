@@ -6,8 +6,8 @@ LIST_HEAD(readyQ);
 LIST_HEAD(msleepQ);
 LIST_HEAD(usleepQ);
 
-uint8_t do_context_switch = 0; /**< \brief Shall we do proccess-shift */
-
+uint8_t do_context_switch = 0; /**< \brief Shall we do proccess-shift. */
+uint8_t allow_context_switch = 1; /**< \brief Is context-switches allowed. */
 
 void free(void* segment);
 void* malloc(unsigned short size);
@@ -134,4 +134,14 @@ void sys_unblock(struct task_t* task) {
 		list_push_front(&readyQ, &task->q);
 		do_context_switch = 1;
 	}
+}
+
+
+void sys_disable_cs() {
+	allow_context_switch = 0;
+}
+
+
+void sys_enable_cs() {
+	allow_context_switch = 1;
 }
