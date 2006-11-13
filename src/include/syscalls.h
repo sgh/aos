@@ -11,10 +11,12 @@
 #define _NR_test        1
 #define _NR_msleep      2
 #define _NR_usleep      3
-#define _NR_sem_down    4
-#define _NR_sem_up      5
+// #define _NR_sem_down    4
+// #define _NR_sem_up      5
 #define _NR_block       6
 #define _NR_unblock     7
+#define _NR_disable_cs   8
+#define _NR_enable_cs   9
 
 
 /* Syscall declarations */
@@ -23,8 +25,10 @@ void sys_block(struct list_head* q);
 void sys_yield();
 void sys_msleep(uint16_t ms);
 void sys_usleep(uint32_t us);
-void sys_sem_down(struct semaphore_t* s);
-void sys_sem_up(struct semaphore_t* s);
+// void sys_sem_down(struct semaphore_t* s);
+// void sys_sem_up(struct semaphore_t* s);
+void sys_disable_cs();
+void sys_enable_cs();
 
 
 #define str(s) #s
