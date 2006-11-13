@@ -22,9 +22,7 @@ struct fragment_store* store_fragment(const unsigned char* data, unsigned int si
 		if (!fragment) // If malloc did not succeded
 			break;
 		
-		
-		
-		if (!retval) { // First time
+		if (retval == NULL) { // First time
 			retval = fragment;
 			fragment->size = size;
 		} else {
