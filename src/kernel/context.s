@@ -23,8 +23,8 @@ get_usermode_sp:
 	
 	/* Switch to system-mode */
 	MOV r9, r10
-	BIC r9,r9,#0x1F
-	ORR r9, r9, #0x9F /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
+	BIC r9,r9,#0xFF
+	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
 	MSR CPSR, r9
 	
 	MOV r0, SP /* Save stackpointer */
@@ -202,8 +202,8 @@ return_from_interrupt:
 	
 	/* Switch to system-mode */
 	MOV r9, r10
-	BIC r9,r9,#0x1F
-	ORR r9, r9, #0x9F /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
+	BIC r9,r9,#0xFF
+	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
 	MSR CPSR, r9
 
 	/* Move SP to r2 - so we can access it from interrupt-mode */
@@ -234,8 +234,8 @@ _after_task_save:
 	
 	/* Switch to system-mode */
 	MOV r9, r10
-	BIC r9,r9,#0x1F
-	ORR r9, r9, #0x9F /* System-mode and IRQ-disable - since pending interrupts would destry operation */
+	BIC r9,r9,#0xFF
+	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
 	MSR CPSR, r9
 
 	/* Set SP and LR */
@@ -260,12 +260,33 @@ _after_task_save:
 	STMFD SP!,{r1} @ Store r1
 	LDR r1, [r0, #-4]
 	MSR SPSR, r1
+
 	LDMFD SP!,{r1} @ Restore r1
 
 	
 _no_task_switch:
+
+	STMFD SP!,{r1} @ Store r1
+
+	@ Check if interrupts should be disabled
+	LDR r1, =interrupts_disabled
+	LDRB r1, [r1]
+	CMP r1, #0
+	BEQ interrupts_are_enabled
+
+	MRS r1, SPSR
+	ORR r1, r1, #0xC0  @ disable IRQ and FIQ interrupts
+	MSR SPSR_c, r1
+	B after_interrupt_endisable
+
+interrupts_are_enabled:
+	MRS r1, SPSR
+	BIC r1, r1, #0xC0  @ enable IRQ and FIQ interrupts
+	MSR SPSR_c, r1
+
+after_interrupt_endisable:
+	LDMFD SP!,{r1} @ Restore r1
 	
 return_from_irq:
 	LDMFD SP!,{r0}
 	MOVS PC, LR
-	

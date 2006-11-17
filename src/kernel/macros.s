@@ -10,6 +10,10 @@
 .extern timer_interrupt_routine
 .extern uart0_interrupt_routine
 
+
+.equ SYSTEM_MODE_NOIRQ, 0xDF @ System-mod with IRQ an FIRQ disabled
+
+
 /* IRQ prologue- and epilogue macros */
 .macro IRQ_prologue
 		/* Save r0-r12,LR on User-mode stack */
