@@ -28,26 +28,47 @@ uint32_t global_int = 0;
 
 mutex_t mymutex;
 
+int p;
+
 void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task1(void) {
 // 	uint8 c;
-	char a[500];
+// 	char a[500];
 	int i;
-
+	int p;
+	
 	for (;;) {
 		
-		for (i=0; i<sizeof(a); i++)
-			a[i] = '1';
+// 		for (i=0; i<sizeof(a); i++)
+// 			a[i] = '1';
 
-		for (i=0; i<sizeof(a); i++)
-			if (a[i] != '1')
-				for (;;);
+// 		for (i=0; i<sizeof(a); i++)
+// 			if (a[i] != '1')
+// 				for (;;);
 		
 		mutex_lock(&mymutex);
 		mutex_unlock(&mymutex);
 		GPIO1_IOSET = BIT22;
-		msleep(30);
+		msleep(75);
 		GPIO1_IOCLR = BIT22;
-		msleep(30);
+//  		disable_cs();
+// 		
+
+ 		disable_irqs();
+		
+		i = 0;
+		p = 0;
+		while (p<200000) {
+			i++;
+			p++;
+			if (p != i) {
+				disable_cs();
+				for (;;);
+			}
+		}
+		enable_irqs();
+// 		enable_cs();
+
+		msleep(75);
 	}
 }
 
@@ -131,18 +152,18 @@ void /*__attribute__((weak)) __attribute__((noreturn)) __attribute__((nothrow))*
 	uint8_t onoff = 0;
 	uint32_t count = 0;
 	for (;;) {
-		if (count == 0xFFFFF) {
-			if (onoff)
-				GPIO1_IOSET = BIT24;
-			else
-				GPIO1_IOCLR = BIT24;
-			count = 0;
-			onoff ^= 1;
-		}
-		onoff ^= 1;
-		onoff ^= 1;
- 		//yield();
-		count++;
+// 		if (count == 0xFFFFF) {
+// 			if (onoff)
+// 				GPIO1_IOSET = BIT24;
+// 			else
+// 				GPIO1_IOCLR = BIT24;
+// 			count = 0;
+// 			onoff ^= 1;
+// 		}
+// 		onoff ^= 1;
+// 		onoff ^= 1;
+//  		//yield();
+// 		count++;
 	}
 }
 
