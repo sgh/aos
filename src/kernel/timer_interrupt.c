@@ -45,21 +45,21 @@ void timer_interrupt_routine() {
 	struct task_t* t;
 	struct list_head* e;
 	uint32_t past_time;
-// 	static uint8_t count= 0;
-// 	static uint8_t onoff = 0;
+	static uint8_t count= 0;
+	static uint8_t onoff = 0;
 	 
 	T0_IR = BIT0; /* Clear interrupt */
 	VICVectAddr = 0; /* Update priority hardware */
 	
-// 	if (count == 20) {
-// 		if (onoff)
-// 			GPIO1_IOSET = BIT24;
-// 		else
-// 			GPIO1_IOCLR = BIT24;
-// 		count = 0;
-// 		onoff ^= 1;
-// 	}
-// 	count++;
+	if (count == 20) {
+		if (onoff)
+			GPIO1_IOSET = BIT24;
+		else
+			GPIO1_IOCLR = BIT24;
+		count = 0;
+		onoff ^= 1;
+	}
+	count++;
 	
 
 		// If someone is sleeping
