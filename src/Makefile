@@ -3,7 +3,7 @@
 APP = armOS
 
 
-KERNEL_SOURCES = main.c startup.s context.s syscalls.c list.c timer_interrupt.c semaphore.c interrupt.c uart.c mutex.c spinlock.c atomic.s kernel.c interrupt_low.s
+KERNEL_SOURCES = main.c startup.s context.s syscalls.c list.c timer_interrupt.c semaphore.c interrupt.c uart.c mutex.c spinlock.c atomic.s kernel.c
 
 DRIVER_SOURCES =  driver_core.c driver_class.c serio/serio.c platform/platform.c
 
