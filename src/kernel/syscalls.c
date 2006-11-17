@@ -8,8 +8,8 @@ void* sys_call_table[] =
 	[_NR_yield] sys_yield,
 	[_NR_msleep] sys_msleep,
 	[_NR_usleep] sys_usleep,
-// 	[_NR_sem_down] sys_sem_down,
-// 	[_NR_sem_up] sys_sem_up,
+	[_NR_disable_irqs] sys_disable_irqs,
+	[_NR_enable_irqs] sys_enable_irqs,
 	[_NR_block] sys_block,
 	[_NR_unblock] sys_unblock,
 	[_NR_disable_cs] sys_disable_cs,
@@ -26,4 +26,6 @@ _syscall1(void,block, struct list_head*, q);
 _syscall0(void,yield);
 _syscall0(void,disable_cs);
 _syscall0(void,enable_cs);
+_syscall0(void,enable_irqs);
+_syscall0(void,disable_irqs);
 
