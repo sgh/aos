@@ -49,7 +49,46 @@ void timer_interrupt_routine() {
 	static uint16_t count= 0;
 	static uint8_t onoff = 0;
 	uint32_t time_to_wake = 1000;
-	
+
+	// If more than one process is waiting, do context_switch
+	if (list_get_front(&usleepQ)->next !=  &usleepQ)
+		do_context_switch = 1; // Signal context-switch
+
+	// If someone is sleeping
+	if (!list_isempty(&usleepQ)) {
+		e = list_get_front(&usleepQ);
+		t = get_struct_task(e);
+
+		past_time = T1_TC;
+		if (t->sleep_time) { // If process had time left to sleep
+			if (t->sleep_time > past_time)
+				t->sleep_time -= past_time;
+			else
+				t->sleep_time = 0;
+		}
+
+		if (t->sleep_time == 0) { // If process now has no time left to sleep
+			list_erase(&t->q);
+			list_push_front(&readyQ,&t->q);
+			do_context_switch = 1; // Signal context-switch
+		}
+
+		if (!list_isempty(&usleepQ)) {
+			e = list_get_front(&usleepQ); // Set e to the next to wake up
+			t = get_struct_task(e); // Get task-struct.
+
+			time_to_wake = t->sleep_time;
+			if (time_to_wake < 50) /** TODO 10 should be the time of a timerinterrupt times 2 or larger */
+				time_to_wake = 50;
+
+			if (time_to_wake > 1000) // This insures at least 1000 interrupts pr. sec.
+				time_to_wake = 1000;
+		}
+
+	}
+
+	T0_MR0 = time_to_wake;
+
 	if (count == 50) { // Do 10 Hz blink
 		if (onoff)
 			GPIO1_IOSET = BIT24;
@@ -59,44 +98,13 @@ void timer_interrupt_routine() {
 		onoff ^= 1;
 	}
 	count++;
-	
 
-		// If someone is sleeping
-		if (!list_isempty(&msleepQ)) {
-			e = list_get_front(&msleepQ);
-			t = get_struct_task(e);
-	
-			past_time = T1_TC;
-			if (t->sleep_time) { // If process had time left to sleep
-				if (t->sleep_time > past_time)
-					t->sleep_time -= past_time;
-				else
-					t->sleep_time = 0;
-			}
-	
-			if (t->sleep_time == 0) { // If process now has no time left to sleep
-				list_erase(/*&msleepQ,*/&t->q);
-				list_push_front(&readyQ,&t->q);
-			}
-
-			if (!list_isempty(&msleepQ)) {
-				e = list_get_front(&msleepQ); // Set e to the next to wake up
-				t = get_struct_task(e); // Get task-struct.
-
-				time_to_wake = t->sleep_time;
-				if (time_to_wake < 10) /** TODO 10 should be the time of a timerinterrupt times 2 or larger */
-					time_to_wake = 10;
-
-				if (time_to_wake > 1000) // This insured at least 100 interrupts pr. sec.
-					time_to_wake = 1000;
-			}
-
-		}
-
-	T0_MR0 = time_to_wake;
+// 	if (do_context_switch)
+// 		GPIO1_IOPIN ^= BIT24;
+// 	else
+// 		GPIO1_IOCLR = BIT24;
 	
 	T1_TC = 0;	// Reset delay-timer to zero
-	do_context_switch = 1;
 
 	T0_IR = BIT0; /* Clear interrupt */
 	VICVectAddr = 0; /* Update priority hardware */
