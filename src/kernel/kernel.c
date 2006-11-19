@@ -3,7 +3,6 @@
 #include <fragment.h>
 
 LIST_HEAD(readyQ);
-LIST_HEAD(msleepQ);
 LIST_HEAD(usleepQ);
 
 uint8_t do_context_switch = 0; /**< \brief Shall we do proccess-shift. */
@@ -94,10 +93,10 @@ void sys_usleep(uint32_t us) {
 		return;
 
 	/* Run through alle sleeping processes all decrement the time our current
-	processs wants to sleep. If a longer-sleeping process i reached, the
+	processs wants to sleep. If a longer-sleeping process is reached, the
 	current process should be interted before that process.
 	*/
-	list_for_each(e,&msleepQ) {
+	list_for_each(e,&usleepQ) {
 		struct task_t* t = NULL;
 		t = get_struct_task(e);
 		if (time > t->sleep_time)
@@ -111,7 +110,7 @@ void sys_usleep(uint32_t us) {
 	current->sleep_time = time;
 
 	if (insertion_point == NULL) {
-		list_push_back(&msleepQ,&current->q);
+		list_push_back(&usleepQ,&current->q);
 	} else {
 		list_push_back(insertion_point,&current->q);
 	}
