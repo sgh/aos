@@ -37,8 +37,6 @@ extern struct task_t* current;
 extern uint8_t do_context_switch;
 
 extern struct list_head readyQ;
-extern struct list_head readyQ;
-extern struct list_head msleepQ;
 extern struct list_head usleepQ;
 
 #endif // _KERNEL_H_
