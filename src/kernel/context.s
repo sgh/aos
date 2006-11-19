@@ -91,17 +91,12 @@ _get_current_context_store:
 	UART0-interrupt handler
 */
 uart0_interrupt:
-	STMFD SP!,{r0-r12,LR}
+	IRQ_prologue
 
 	/* Call C-interrupt-routine */
 	BL uart0_interrupt_routine
-
-	/* Restore r0-r12,LR frim User-mode-stack */
-	LDMFD SP!,{r0-r12,LR}
 	
-	/* Substract 4 from return addres - we do this to correctly return in a general matter */
-	SUB LR, LR, #4
-	B return_from_interrupt
+	IRQ_epilogue
 
 
 /*
@@ -126,7 +121,7 @@ return_from_interrupt:
 	/* Save r0 on stack - we restore it later */
 	STMFD SP!,{r0}
 	
-	/* Are we going to witch tasks */
+	/* Are we going to switch tasks */
 	LDR r0, =do_context_switch
 	LDRB r0, [r0]
 	CMP r0, #0
@@ -147,7 +142,7 @@ return_from_interrupt:
 
 	/* If current is 0, then we must not try so save current context */
 	LDR r0, =current
-	LDRB r0, [r0]
+	LDR r0, [r0]
 	CMP r0, #0
 	BEQ _after_task_save
 	
@@ -202,7 +197,7 @@ return_from_interrupt:
 	
 	/* Switch to system-mode */
 	MOV r9, r10
-	BIC r9,r9,#0xFF
+	BIC r9,r9, #0xFF
 	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
 	MSR CPSR, r9
 
@@ -234,7 +229,7 @@ _after_task_save:
 	
 	/* Switch to system-mode */
 	MOV r9, r10
-	BIC r9,r9,#0xFF
+	BIC r9,r9, #0xFF
 	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
 	MSR CPSR, r9
 
@@ -276,13 +271,13 @@ _no_task_switch:
 
 	MRS r1, SPSR
 	ORR r1, r1, #0xC0  @ disable IRQ and FIQ interrupts
-	MSR SPSR_c, r1
+	MSR SPSR, r1
 	B after_interrupt_endisable
 
 interrupts_are_enabled:
 	MRS r1, SPSR
 	BIC r1, r1, #0xC0  @ enable IRQ and FIQ interrupts
-	MSR SPSR_c, r1
+	MSR SPSR, r1
 
 after_interrupt_endisable:
 	LDMFD SP!,{r1} @ Restore r1
