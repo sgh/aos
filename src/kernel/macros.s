@@ -11,7 +11,7 @@
 .extern uart0_interrupt_routine
 
 
-.equ SYSTEM_MODE_NOIRQ, 0xDF @ System-mod with IRQ an FIRQ disabled
+.equ SYSTEM_MODE_NOIRQ, 0xDF @ System-mode with IRQ an FIRQ disabled
 
 
 /* IRQ prologue- and epilogue macros */
