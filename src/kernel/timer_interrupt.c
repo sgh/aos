@@ -9,10 +9,11 @@
 #define TIMER0_IRQ 4
 
 static int8_t vector_num;
+uint32_t last_interrupt_time = 0; /** \brief Timer value at last interrupt */
 
 void init_timer_interrupt() {
 	T0_PR = 15000000/1000000 - 1;		/* Scale to 1 ms steps */
-// 	T0_PC = 0;
+	T0_PC = 0;										/* Counter-value */
 	T0_MR0 = 1000;								/* Match-Register0 */
 	
 // 	VICVectCntl0 = 4 + BIT5;
@@ -22,8 +23,8 @@ void init_timer_interrupt() {
 	if ( vector_num == -1 )
 		for (;;);
 	
-	T0_MCR = BIT0 | BIT1;		/* Reset and Interrupt on Math-Register0 */
-	T0_TCR = BIT0;					/* Enable timer0 */
+	T0_MCR = BIT0;	/* Interrupt on Math-Register0 */
+	T0_TCR = BIT0;	/* Enable timer0 */
 }
 
 
@@ -41,11 +42,20 @@ void reset_timer_interrupt() {
 	T0_TC = 0;
 }
 
+void sys_get_systime(uint32_t* time) {
+	if (time != NULL)
+		*time = T0_TC;
+}
+
+uint32_t get_interrupt_elapsed() {
+	register uint32_t now = T0_TC;
+	return now>=last_interrupt_time ? now-last_interrupt_time: 0xFFFFFFFF - (last_interrupt_time-now);
+}
 
 void timer_interrupt_routine() {
 	struct task_t* t;
 	struct list_head* e;
-	uint32_t past_time;
+	uint32_t elapsed_time;
 	static uint16_t count= 0;
 	static uint8_t onoff = 0;
 	uint32_t time_to_wake = 1000;
@@ -59,10 +69,10 @@ void timer_interrupt_routine() {
 		e = list_get_front(&usleepQ);
 		t = get_struct_task(e);
 
-		past_time = T1_TC;
+		elapsed_time = get_interrupt_elapsed();
 		if (t->sleep_time) { // If process had time left to sleep
-			if (t->sleep_time > past_time)
-				t->sleep_time -= past_time;
+			if (t->sleep_time > elapsed_time)
+				t->sleep_time -= elapsed_time;
 			else
 				t->sleep_time = 0;
 		}
@@ -87,8 +97,6 @@ void timer_interrupt_routine() {
 
 	}
 
-	T0_MR0 = time_to_wake;
-
 	if (count == 50) { // Do 10 Hz blink
 		if (onoff)
 			GPIO1_IOSET = BIT24;
@@ -103,8 +111,10 @@ void timer_interrupt_routine() {
 // 		GPIO1_IOPIN ^= BIT24;
 // 	else
 // 		GPIO1_IOCLR = BIT24;
-	
-	T1_TC = 0;	// Reset delay-timer to zero
+
+	sys_get_systime(&last_interrupt_time);
+
+	T0_MR0 = last_interrupt_time + time_to_wake;
 
 	T0_IR = BIT0; /* Clear interrupt */
 	VICVectAddr = 0; /* Update priority hardware */
