@@ -233,10 +233,7 @@ void main(void) {
 	
 	init_timer_interrupt();
 	enable_timer_interrupt();
-	
-	T1_PR = 15000000/1000000;		/* Scale to 1 us steps */
-	T1_TCR = BIT0;							/* Enable timer0 */
-	
+		
 	current = NULL;
 	yield();
 }

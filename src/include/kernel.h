@@ -32,6 +32,7 @@ void msleep(uint16_t ms);
 void usleep(uint32_t us);
 void disable_cs();
 void enable_cs();
+void get_systime(uint32_t* time);
 
 extern struct task_t* current;
 extern uint8_t do_context_switch;

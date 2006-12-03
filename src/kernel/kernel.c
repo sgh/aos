@@ -1,6 +1,7 @@
 #include <kernel.h>
 #include <arm/lpc2119.h>
 #include <fragment.h>
+#include <timer_interrupt.h>
 
 LIST_HEAD(readyQ);
 LIST_HEAD(usleepQ);
@@ -86,7 +87,7 @@ void sys_msleep(uint16_t ms) {
 void sys_usleep(uint32_t us) {
 	struct list_head* e;
 	struct list_head* insertion_point = NULL;
-	uint32_t time = us + T1_TC;
+	uint32_t time = us + get_interrupt_elapsed();
 	
 	// TODO: Implement busywait here if delay is smaller than interrupt latency.
 	if (us == 0)

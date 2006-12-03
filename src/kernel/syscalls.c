@@ -14,6 +14,7 @@ void* sys_call_table[] =
 	[_NR_unblock] sys_unblock,
 	[_NR_disable_cs] sys_disable_cs,
 	[_NR_enable_cs] sys_enable_cs,
+	[_NR_get_systime] sys_get_systime,
 };
 
 /* Syscall definitions */
@@ -28,4 +29,5 @@ _syscall0(void,disable_cs);
 _syscall0(void,enable_cs);
 _syscall0(void,enable_irqs);
 _syscall0(void,disable_irqs);
+_syscall1(void,get_systime,uint32_t*,time);
 

@@ -17,6 +17,7 @@
 #define _NR_unblock       7
 #define _NR_disable_cs    8
 #define _NR_enable_cs     9
+#define _NR_get_systime   10
 
 
 /* Syscall declarations */
@@ -31,6 +32,7 @@ void sys_disable_cs();
 void sys_enable_cs();
 void sys_disable_irqs();
 void sys_enable_irqs();
+void sys_get_systime(uint32_t* time);
 
 
 #define str(s) #s
