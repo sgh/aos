@@ -10,8 +10,6 @@ uint8_t do_context_switch = 0; /**< \brief Shall we do proccess-shift. */
 uint8_t allow_context_switch = 1; /**< \brief Is context-switches allowed. */
 uint8_t interrupts_disabled = 0; /**< \brief Are interrupts disabled. */
 
-void free(void* segment);
-void* malloc(unsigned short size);
 	
 void sched(void) {
 #ifdef SHARED_STACK
