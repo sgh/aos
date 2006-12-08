@@ -36,6 +36,7 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task1(void) {
 // 	char a[500];
 	int i;
 	int p;
+	char* ptr;
 	
 	for (;;) {
 		
@@ -69,7 +70,9 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task1(void) {
 		enable_irqs();
 // 		enable_cs();
 
+		ptr = malloc(200);
 		msleep(75);
+		free(ptr);
 	}
 }
 
