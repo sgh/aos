@@ -2,6 +2,7 @@
 #include <string.h>
 #include <driver_core.h>
 #include <mm.h>
+#include <syscalls.h>
 
 #define ciel(var,val) (var>val?val:var)
 
@@ -18,7 +19,7 @@ struct fragment_store* store_fragment(const unsigned char* data, unsigned int si
 	while (size>0) {
 		uint16_t fragment_size = ciel(size,FRAGMENT_SIZE);
 		
-		fragment = (struct fragment_store*)malloc(sizeof(struct fragment_store));
+		fragment = (struct fragment_store*)sys_malloc(sizeof(struct fragment_store));
 		if (!fragment) // If malloc did not succeded
 			break;
 		
@@ -59,7 +60,7 @@ void load_fragment(unsigned char* data, struct fragment_store* fragment) {
 		fragment = fragment->next;
 		
 		/* Free prevfragment */
-		free(prevfrag);
+		sys_free(prevfrag);
 		prevfrag = NULL;
 	}
 // 	printf("\n");

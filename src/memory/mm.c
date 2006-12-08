@@ -61,7 +61,7 @@ void mm_init(void* start, uint16_t len) {
 // 	mm_status();
 }
 
-void* malloc(uint16_t size)
+void* sys_malloc(uint16_t size)
 {
 	uint32_t segmentsize;
 	uint8_t* ptr = (uint8_t*)mm_start;
@@ -108,7 +108,7 @@ void* malloc(uint16_t size)
 	return NULL;
 }
 
-void free(void* segment) {
+void sys_free(void* segment) {
 	mm_header_t* header =  segment - sizeof(mm_header_t);
 	uint8_t *ptr = (uint8_t*)header;
 	mm_header_t* prev_header = NULL;

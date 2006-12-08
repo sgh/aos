@@ -18,6 +18,8 @@
 #define _NR_disable_cs    8
 #define _NR_enable_cs     9
 #define _NR_get_systime   10
+#define _NR_malloc        11
+#define _NR_free          12
 
 
 /* Syscall declarations */
@@ -33,6 +35,8 @@ void sys_enable_cs();
 void sys_disable_irqs();
 void sys_enable_irqs();
 void sys_get_systime(uint32_t* time);
+void* sys_malloc(uint16_t size);
+void* sys_free(void* segment);
 
 
 #define str(s) #s

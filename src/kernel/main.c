@@ -9,6 +9,7 @@
 #include <driver_core.h>
 #include <platform.h>
 #include <serio.h>
+#include <mm.h>
 
 struct task_t* current = NULL;
 REGISTER_TYPE task1_stack[17];
@@ -82,6 +83,7 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 	char buf[40];
 	struct serio console;
 	int i;
+	char* ptr;
 	
 // 	acquire_serio(0,&console);
 	
@@ -112,8 +114,9 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 				GPIO1_IOCLR = BIT23;
 			}
 		}
-		
+		ptr = malloc(200);
 		yield();
+		free(ptr);
 	}
 }
 
