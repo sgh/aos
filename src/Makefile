@@ -3,7 +3,7 @@
 APP = armOS
 
 
-KERNEL_SOURCES = main.c startup.s context.s syscalls.c list.c timer_interrupt.c semaphore.c interrupt.c uart.c mutex.c spinlock.c atomic.s kernel.c
+KERNEL_SOURCES = startup.s context.s syscalls.c list.c timer_interrupt.c semaphore.c interrupt.c uart.c mutex.c spinlock.c atomic.s kernel.c
 
 DRIVER_SOURCES =  driver_core.c driver_class.c serio/serio.c platform/platform.c
 
@@ -19,17 +19,20 @@ LDFLAGS =
 	
 LINKERSCRIPT = kernel/linkerscript.ld
 
-LIBS = -lc -lm -lgcc -lnosys
+LIBS = -larmOS -lc -lm -lgcc -lnosys 
+
+LIBDIRS = -L .
 
 ##
 # Tools
 ##
-ARM_PREFIX=arm-elf
-GCC = $(ARM_PREFIX)-gcc
-AS = $(ARM_PREFIX)-as
-LD = $(ARM_PREFIX)-ld
-SIZE = $(ARM_PREFIX)-size
-OBJCOPY = $(ARM_PREFIX)-objcopy
+ARM_PREFIX=arm-elf-
+GCC = $(ARM_PREFIX)gcc
+AS = $(ARM_PREFIX)as
+AR = $(ARM_PREFIX)ar
+LD = $(ARM_PREFIX)ld
+SIZE = $(ARM_PREFIX)size
+OBJCOPY = $(ARM_PREFIX)objcopy
 
 ##
 # Includes
@@ -43,7 +46,9 @@ DEPS := $(patsubst %.o,%.d,$(OBJS))
 
 
 all: deps application
-	$(GCC) $(CFLAGS) -Wl,-Map=$(APP).map  -T $(LINKERSCRIPT) -o $(APP).elf $(OBJS) $(LIBS)
+	${AR} rcs lib${APP}.a $(OBJS)
+	${AR}  t lib${APP}.a 
+	$(GCC) $(CFLAGS) -Wl,-Map=$(APP).map  -T $(LINKERSCRIPT) $(INCLUDE) -o $(APP).elf kernel/main.c ${LIBDIRS} ${LIBS}
 	$(OBJCOPY) -O ihex $(APP).elf $(APP).hex
 	$(OBJCOPY) -O binary $(APP).elf $(APP).bin
 	$(SIZE) -t $(OBJS)
@@ -53,7 +58,7 @@ all: deps application
 	$(GCC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
 
 %.o: %.s
-	$(AS) -MD -c $(INCLUDE) -o $@ $<
+	$(AS) $(INCLUDE) -o $@ $<
 
 application: $(OBJS)
 
