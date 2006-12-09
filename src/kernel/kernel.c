@@ -6,10 +6,80 @@
 LIST_HEAD(readyQ);
 LIST_HEAD(usleepQ);
 
-uint8_t do_context_switch = 0; /**< \brief Shall we do proccess-shift. */
-uint8_t allow_context_switch = 1; /**< \brief Is context-switches allowed. */
-uint8_t interrupts_disabled = 0; /**< \brief Are interrupts disabled. */
 
+/**
+ * \brief Shall we do proccess-shift.
+ */
+uint8_t do_context_switch = 0;
+
+/**
+ * \brief Is context-switches allowed.
+ */
+uint8_t allow_context_switch = 1;
+
+/**
+ * \brief Are interrupts disabled.
+ */
+uint8_t interrupts_disabled = 0;
+
+/**
+ * \brief Offset of struct task_t::contex
+ * Used in assembler routines to fetch location of
+ * the memory to store registers in.
+ */
+const uint32_t context_offset = offsetof(struct task_t,context);
+
+
+struct task_t* current = NULL;
+
+
+typedef void (*funcptr)();
+
+// Linker provides theese
+extern funcptr __start_driver_initcalls[];
+extern funcptr __stop_driver_initcalls[];
+extern funcptr __start_bus_initcalls[];
+extern funcptr __stop_bus_initcalls[];
+extern funcptr __start_class_initcalls[];
+extern funcptr __stop_class_initcalls[];
+
+static void do_initcalls() {
+	funcptr* initcall;
+	
+	// Init classes
+	initcall = __start_class_initcalls;
+	while (initcall != __stop_class_initcalls) {
+		(*initcall)();
+		initcall++;
+	}
+	
+	// Init busses
+	initcall = __start_bus_initcalls;
+	while (initcall != __stop_bus_initcalls) {
+		(*initcall)();
+		initcall++;
+	}
+	
+	// Init drivers
+	initcall = __start_driver_initcalls;
+	while (initcall != __stop_driver_initcalls) {
+		(*initcall)();
+		initcall++;
+	}
+
+}
+
+void aos_basic_init() {
+	do_initcalls();
+	current = NULL;
+}
+
+
+void aos_context_init() {
+	init_timer_interrupt();
+	enable_timer_interrupt();
+	yield();
+}
 	
 void sched(void) {
 #ifdef SHARED_STACK
