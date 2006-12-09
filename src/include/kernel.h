@@ -1,3 +1,4 @@
+
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
 
@@ -24,6 +25,11 @@ uint32_t __inline__ get_usermode_sp();
 uint32_t get_sp();
 
 void set_interrupt_mask(uint8_t i);
+
+void init_task(struct task_t* task,funcPtr entrypoint);
+
+void aos_basic_init();
+void aos_context_init();
 
 void block();
 void unblock(struct task_t* task);

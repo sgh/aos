@@ -3,7 +3,7 @@
 APP = armOS
 
 
-KERNEL_SOURCES = startup.s context.s syscalls.c list.c timer_interrupt.c semaphore.c interrupt.c uart.c mutex.c spinlock.c atomic.s kernel.c
+KERNEL_SOURCES = startup.s context.s syscalls.c list.c timer_interrupt.c semaphore.c interrupt.c uart.c mutex.c spinlock.c atomic.s kernel.c task.c
 
 DRIVER_SOURCES =  driver_core.c driver_class.c serio/serio.c platform/platform.c
 
@@ -46,8 +46,8 @@ DEPS := $(patsubst %.o,%.d,$(OBJS))
 
 
 all: deps application
-	${AR} rcs lib${APP}.a $(OBJS)
-	${AR}  t lib${APP}.a 
+	$(AR) rcs lib$(APP).a $(OBJS)
+	#${AR}  t lib${APP}.a 
 	$(GCC) $(CFLAGS) -Wl,-Map=$(APP).map  -T $(LINKERSCRIPT) $(INCLUDE) -o $(APP).elf kernel/main.c ${LIBDIRS} ${LIBS}
 	$(OBJCOPY) -O ihex $(APP).elf $(APP).hex
 	$(OBJCOPY) -O binary $(APP).elf $(APP).bin
@@ -65,7 +65,7 @@ application: $(OBJS)
 clean:
 	rm -f $(OBJS)
 	rm -f $(DEPS)
-	rm -f $(APP).elf $(APP).map $(APP).hex $(APP).bin
+	rm -f lib$(APP).a $(APP).elf $(APP).map $(APP).hex $(APP).bin
 
 deps: $(SOURCES)
 	#$(GCC) -M -E $(SOURCES) $(INCLUDE) > /dev/null
