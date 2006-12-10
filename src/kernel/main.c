@@ -153,9 +153,9 @@ void main(void) {
 	task2_cd = malloc(sizeof(struct task_t));
 	idle_cd = malloc(sizeof(struct task_t));
 
-	init_task(task1_cd,task1);
-	init_task(task2_cd,task2);
-	init_task(idle_cd,idle_task);
+	init_task(task1_cd,task1, 0);
+	init_task(task2_cd,task2, 0);
+	init_task(idle_cd,idle_task, 0);
 	
 	mutex_init(&mymutex);
 	

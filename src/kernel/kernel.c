@@ -199,9 +199,11 @@ void sys_block(struct list_head* q) {
 
 void sys_unblock(struct task_t* task) {	
 	if (task->state == BLOCKED ) {
+		struct task_t* next = get_struct_task(list_get_front(&readyQ));
 		task->state = READY;
 		list_push_front(&readyQ, &task->q);
-		do_context_switch = 1;
+		if (task->priority <= next->priority)
+			do_context_switch = 1;
 	}
 }
 
