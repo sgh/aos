@@ -5,7 +5,7 @@
 #include <task.h>
 #include <types.h>
 
-void init_task(struct task_t* task,funcPtr entrypoint) {
+void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
 // 	memset( (void*)stack, 0, 64);
 	memset(task, 0, sizeof(struct task_t));
 	task->context = malloc(sizeof(REGISTER_TYPE) * 17);
@@ -32,5 +32,6 @@ void init_task(struct task_t* task,funcPtr entrypoint) {
 	task->context[15] = 0x11; // r11
 	task->context[16] = 0x12; // r12
 	task->state = READY;
+	task->priority = priority;
 	list_push_back(&readyQ,&task->q);
 }

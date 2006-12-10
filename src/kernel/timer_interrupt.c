@@ -64,6 +64,8 @@ void timer_interrupt_routine() {
 	if (list_get_front(&usleepQ)->next !=  &usleepQ)
 		do_context_switch = 1; // Signal context-switch
 
+	do_context_switch = 1; // Signal context-switch
+	
 	// If someone is sleeping
 	if (!list_isempty(&usleepQ)) {
 		e = list_get_front(&usleepQ);
@@ -78,9 +80,11 @@ void timer_interrupt_routine() {
 		}
 
 		if (t->sleep_time == 0) { // If process now has no time left to sleep
+			struct task_t* next = get_struct_task(list_get_front(&readyQ));
 			list_erase(&t->q);
 			list_push_front(&readyQ,&t->q);
-			do_context_switch = 1; // Signal context-switch
+ 			if (t->priority > next->priority)
+				do_context_switch = 0; // Un-signal context-switch
 		}
 
 		if (!list_isempty(&usleepQ)) {
