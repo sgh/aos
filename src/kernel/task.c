@@ -5,6 +5,13 @@
 #include <task.h>
 #include <types.h>
 
+struct task_t* create_task(funcPtr entrypoint, int8_t priority) {
+	struct task_t* t;
+	t = malloc(sizeof(struct task_t));
+	init_task(t, entrypoint, priority);
+	return t;
+}
+
 void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
 // 	memset( (void*)stack, 0, 64);
 	memset(task, 0, sizeof(struct task_t));

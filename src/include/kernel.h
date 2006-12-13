@@ -26,6 +26,7 @@ uint32_t get_sp();
 
 void set_interrupt_mask(uint8_t i);
 
+struct task_t* create_task(funcPtr entrypoint, int8_t priority);
 void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority);
 
 void aos_basic_init();
