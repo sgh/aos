@@ -48,16 +48,16 @@ void mm_status(void) {
 // 	printf("\n");
 }
 
-void mm_init(void* start, uint16_t len) {
+void aos_init_mm(void* start, void* end) {
 	struct mm_header* head;
 	mm_start =  start;
-	mm_end = mm_start + len;	
-	memset(mm_start,0x0,len);
+	mm_end = end;
+	memset(mm_start,0x0,end-start);
 // 	memory_size = len;
 
 	head = (struct mm_header*)mm_start;
-	head->free=1;
-	head->size=len-sizeof(mm_header_t);
+	head->free = 1;
+	head->size = (end-start) - sizeof(mm_header_t);
 // 	mm_status();
 }
 

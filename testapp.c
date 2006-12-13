@@ -72,10 +72,10 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 	char a[500];
 	char buf[40];
 	struct serio console;
-	int i;
+	unsigned int i;
 	char* ptr;
 	
-// 	acquire_serio(0,&console);
+ 	acquire_serio(0,&console);
 	
 	for(;;) {
 		
@@ -141,21 +141,18 @@ struct device lpcuart = {
 };
 
 void main(void) {
+
+	//f = sqrtf(f);
 	GPIO1_IODIR |= BIT24|BIT23|BIT22;
 	
 	aos_basic_init();
-	
-	mm_init(dmem, sizeof(dmem));
+	aos_init_mm(dmem, dmem+sizeof(dmem));
 	
 	device_register(&lpcuart);
 	
-	task1_cd = malloc(sizeof(struct task_t));
-	task2_cd = malloc(sizeof(struct task_t));
-	idle_cd = malloc(sizeof(struct task_t));
-
-	init_task(task1_cd,task1, 0);
-	init_task(task2_cd,task2, 0);
-	init_task(idle_cd,idle_task, 0);
+	task1_cd = create_task(task1, 0);
+	task2_cd = create_task(task2, 0);
+	idle_cd = create_task(idle_task, 0);
 	
 	mutex_init(&mymutex);
 	

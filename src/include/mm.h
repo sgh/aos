@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-void mm_init(void* start, unsigned short len);
+void aos_init_mm(void* start, void* end);
 void *malloc(uint16_t size);
 void free(void* ptr);
 

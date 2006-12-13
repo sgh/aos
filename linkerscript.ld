@@ -13,7 +13,7 @@ SECTIONS
 
   .text :
   {
-    KEEP(kernel/startup.o (.text))         /* Startup code */
+    KEEP(startup.o (.text))         /* Startup code */
     *(.text)                   /* remaining code */
 
     *(.glue_7t) *(.glue_7)
