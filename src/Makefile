@@ -1,12 +1,17 @@
 
 APP = libaos
-KERNEL_SOURCES = context.s syscalls.c list.c timer_interrupt.c semaphore.c interrupt.c  mutex.c spinlock.c atomic.s kernel.c task.c uart.c
 
-DRIVER_SOURCES =  driver_core.c driver_class.c serio/serio.c platform/platform.c
+MARCH = arm-lpc2xxx
+
+KERNEL_SOURCES = syscalls.c list.c timer_interrupt.c semaphore.c mutex.c spinlock.c kernel.c task.c uart.c
+
+DRIVER_SOURCES =  driver_core.c driver_class.c platform/platform.c
+
+ARCH_SOURCES = irq.c context.s atomic.s
 
 MM_SOURCES = mm.c fragment.c 
 
-SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES))  $(addprefix memory/,$(MM_SOURCES))  $(addprefix driver-model/,$(DRIVER_SOURCES))
+SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES))  $(addprefix memory/,$(MM_SOURCES))  $(addprefix drivers/,$(DRIVER_SOURCES)) $(addprefix arch/$(MARCH)/,$(ARCH_SOURCES))
 
 CFLAGS = -mcpu=arm7tdmi -mapcs -Os -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -mthumb-interwork -mthumb
 #-ffunction-sections -fdata-sections
