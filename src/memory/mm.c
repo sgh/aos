@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <driver_core.h>
+#include <arm/lpc2119.h>
+#include <bits.h>
 
 
 /* MM defines */
@@ -48,11 +50,11 @@ void mm_status(void) {
 // 	printf("\n");
 }
 
-void aos_init_mm(void* start, void* end) {
+void aos_mm_init(void* start, void* end) {
 	struct mm_header* head;
 	mm_start =  start;
 	mm_end = end;
-	memset(mm_start,0x0,end-start);
+	memset(mm_start, 0x0, end-start);
 // 	memory_size = len;
 
 	head = (struct mm_header*)mm_start;
@@ -67,7 +69,7 @@ void* sys_malloc(uint16_t size)
 	uint8_t* ptr = (uint8_t*)mm_start;
 	mm_header_t* header;
 	mm_header_t* next_header;
-	
+
 //  	mm_status();
 	do {
 		header = (mm_header_t*)ptr;
