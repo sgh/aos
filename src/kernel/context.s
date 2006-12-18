@@ -8,7 +8,7 @@
 
 /* Public interrupt-handler symbols */
 .global timer_interrupt
-.global uart0_interrupt
+;.global uart0_interrupt
 
 .include "kernel/macros.s"
 
@@ -34,7 +34,7 @@ get_usermode_sp:
 	MSR CPSR, r9
 	
 	LDMFD SP!, {r9-r10}
-	MOV PC, LR
+	BX LR
 
 /*
 	Software-interrupt handler:
@@ -48,9 +48,22 @@ SWI_Handler:
 	/* Save registers on SWI-mode stack */
 	STMFD SP!,{r6-r12, LR}
 
-	/* Get number embedded in SWI-instruction */
+	/* Read LR to see if the SWI-instruction was in ARM-, or THUMB-mode */
+	MRS r7, SPSR
+	AND r6, r7, #0x20
+	CMP r6, #0
+	BEQ _get_swinum_arm
+
+	/* Get number embedded in SWI-instruction, either THUMB or ARM */
+_get_swinum_thumb:
+	LDRB r6, [LR, #-2] @ FIXME: The load is not done corectly
+	BIC r6, r6 ,#0xFFFFFF00
+	B _after_get_swinum
+	B _get_swinum_thumb
+_get_swinum_arm:	
 	LDR r6, [LR, #-4]
 	BIC r6, r6 ,#0xFF000000
+_after_get_swinum:
 
 	/* syscall offset */
 	MOV r6, r6, LSL #2
@@ -90,13 +103,13 @@ _get_current_context_store:
 /*
 	UART0-interrupt handler
 */
-uart0_interrupt:
-	IRQ_prologue
-
-	/* Call C-interrupt-routine */
-	BL uart0_interrupt_routine
-	
-	IRQ_epilogue
+@uart0_interrupt:
+@	IRQ_prologue
+@
+@	/* Call C-interrupt-routine */
+@	BL uart0_interrupt_routine
+@	
+@	IRQ_epilogue
 
 
 /*
@@ -107,7 +120,9 @@ timer_interrupt:
 	IRQ_prologue
 
 	/* Call C-interrupt-routine */
-	BL timer_interrupt_routine
+	LDR r5, =timer_interrupt_routine
+	MOV LR, PC
+	BX r5
 
 	IRQ_epilogue
 
@@ -132,6 +147,8 @@ return_from_interrupt:
 	LDRB r0, [r0]
 	CMP r0, #0
 	BEQ _no_task_switch
+
+@======================================================================================
 
 	/* Set do_context_switch to 0 */
 	STMFD SP!,{r1}	@ Store r1
@@ -216,9 +233,13 @@ return_from_interrupt:
 	STMIA r0,{r2-r3}
 
 _after_task_save:
-	
-	BL sched
-		
+	/* From this point on we have all registers to our self */
+
+	LDR r5, =sched
+	MOV LR, PC
+	BX r5
+
+	/* Here the process restore starts. WATCH THE REGISTERS */
 	BL _get_current_context_store
 
 	LDMIA r0!,{LR}
@@ -258,7 +279,7 @@ _after_task_save:
 
 	LDMFD SP!,{r1} @ Restore r1
 
-	
+@======================================================================================
 _no_task_switch:
 
 	STMFD SP!,{r1} @ Store r1
