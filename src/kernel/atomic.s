@@ -7,5 +7,5 @@ atomic_xchg:
 	MOV r3, r0
 	SWP r0, r1, [r3]
 	LDMFD SP!,{r1-r3}
-	MOV PC, LR
+	BX LR
 
