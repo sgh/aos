@@ -3,7 +3,7 @@
 #include <arm/lpc2119.h>
 #include <bits.h>
 #include <timer_interrupt.h>
-#include <vic.h>
+#include <irq.h>
 #include <mutex.h>
 #include <atomic.h>
 #include <driver_core.h>
