@@ -13,6 +13,9 @@ struct task_t* create_task(funcPtr entrypoint, int8_t priority) {
 }
 
 void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
+	REGISTER_TYPE cpsr = 0x00000010; // User-mode
+	if (((uint32_t)entrypoint & 1) == 1) // If address is thumb
+		cpsr |= 0x20;	// Set thumb bit
 // 	memset( (void*)stack, 0, 64);
 	memset(task, 0, sizeof(struct task_t));
 	task->context = malloc(sizeof(REGISTER_TYPE) * 17);
@@ -25,7 +28,7 @@ void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
 #endif
 	task->context[2] = 0x12345678; // LR
 	task->context[3] = 0; // r0
-	task->context[4] = 0x60000010;  // SPSR User-mode
+	task->context[4] = cpsr;  // SPSR 
 	task->context[5] = 0x1; // r1
 	task->context[6] = 0x2; // r2
 	task->context[7] = 0x3; // r3
