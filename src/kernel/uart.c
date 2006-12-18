@@ -2,7 +2,7 @@
 #include <types.h>
 #include <bits.h>
 #include <semaphore.h>
-#include <vic.h>
+#include <irq.h>
 #include <kernel.h>
 #include <driver_core.h>
 
