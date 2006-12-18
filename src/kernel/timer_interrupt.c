@@ -18,7 +18,7 @@ void init_timer_interrupt() {
 	
 // 	VICVectCntl0 = 4 + BIT5;
 // 	VICVectAddr0 = (uint32)timer_interrupt;
-	vector_num = vic_request_vector((uint32_t)timer_interrupt, TIMER0_IRQ);
+	vector_num = request_vector((uint32_t)timer_interrupt, TIMER0_IRQ);
 	
 	if ( vector_num == -1 )
 		for (;;);
@@ -29,13 +29,13 @@ void init_timer_interrupt() {
 
 
 void enable_timer_interrupt() {
-	vic_vector_enable(vector_num);
-	vic_irq_enable(TIMER0_IRQ);
+	vector_enable(vector_num);
+	irq_enable(TIMER0_IRQ);
 }
 
 void disable_timer_interrupt() {
-	vic_vector_disable(vector_num);
-	vic_irq_disable(TIMER0_IRQ);
+ 	vector_disable(vector_num);
+	irq_disable(TIMER0_IRQ);
 }
 
 void reset_timer_interrupt() {

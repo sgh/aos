@@ -28,8 +28,6 @@ void sys_block(struct list_head* q);
 void sys_yield();
 void sys_msleep(uint16_t ms);
 void sys_usleep(uint32_t us);
-// void sys_sem_down(struct semaphore_t* s);
-// void sys_sem_up(struct semaphore_t* s);
 void sys_disable_cs();
 void sys_enable_cs();
 void sys_disable_irqs();

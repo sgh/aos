@@ -6,7 +6,7 @@
 #include <types.h>
 
 /**
- * \brief General Inpu-Output pin range.
+ * \brief General Input-Output pin range.
  * 
  * Example: Port 2,  BIT4 to BIT6
  * <pre>
