@@ -3,10 +3,13 @@ APP = testapp
 
 SOURCES = testapp.c startup.s
 
-CFLAGS = -mcpu=arm7tdmi -mapcs -O0 -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration  -ffast-math -fno-math-errno 
+CFLAGS = -mcpu=arm7tdmi -mapcs -Os -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration  -ffast-math -fno-math-errno -mthumb-interwork -mthumb 
 #-ffunction-sections -fdata-sections
 
-LDFLAGS = -nostartfiles  -nodefaultlibs  -nostdlib --gc-sections
+ASFLAGS = -mthumb-interwork
+
+LDFLAGS = -nostartfiles  -nodefaultlibs  -nostdlib -mthumb-interwork
+#--gc-sections
 	
 LINKERSCRIPT = linkerscript.ld
 
@@ -47,7 +50,7 @@ all: application ${OBJS}
 	$(GCC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
 
 %.o: %.s
-	$(AS) $(INCLUDE) -o $@ $<
+	$(AS) ${ASFLAGS} $(INCLUDE) -o $@ $<
 
 application: $(OBJS)
 
