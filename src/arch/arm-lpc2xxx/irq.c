@@ -4,7 +4,7 @@
 
 static uint16_t vic_address_map;
 
-int8_t vic_request_vector(uint32_t func, uint8_t irqnum) {
+int8_t request_irq(uint32_t func, uint8_t irqnum) {
 	uint8_t i = 0;
 	uint32_t* vector_address = (void*)&VICVectAddr0; // Address of first Vector-Address-Register
 	uint32_t* vector_control = (void*)&VICVectCntl0; // Address of first Vector-Control-Register
@@ -29,7 +29,7 @@ int8_t vic_request_vector(uint32_t func, uint8_t irqnum) {
 }
 
 
-void vic_vector_enable(uint8_t vectornum) {
+void vector_enable(uint8_t vectornum) {
 	uint32_t* vector_control = (void*)&VICVectCntl0; // Address of first Vector-Control-Register
 	if (vectornum>15)
 		return;
@@ -38,23 +38,23 @@ void vic_vector_enable(uint8_t vectornum) {
 }
 
 
-void vic_vector_disable(uint8_t vectornum) {
+void vector_disable(uint8_t vectornum) {
 	uint32_t* vector_control = (void*)&VICVectCntl0; // Address of first Vector-Control-Register
 	if (vectornum>15)
 		return;
-	 vector_control += vectornum;
-	 *vector_control &=  ~BIT5; /* Disable Vector */
+	vector_control += vectornum;
+	*vector_control &=  ~BIT5; /* Disable Vector */
 }
 
 
-void vic_irq_enable(uint8_t irqnum) {
+void irq_enable(uint8_t irqnum) {
 	if (irqnum>31)
 		return;
 	VICIntEnable |= BIT0<<irqnum; /* Enable Interrrupt */
 }
 
 
-void vic_irq_disable(uint8_t irqnum) {
+void irq_disable(uint8_t irqnum) {
 	if (irqnum>31)
 		return;
 	VICIntEnable &= ~(BIT0<<irqnum); /* Enable Interrrupt */

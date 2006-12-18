@@ -3,7 +3,7 @@ APP = libaos
 
 MARCH = arm-lpc2xxx
 
-KERNEL_SOURCES = syscalls.c list.c timer_interrupt.c semaphore.c mutex.c spinlock.c kernel.c task.c uart.c
+KERNEL_SOURCES = syscalls.c list.c timer_interrupt.c semaphore.c mutex.c spinlock.c kernel.c task.c
 
 DRIVER_SOURCES =  driver_core.c driver_class.c platform/platform.c
 
