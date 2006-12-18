@@ -56,10 +56,10 @@ SWI_Handler:
 
 	/* Get number embedded in SWI-instruction, either THUMB or ARM */
 _get_swinum_thumb:
-	LDRB r6, [LR, #-2] @ FIXME: The load is not done corectly
+	/* Load SWI-number from THUMB SWI-instruction */
+	LDRB r6, [LR, #-2]
 	BIC r6, r6 ,#0xFFFFFF00
 	B _after_get_swinum
-	B _get_swinum_thumb
 _get_swinum_arm:	
 	LDR r6, [LR, #-4]
 	BIC r6, r6 ,#0xFF000000
