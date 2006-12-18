@@ -4,7 +4,7 @@
 #include <types.h>
 #include <timer_interrupt.h>
 #include <kernel.h>
-#include <vic.h>
+#include <irq.h>
 
 #define TIMER0_IRQ 4
 
@@ -60,11 +60,9 @@ void timer_interrupt_routine() {
 	static uint8_t onoff = 0;
 	uint32_t time_to_wake = 1000;
 
-	// If more than one process is waiting, do context_switch
-	if (list_get_front(&usleepQ)->next !=  &usleepQ)
+	// If a one process is waiting, do context_switch
+	if (!list_isempty(&readyQ))
 		do_context_switch = 1; // Signal context-switch
-
-	do_context_switch = 1; // Signal context-switch
 	
 	// If someone is sleeping
 	if (!list_isempty(&usleepQ)) {
