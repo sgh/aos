@@ -8,7 +8,7 @@
 #include <atomic.h>
 #include <driver_core.h>
 #include <platform.h>
-#include <serio.h>
+//#include <serio.h>
 #include <mm.h>
 
 struct task_t* task1_cd;
@@ -24,6 +24,14 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task1(void) {
 	int i;
 	int p;
 	char* ptr;
+
+// 	for(;;) {
+// 		GPIO1_IOPIN ^= BIT22;
+// 		p = 0;
+// 		while (p<200000) {
+// 			p++;
+// 		}
+// 	}
 	
 	for (;;) {
 		
@@ -71,11 +79,21 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 	uint32_t timer = 10000;
 	char a[500];
 	char buf[40];
-	struct serio console;
+	//struct serio console;
 	unsigned int i;
 	char* ptr;
-	
- 	acquire_serio(0,&console);
+
+// 	for(;;) ;
+// 	{
+// 		GPIO1_IOPIN ^= BIT23;
+// 		usleep(1000000);
+// 		disable_cs();
+// 		enable_cs();
+// 		disable_irqs();
+// 		enable_irqs();
+// 	}
+
+ 	//acquire_serio(0,&console);
 	
 	for(;;) {
 		
@@ -112,8 +130,10 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 
 
 void /*__attribute__((weak)) __attribute__((noreturn)) __attribute__((nothrow))*/ idle_task()  {
-	uint8_t onoff = 0;
-	uint32_t count = 0;
+// 	uint8_t onoff = 0;
+// 	uint32_t count = 0;
+
+// 	GPIO1_IOPIN |= BIT24;
 	for (;;) {
 // 		if (count == 0xFFFFF) {
 // 			if (onoff)
@@ -144,17 +164,21 @@ void main(void) {
 
 	//f = sqrtf(f);
 	GPIO1_IODIR |= BIT24|BIT23|BIT22;
-	
+
 	aos_basic_init();
-	aos_init_mm(dmem, dmem+sizeof(dmem));
-	
-	device_register(&lpcuart);
+	aos_mm_init(dmem, dmem+sizeof(dmem));
+
+// 	device_register(&lpcuart);
+
 	
 	task1_cd = create_task(task1, 0);
 	task2_cd = create_task(task2, 0);
 	idle_cd = create_task(idle_task, 0);
 	
 	mutex_init(&mymutex);
+
 	
-	aos_context_init();
+// 	for(;;);
+
+	aos_context_init(15000000);
 }

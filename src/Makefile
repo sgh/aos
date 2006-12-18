@@ -1,7 +1,6 @@
 
 APP = libaos
-
-KERNEL_SOURCES = context.s syscalls.c list.c timer_interrupt.c semaphore.c interrupt.c uart.c mutex.c spinlock.c atomic.s kernel.c task.c
+KERNEL_SOURCES = context.s syscalls.c list.c timer_interrupt.c semaphore.c interrupt.c  mutex.c spinlock.c atomic.s kernel.c task.c uart.c
 
 DRIVER_SOURCES =  driver_core.c driver_class.c serio/serio.c platform/platform.c
 
@@ -9,10 +8,12 @@ MM_SOURCES = mm.c fragment.c
 
 SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES))  $(addprefix memory/,$(MM_SOURCES))  $(addprefix driver-model/,$(DRIVER_SOURCES))
 
-CFLAGS = -mcpu=arm7tdmi -mapcs -Os -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall -Werror-implicit-function-declaration
+CFLAGS = -mcpu=arm7tdmi -mapcs -Os -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -mthumb-interwork -mthumb
 #-ffunction-sections -fdata-sections
 
-LDFLAGS = 
+LDFLAGS = -mthumb-interwork
+
+ASFLAGS = -mthumb-interwork
 #--gc-sections
 	
 LINKERSCRIPT = kernel/linkerscript.ld
@@ -57,7 +58,7 @@ all: application
 	$(GCC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
 
 %.o: %.s
-	$(AS) $(INCLUDE) -o $@ $<
+	$(AS) $(ASFLAGS) $(INCLUDE) -o $@ $<
 
 application: $(OBJS)
 
