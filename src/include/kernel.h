@@ -20,7 +20,7 @@
 
 extern uint32_t Top_Stack;
 
-uint32_t __inline__ get_usermode_sp();
+__inline__ uint32_t get_usermode_sp();
 
 uint32_t get_sp();
 
@@ -30,7 +30,8 @@ struct task_t* create_task(funcPtr entrypoint, int8_t priority);
 void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority);
 
 void aos_basic_init();
-void aos_context_init();
+void aos_context_init(uint32_t timer_refclk);
+void aos_mm_init(void* start, void* end);
 
 void block();
 void unblock(struct task_t* task);
