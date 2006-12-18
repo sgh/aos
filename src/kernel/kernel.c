@@ -2,6 +2,8 @@
 #include <arm/lpc2119.h>
 #include <fragment.h>
 #include <timer_interrupt.h>
+#include <arm/lpc2119.h>
+#include <bits.h>
 
 LIST_HEAD(readyQ);
 LIST_HEAD(usleepQ);
@@ -36,7 +38,7 @@ struct task_t* current = NULL;
 typedef void (*funcptr)();
 
 // Linker provides theese
-extern funcptr __start_driver_initcalls[];
+/*extern funcptr __start_driver_initcalls[];
 extern funcptr __stop_driver_initcalls[];
 extern funcptr __start_bus_initcalls[];
 extern funcptr __stop_bus_initcalls[];
@@ -67,16 +69,16 @@ static void do_initcalls() {
 		initcall++;
 	}
 
-}
+}*/
 
 void aos_basic_init() {
-	do_initcalls();
+//	do_initcalls();
 	current = NULL;
 }
 
 
-void aos_context_init() {
-	init_timer_interrupt();
+void aos_context_init(uint32_t timer_refclk) {
+	init_timer_interrupt(timer_refclk);
 	enable_timer_interrupt();
 	yield();
 }
@@ -226,3 +228,4 @@ void sys_disable_irqs() {
 void sys_enable_irqs() {
 	interrupts_disabled = 0;
 }
+
