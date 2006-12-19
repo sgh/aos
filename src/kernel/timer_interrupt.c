@@ -8,13 +8,16 @@
 
 #define TIMER0_IRQ 4
 
+#define max_time_slice_us 1000
+#define min_time_slice_us 100
+
 static int8_t vector_num;
 uint32_t last_interrupt_time = 0; /** \brief Timer value at last interrupt */
 
 void init_timer_interrupt(uint32_t timer_refclk) {
 	T0_PR = timer_refclk/1000000 - 1;		/* Scale to 1 ms steps */
-	T0_PC = 0;										/* Counter-value */
-	T0_MR0 = 1000;								/* Match-Register0 */
+	T0_PC = 0;													/* Counter-value */
+	T0_MR0 = max_time_slice_us;;				/* Match-Register0 */
 	
 // 	VICVectCntl0 = 4 + BIT5;
 // 	VICVectAddr0 = (uint32)timer_interrupt;
@@ -47,18 +50,30 @@ void sys_get_systime(uint32_t* time) {
 		*time = T0_TC;
 }
 
+/**
+ * \brief Calculate the difference between two uint32_t
+ * Overflow compen
+ */
+inline static uint32_t uint32diff(uint32_t min, uint32_t max) {
+	return min<max ? max-min : max + 0xFFFFFFFF - min;
+}
+
 uint32_t get_interrupt_elapsed() {
 	register uint32_t now = T0_TC;
 	return now>=last_interrupt_time ? now-last_interrupt_time: 0xFFFFFFFF - (last_interrupt_time-now);
 }
 
+uint32_t time_slice_elapsed() {
+	return uint32diff(last_interrupt_time, T0_TC); 
+}
+
 void timer_interrupt_routine() {
 	struct task_t* t;
 	struct list_head* e;
-	uint32_t elapsed_time;
-	static uint16_t count= 0;
-	static uint8_t onoff = 0;
-	uint32_t time_to_wake = 1000;
+	uint32_t elapsed_time = uint32diff(last_interrupt_time, T0_TC);
+	uint32_t time_to_wake = max_time_slice_us;
+
+	last_interrupt_time = T0_TC;
 
 	// If a one process is waiting, do context_switch
 	if (!list_isempty(&readyQ))
@@ -69,7 +84,6 @@ void timer_interrupt_routine() {
 		e = list_get_front(&usleepQ);
 		t = get_struct_task(e);
 
-		elapsed_time = get_interrupt_elapsed();
 		if (t->sleep_time) { // If process had time left to sleep
 			if (t->sleep_time > elapsed_time)
 				t->sleep_time -= elapsed_time;
@@ -77,7 +91,7 @@ void timer_interrupt_routine() {
 				t->sleep_time = 0;
 		}
 
-		if (t->sleep_time == 0) { // If process now has no time left to sleep
+		if (t->sleep_time < min_time_slice_us ) { // If process now has almost no time left to sleep
 			struct task_t* next = get_struct_task(list_get_front(&readyQ));
 			list_erase(&t->q);
 			list_push_front(&readyQ,&t->q);
@@ -90,33 +104,16 @@ void timer_interrupt_routine() {
 			t = get_struct_task(e); // Get task-struct.
 
 			time_to_wake = t->sleep_time;
-			if (time_to_wake < 50) /** TODO 10 should be the time of a timerinterrupt times 2 or larger */
-				time_to_wake = 50;
+			if (time_to_wake < min_time_slice_us) // Make sure that timeslice stays above min_time_slice_us
+				time_to_wake = min_time_slice_us;
 
-			if (time_to_wake > 1000) // This insures at least 1000 interrupts pr. sec.
-				time_to_wake = 1000;
+			if (time_to_wake > max_time_slice_us) // Make sure that timeslice stays below max_time_slice_us
+				time_to_wake = max_time_slice_us;
 		}
 
 	}
 
-	if (count == 50) { // Do 10 Hz blink
-		if (onoff)
-			GPIO1_IOSET = BIT24;
-		else
-			GPIO1_IOCLR = BIT24;
-		count = 0;
-		onoff ^= 1;
-	}
-	count++;
-
-// 	if (do_context_switch)
-// 		GPIO1_IOPIN ^= BIT24;
-// 	else
-// 		GPIO1_IOCLR = BIT24;
-
-	sys_get_systime(&last_interrupt_time);
-
-	T0_MR0 = last_interrupt_time + time_to_wake;
+	T0_MR0 = T0_TC + time_to_wake;
 
 	T0_IR = BIT0; /* Clear interrupt */
 	VICVectAddr = 0; /* Update priority hardware */
