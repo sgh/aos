@@ -1,7 +1,7 @@
 
 void timer_interrupt();
 
-void init_timer_interrupt();
+void init_timer_interrupt(uint32_t timer_refclk);
 
 void enable_timer_interrupt();
 
