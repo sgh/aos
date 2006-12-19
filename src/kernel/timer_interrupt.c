@@ -11,8 +11,8 @@
 static int8_t vector_num;
 uint32_t last_interrupt_time = 0; /** \brief Timer value at last interrupt */
 
-void init_timer_interrupt() {
-	T0_PR = 15000000/1000000 - 1;		/* Scale to 1 ms steps */
+void init_timer_interrupt(uint32_t timer_refclk) {
+	T0_PR = timer_refclk/1000000 - 1;		/* Scale to 1 ms steps */
 	T0_PC = 0;										/* Counter-value */
 	T0_MR0 = 1000;								/* Match-Register0 */
 	

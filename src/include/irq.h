@@ -1,7 +1,7 @@
-#ifndef VIC_H
-#define VIC_H
+#ifndef IRQ_H
+#define IRQ_H
 
-
+#include <types.h>
 
 /**
  * \brief Request a vector for a interrupt
