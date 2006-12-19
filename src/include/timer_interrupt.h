@@ -9,4 +9,4 @@ void disable_timer_interrupt();
 
 void reset_timer_interrupt();
 
-uint32_t get_interrupt_elapsed();
+uint32_t time_slice_elapsed();

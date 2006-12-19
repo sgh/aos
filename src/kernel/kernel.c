@@ -157,7 +157,7 @@ void sys_msleep(uint16_t ms) {
 void sys_usleep(uint32_t us) {
 	struct list_head* e;
 	struct list_head* insertion_point = NULL;
-	uint32_t time = us + get_interrupt_elapsed();
+	uint32_t time = us + time_slice_elapsed();
 	
 	// TODO: Implement busywait here if delay is smaller than interrupt latency.
 	if (us == 0)
@@ -168,13 +168,14 @@ void sys_usleep(uint32_t us) {
 	current process should be interted before that process.
 	*/
 	list_for_each(e,&usleepQ) {
-		struct task_t* t = NULL;
+		struct task_t* t;
 		t = get_struct_task(e);
 		if (time > t->sleep_time)
 			time -= t->sleep_time;
 		else {
 			t->sleep_time -= time;
 			insertion_point = e;
+			break;
 		}
 	}
 
