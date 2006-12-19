@@ -4,7 +4,7 @@
 
 static uint16_t vic_address_map;
 
-int8_t request_irq(uint32_t func, uint8_t irqnum) {
+int8_t request_vector(uint32_t func, uint8_t irqnum) {
 	uint8_t i = 0;
 	uint32_t* vector_address = (void*)&VICVectAddr0; // Address of first Vector-Address-Register
 	uint32_t* vector_control = (void*)&VICVectCntl0; // Address of first Vector-Control-Register
