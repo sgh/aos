@@ -154,11 +154,11 @@ void /*__attribute__((weak)) __attribute__((noreturn)) __attribute__((nothrow))*
 
 char __attribute__((aligned(4))) dmem[5*1024];
 
-struct device lpcuart = {
-	.name = "lpcuart",
-	.bus = &platform_bus_type,
-	.device_id = 1,
-};
+// struct device lpcuart = {
+// 	.name = "lpcuart",
+// 	.bus = &platform_bus_type,
+// 	.device_id = 1,
+// };
 
 void main(void) {
 
