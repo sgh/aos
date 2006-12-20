@@ -25,6 +25,7 @@ GCC = $(ARM_PREFIX)gcc
 AS = $(ARM_PREFIX)as
 AR = $(ARM_PREFIX)ar
 LD = $(ARM_PREFIX)ld
+STRIP = $(ARM_PREFIX)strip
 SIZE = $(ARM_PREFIX)size
 OBJCOPY = $(ARM_PREFIX)objcopy
 
@@ -39,7 +40,8 @@ OBJS := $(patsubst %.s,%.o,$(OBJS))
 DEPS := $(patsubst %.o,%.d,$(OBJS))
 
 
-all: application ${OBJS}
+all: ${OBJS}
+	$(MAKE) -C src
 	$(GCC) ${LDFLAGS} -Wl,-Map=$(APP).map  -T $(LINKERSCRIPT) $(INCLUDE) -o $(APP).elf ${LIBDIRS} ${OBJS} ${LIBS} 
 	$(OBJCOPY) -O ihex $(APP).elf $(APP).hex
 	$(OBJCOPY) -O binary $(APP).elf $(APP).bin
@@ -52,9 +54,8 @@ all: application ${OBJS}
 %.o: %.s
 	$(AS) ${ASFLAGS} $(INCLUDE) -o $@ $<
 
-application: $(OBJS)
-
 clean:
+	$(MAKE) -C src clean
 	rm -f $(OBJS)
 	rm -f $(DEPS)
 	rm -f ../$(APP).a
