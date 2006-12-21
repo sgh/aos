@@ -2,14 +2,15 @@
 #define _TYPES_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 /* Basic int definitions */
-typedef unsigned char uint8_t;
-typedef signed char int8_t;
-typedef unsigned short int uint16_t;
-typedef signed short int int16_t;
-typedef long unsigned int uint32_t;
-typedef signed int int32_t;
+// typedef unsigned char uint8_t;
+// typedef signed char int8_t;
+// typedef unsigned short indt uint16_t;
+// typedef signed short int int16_t;
+// typedef long unsigned int uint32_t;
+// typedef signed int int32_t;
 
 typedef void (*funcPtr)(void);
 

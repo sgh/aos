@@ -102,9 +102,8 @@ uint16_t size_fragment(struct fragment_store* fragment) {
 // }
 
 
-void mm_init(void* start, uint16_t len);
+//void mm_init(void* start, uint16_t len);
 
-char __attribute__((aligned(4))) dmem[4*1024];
 
 /*int main() {
 	struct fragment_store* frag1;
@@ -138,4 +137,4 @@ char __attribute__((aligned(4))) dmem[4*1024];
 }*/
 
 
-// DRIVER_MODULE_INIT(init_fragment_store);
+//DRIVER_MODULE_INIT(init_fragment_store);
