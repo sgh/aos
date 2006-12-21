@@ -38,41 +38,23 @@ struct task_t* current = NULL;
 typedef void (*funcptr)();
 
 // Linker provides theese
-/*extern funcptr __start_driver_initcalls[];
-extern funcptr __stop_driver_initcalls[];
-extern funcptr __start_bus_initcalls[];
-extern funcptr __stop_bus_initcalls[];
-extern funcptr __start_class_initcalls[];
-extern funcptr __stop_class_initcalls[];
+extern funcptr __initcalls_start__[];
+extern funcptr __initcalls_end__[];
 
 static void do_initcalls() {
 	funcptr* initcall;
 	
-	// Init classes
-	initcall = __start_class_initcalls;
-	while (initcall != __stop_class_initcalls) {
-		(*initcall)();
-		initcall++;
-	}
-	
-	// Init busses
-	initcall = __start_bus_initcalls;
-	while (initcall != __stop_bus_initcalls) {
-		(*initcall)();
-		initcall++;
-	}
-	
-	// Init drivers
-	initcall = __start_driver_initcalls;
-	while (initcall != __stop_driver_initcalls) {
+	// Do initcalls 
+	initcall = __initcalls_start__;
+	while (initcall != __initcalls_end__) {
 		(*initcall)();
 		initcall++;
 	}
 
-}*/
+}
 
 void aos_basic_init() {
-//	do_initcalls();
+	do_initcalls();
 	current = NULL;
 }
 
@@ -100,8 +82,10 @@ void sched(void) {
 		
 		// Fragmem
 		current->fragment = store_fragment(src,len);
-		if ((current->fragment == NULL) && (len > 0)) // This indicates OOM
+		if ((current->fragment == NULL) && (len > 0)) { // This indicates OOM {
 			current->state = CRASHED;
+			memset((void*)(0x82020000),0,320*240);
+		}
 		current->stack_size = len;
 		
 		if (current->state == RUNNING) {
