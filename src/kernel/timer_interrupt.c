@@ -91,7 +91,7 @@ void timer_interrupt_routine() {
 				t->sleep_time = 0;
 		}
 
-		if (t->sleep_time < min_time_slice_us ) { // If process now has almost no time left to sleep
+		if (t->sleep_time == 0) { // If process now has no time left to sleep
 			struct task_t* next = get_struct_task(list_get_front(&readyQ));
 			list_erase(&t->q);
 			list_push_front(&readyQ,&t->q);
