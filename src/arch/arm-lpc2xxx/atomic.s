@@ -1,7 +1,7 @@
 .global atomic_xchg
 
 
-@ uint16 atomic_xchg(uint16* address, uint16 new_val)
+@ uint16 atomic_xchg(uint32* address, uint32 new_val)
 atomic_xchg:
 	STMFD SP!,{r1-r3}
 	MOV r3, r0

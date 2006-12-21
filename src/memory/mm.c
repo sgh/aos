@@ -15,9 +15,9 @@
 // uint32_t largest_segmentnum = 0;
 
 /* MM status variables */
-uint8_t* mm_start;
-uint8_t* mm_end;
-uint8_t* mm_ptr;
+static uint8_t* mm_start;
+static uint8_t* mm_end;
+static uint8_t* mm_ptr;
 
 typedef struct mm_header mm_header_t;
 struct mm_header {
