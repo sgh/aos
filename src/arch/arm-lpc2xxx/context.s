@@ -1,6 +1,6 @@
 
 /* public symbols */
-.global SWI_Handler
+.global aos_swi_handler
 .global get_usermode_sp
 .global get_sp
 .global get_usermode_sp
@@ -44,7 +44,7 @@ get_usermode_sp:
 		Leave r0-r5 alone because they hold the arguments
 		and r0 the return value
 */
-SWI_Handler:
+aos_swi_handler:
 	/* Save registers on SWI-mode stack */
 	STMFD SP!,{r6-r12, LR}
 
