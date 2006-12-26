@@ -48,14 +48,14 @@ void class_register(struct driver_class* cls) {
 
 
 
-int bus_for_each_dev(struct bus_type * bus, struct device * start, void * data, int (*fn)(struct device *, void *)) {
-	return 0;
-}
+// // int bus_for_each_dev(struct bus_type * bus, struct device * start, void * data, int (*fn)(struct device *, void *)) {
+// 	return 0;
+// }
 
-int bus_for_each_drv(struct bus_type * bus, struct device_driver * start, void * data, int (*fn)(struct device_driver *, void *)) {
-	struct list_head* drv;
-	list_for_each_from(drv, &bus->drivers, &start->bus_driver_list) {
+// int bus_for_each_drv(struct bus_type * bus, struct device_driver * start, void * data, int (*fn)(struct device_driver *, void *)) {
+// 	struct list_head* drv;
+// 	list_for_each_from(drv, &bus->drivers, &start->bus_driver_list) {
 // 		printf("driver: %s\n", container_of(drv, struct device_driver, bus_driver_list)->name);
-	}
-	return 0;
-}
+// 	}
+// 	return 0;
+// }

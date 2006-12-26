@@ -28,6 +28,13 @@ void mutex_lock(mutex_t* m);
 void mutex_unlock(mutex_t* m);
 
 /**
+ * \brief Try to lock mutex
+ * @param m The mutex to unlock
+ * @return 0 if mutex is allready locked. 1 if mutex lock was succesfully acquired.
+ */
+uint8_t mutex_trylock(mutex_t* m);
+
+/**
  * \brief Initialize mutex to unlocked
  * @param m The mutex to initialize
  */
