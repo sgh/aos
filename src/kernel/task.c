@@ -5,6 +5,8 @@
 #include <task.h>
 #include <types.h>
 
+#define AOS_TASK __attribute__((noreturn))
+
 struct task_t* create_task(funcPtr entrypoint, int8_t priority) {
 	struct task_t* t;
 	t = malloc(sizeof(struct task_t));
@@ -12,6 +14,7 @@ struct task_t* create_task(funcPtr entrypoint, int8_t priority) {
 	return t;
 }
 
+/** @todo This function is architechture specific and should be moved away */
 void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
 	REGISTER_TYPE cpsr = 0x00000010; // User-mode
 	if (((uint32_t)entrypoint & 1) == 1) // If address is thumb

@@ -5,6 +5,7 @@
 #include <timer_interrupt.h>
 #include <kernel.h>
 #include <irq.h>
+#include <macros.h>
 
 #define TIMER0_IRQ 4
 
