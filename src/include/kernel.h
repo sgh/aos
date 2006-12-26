@@ -2,20 +2,11 @@
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
 
-#include <macros.h>
-#include <task.h>
-#include <types.h>
-#include <list.h>
 #include <syscalls.h>
-#include <string.h>
+
+
 #include <semaphore.h>
 
-#define SHARED_STACK
-
-/**
- * \brief The size, in bytes, of a saved process-context.
- */
-#define CONTEXT_SIZE
 
 extern uint32_t Top_Stack;
 
@@ -28,8 +19,17 @@ void set_interrupt_mask(uint8_t i);
 struct task_t* create_task(funcPtr entrypoint, int8_t priority);
 void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority);
 
+/**
+ * \brief Do basic initialization.
+ */
 void aos_basic_init();
+
+/**
+ * \brief This function initiates aos operation. NOTE: This function does NOT return.
+ * @param timer_refclk The frequency of the timer used as context-switch interrupt.
+ */
 void aos_context_init(uint32_t timer_refclk);
+
 void aos_mm_init(void* start, void* end);
 
 /**

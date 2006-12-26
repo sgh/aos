@@ -1,9 +1,10 @@
 #ifndef _SYSCALLS_H_
 #define _SYSCALLS_H_
 
-#include <kernel.h>
+// #include <kernel.h>
 #include <semaphore.h>
 #include <task.h>
+#include <types.h>
 #include <list.h>
 
 /* Syscall numbers */
