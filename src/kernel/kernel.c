@@ -11,12 +11,6 @@ LIST_HEAD(readyQ);
 LIST_HEAD(usleepQ);
 
 /**
- * \brief This is defined if the system should be using a shared stack.
- * create_task does not currently support creating tasks with seperate stacks.
- */
-#define SHARED_STACK
-
-/**
  * \brief Shall we do proccess-shift.
  */
 uint8_t do_context_switch = 0;
@@ -89,10 +83,9 @@ void sched(void) {
 		
 		// Fragmem
 		current->fragment = store_fragment(src,len);
-		if ((current->fragment == NULL) && (len > 0)) { // This indicates OOM {
+		if ((current->fragment == NULL) && (len > 0)) // This indicates OOM
 			current->state = CRASHED;
-			memset((void*)(0x82020000),0,320*240);
-		}
+		
 		current->stack_size = len;
 		
 		if (current->state == RUNNING) {
