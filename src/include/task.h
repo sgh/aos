@@ -5,6 +5,12 @@
 #include <list.h>
 
 /**
+ * \brief This is defined if the system should be using a shared stack.
+ * create_task does not currently support creating tasks with seperate stacks.
+ */
+#define SHARED_STACK
+
+/**
  * \brief A process
  */
 struct task_t {
