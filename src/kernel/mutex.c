@@ -1,4 +1,6 @@
 
+#include <kernel.h>
+#include <macros.h>
 #include <spinlock.h>
 #include <mutex.h>
 #include <task.h>
@@ -18,6 +20,19 @@ void mutex_lock(mutex_t* m) {
 	
 	block(&m->waiting);
 
+}
+
+uint8_t mutex_trylock(mutex_t* m) {
+	spinlock_lock(&m->spinlock);
+
+	if (!m->lock) { // Mutex is not locked - lock it
+		m->lock = 1;
+		spinlock_unlock(&m->spinlock);
+		return 1;
+	}
+	spinlock_unlock(&m->spinlock);
+
+	return 0;
 }
 
 void mutex_init(mutex_t* m) {

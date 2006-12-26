@@ -1,3 +1,4 @@
+#include <kernel.h>
 #include <spinlock.h>
 #include <types.h>
 #include <syscalls.h>

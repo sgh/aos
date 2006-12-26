@@ -1,13 +1,20 @@
+#include <string.h>
 #include <kernel.h>
-#include <arm/lpc2119.h>
+#include <task.h>
+#include <list.h>
+#include <macros.h>
 #include <fragment.h>
 #include <timer_interrupt.h>
-#include <arm/lpc2119.h>
 #include <bits.h>
 
 LIST_HEAD(readyQ);
 LIST_HEAD(usleepQ);
 
+/**
+ * \brief This is defined if the system should be using a shared stack.
+ * create_task does not currently support creating tasks with seperate stacks.
+ */
+#define SHARED_STACK
 
 /**
  * \brief Shall we do proccess-shift.

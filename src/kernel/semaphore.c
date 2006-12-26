@@ -2,6 +2,7 @@
 #include <mutex.h>
 #include <kernel.h>
 #include <list.h>
+#include <macros.h>
 
 /**
  * \brief Semaphore syscall definitions
