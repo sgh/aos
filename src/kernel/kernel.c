@@ -42,12 +42,22 @@ struct task_t* idle_task;
  */
 const uint32_t context_offset = offsetof(struct task_t,context);
 
+/**
+ * \brief Timer value at last interrupt
+ */
+uint32_t last_interrupt_time = 0;
+
 
 struct task_t* current = NULL;
 
 // Linker provides theese
 extern funcPtr __initcalls_start__[];
 extern funcPtr __initcalls_end__[];
+
+uint32_t get_interrupt_elapsed() {
+	register uint32_t now = read_timer();
+	return now>=last_interrupt_time ? now-last_interrupt_time: 0xFFFFFFFF - (last_interrupt_time-now);
+}
 
 static void do_initcalls() {
 	funcPtr* initcall;
@@ -70,7 +80,7 @@ void aos_basic_init() {
 void aos_context_init(uint32_t timer_refclk, funcPtr idle_func) {
 	idle_task = create_task(idle_func, 0);
 	list_erase(&idle_task->q);
-	init_timer_interrupt(timer_refclk);
+	init_timer_interrupt(timer_interrupt, timer_refclk);
 	enable_timer_interrupt();
 	yield();
 }
@@ -155,6 +165,23 @@ static uint8_t is_background() {
 	return (current == idle_task);
 }
 
+/**
+ * \brief Calculate the difference between two uint32_t
+ * Overflow compensated
+ */
+inline static uint32_t uint32diff(uint32_t min, uint32_t max) {
+	return min<max ? max-min : max + 0xFFFFFFFF - min;
+}
+
+uint32_t time_slice_elapsed() {
+	return uint32diff(last_interrupt_time, read_timer());
+}
+
+void sys_get_systime(uint32_t* time) {
+	if (time != NULL)
+		*time = read_timer();
+}
+
 void sys_usleep(uint32_t us) {
 	struct list_head* e;
 	struct list_head* insertion_point = NULL;
@@ -164,8 +191,11 @@ void sys_usleep(uint32_t us) {
 		return;
 	
 	// TODO: Implement busywait here if delay is smaller than the minimum time-slice
-	if (us < MIN_TIME_SLICE_US)
-		return;
+// 	if (us < MIN_TIME_SLICE_US) {
+// 		uint32_t target_time = read_timer();
+// 		sys_get_systime(&target_time);
+// 		while (
+// 	}
 
 	/* Run through alle sleeping processes all decrement the time our current
 	processs wants to sleep. If a longer-sleeping process is reached, the
@@ -235,3 +265,53 @@ void sys_enable_irqs() {
 	interrupts_disabled = 0;
 }
 
+
+void timer_interrupt_routine() {
+	struct task_t* t;
+	struct list_head* e;
+	uint32_t elapsed_time = uint32diff(last_interrupt_time, read_timer());
+	uint32_t time_to_wake = MAX_TIME_SLICE_US;
+
+	last_interrupt_time = read_timer();
+
+	// If a one process is waiting, do context_switch
+	if (!list_isempty(&readyQ))
+		do_context_switch = 1; // Signal context-switch
+	
+	// If someone is sleeping
+	if (!list_isempty(&usleepQ)) {
+		e = list_get_front(&usleepQ);
+		t = get_struct_task(e);
+
+		if (t->sleep_time) { // If process had time left to sleep
+			if (t->sleep_time > elapsed_time)
+				t->sleep_time -= elapsed_time;
+			else
+				t->sleep_time = 0;
+		}
+
+		if (t->sleep_time == 0) { // If process now has no time left to sleep
+			struct task_t* next = get_struct_task(list_get_front(&readyQ));
+			list_erase(&t->q);
+			list_push_front(&readyQ,&t->q);
+			if (t->priority > next->priority)
+				do_context_switch = 0; // Un-signal context-switch
+		}
+
+		if (!list_isempty(&usleepQ)) {
+			e = list_get_front(&usleepQ); // Set e to the next to wake up
+			t = get_struct_task(e); // Get task-struct.
+
+			time_to_wake = t->sleep_time;
+			if (time_to_wake < MIN_TIME_SLICE_US) // Make sure that timeslice stays above MIN_TIME_SLICE_US
+				time_to_wake = MIN_TIME_SLICE_US;
+
+			if (time_to_wake > MAX_TIME_SLICE_US) // Make sure that timeslice stays below MAX_TIME_SLICE_US
+				time_to_wake = MAX_TIME_SLICE_US;
+		}
+
+	}
+
+	set_timer_match( read_timer() + time_to_wake );
+	clear_timer_interrupt();
+}
