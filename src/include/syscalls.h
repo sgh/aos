@@ -35,7 +35,7 @@ void sys_disable_irqs();
 void sys_enable_irqs();
 void sys_get_systime(uint32_t* time);
 void* sys_malloc(uint16_t size);
-void* sys_free(void* segment);
+void sys_free(void* segment);
 
 
 #define str(s) #s

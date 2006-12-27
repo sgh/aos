@@ -1,4 +1,5 @@
 // #include <stdio.h>
+#include <kernel.h>
 #include <string.h>
 #include <driver_core.h>
 #include <bits.h>
@@ -106,7 +107,11 @@ void* sys_malloc(uint16_t size)
 	} while ((uint8_t*)ptr<mm_end);
 // 	printf("Not enough memory\n");
 // 	mm_status();
-	return NULL;
+	
+	if (condition_handlers && condition_handlers->oom)
+		condition_handlers->oom(current); // Call condition-handler
+	
+	return NULL; // Out-Of-Memory
 }
 
 void sys_free(void* segment) {
