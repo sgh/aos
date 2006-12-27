@@ -52,18 +52,15 @@ DEPS := $(patsubst %.o,%.d,$(OBJS))
 
 all: application
 	$(AR) rcs ../$(APP).a $(OBJS)
-	#${AR}  t lib${APP}.a 
-	#$(GCC) $(CFLAGS) -Wl,-Map=$(APP).map  -T $(LINKERSCRIPT) $(INCLUDE) -o $(APP).elf kernel/main.c ${LIBDIRS} ${LIBS}
-	#$(OBJCOPY) -O ihex $(APP).elf $(APP).hex
-	#$(OBJCOPY) -O binary $(APP).elf $(APP).bin
 	$(SIZE) -t $(OBJS)
-	#$(SIZE) $(APP).elf
 
 %.o: %.c
-	$(GCC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
+	@echo Compiling $< ...
+	@$(GCC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
 
 %.o: %.s
-	$(AS) $(ASFLAGS) $(INCLUDE) -o $@ $<
+	@echo Assembling $< ...
+	@$(AS) $(ASFLAGS) $(INCLUDE) -o $@ $<
 
 application: $(OBJS)
 
@@ -72,4 +69,4 @@ clean:
 	rm -f $(DEPS)
 	rm -f ../$(APP).a
 
--include kernel/*.d
+-include $(DEPS)
