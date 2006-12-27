@@ -9,16 +9,13 @@
 
 #define TIMER0_IRQ 4
 
-#define max_time_slice_us 1000
-#define min_time_slice_us 100
-
 static int8_t vector_num;
 uint32_t last_interrupt_time = 0; /** \brief Timer value at last interrupt */
 
 void init_timer_interrupt(uint32_t timer_refclk) {
 	T0_PR = timer_refclk/1000000 - 1;		/* Scale to 1 ms steps */
 	T0_PC = 0;													/* Counter-value */
-	T0_MR0 = max_time_slice_us;;				/* Match-Register0 */
+	T0_MR0 = MAX_TIME_SLICE_US;;				/* Match-Register0 */
 	
 // 	VICVectCntl0 = 4 + BIT5;
 // 	VICVectAddr0 = (uint32)timer_interrupt;
@@ -31,6 +28,13 @@ void init_timer_interrupt(uint32_t timer_refclk) {
 	T0_TCR = BIT0;	/* Enable timer0 */
 }
 
+/**
+ * \brief Calculate the difference between two uint32_t
+ * Overflow compensated
+ */
+inline static uint32_t uint32diff(uint32_t min, uint32_t max) {
+	return min<max ? max-min : max + 0xFFFFFFFF - min;
+}
 
 void enable_timer_interrupt() {
 	vector_enable(vector_num);
@@ -51,14 +55,6 @@ void sys_get_systime(uint32_t* time) {
 		*time = T0_TC;
 }
 
-/**
- * \brief Calculate the difference between two uint32_t
- * Overflow compen
- */
-inline static uint32_t uint32diff(uint32_t min, uint32_t max) {
-	return min<max ? max-min : max + 0xFFFFFFFF - min;
-}
-
 uint32_t get_interrupt_elapsed() {
 	register uint32_t now = T0_TC;
 	return now>=last_interrupt_time ? now-last_interrupt_time: 0xFFFFFFFF - (last_interrupt_time-now);
@@ -72,7 +68,7 @@ void timer_interrupt_routine() {
 	struct task_t* t;
 	struct list_head* e;
 	uint32_t elapsed_time = uint32diff(last_interrupt_time, T0_TC);
-	uint32_t time_to_wake = max_time_slice_us;
+	uint32_t time_to_wake = MAX_TIME_SLICE_US;
 
 	last_interrupt_time = T0_TC;
 
@@ -105,11 +101,11 @@ void timer_interrupt_routine() {
 			t = get_struct_task(e); // Get task-struct.
 
 			time_to_wake = t->sleep_time;
-			if (time_to_wake < min_time_slice_us) // Make sure that timeslice stays above min_time_slice_us
-				time_to_wake = min_time_slice_us;
+			if (time_to_wake < MIN_TIME_SLICE_US) // Make sure that timeslice stays above MIN_TIME_SLICE_US
+				time_to_wake = MIN_TIME_SLICE_US;
 
-			if (time_to_wake > max_time_slice_us) // Make sure that timeslice stays below max_time_slice_us
-				time_to_wake = max_time_slice_us;
+			if (time_to_wake > MAX_TIME_SLICE_US) // Make sure that timeslice stays below MAX_TIME_SLICE_US
+				time_to_wake = MAX_TIME_SLICE_US;
 		}
 
 	}
