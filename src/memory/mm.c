@@ -17,7 +17,6 @@
 /* MM status variables */
 static uint8_t* mm_start;
 static uint8_t* mm_end;
-static uint8_t* mm_ptr;
 
 typedef struct mm_header mm_header_t;
 struct mm_header {
