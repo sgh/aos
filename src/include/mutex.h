@@ -3,8 +3,8 @@
 
 #include <list.h>
 
-#define MUTEX_LOCKED(m) mutex_t m = { .lock = 1, .spinlock=0, .waiting = LIST_HEAD_INIT(m.waiting) }
-#define MUTEX_UNLOCKED(m) mutex_t m = { .lock = 0, .spinlock=0, .waiting = LIST_HEAD_INIT(m.waiting) }
+#define DECLARE_MUTEX_LOCKED(m) mutex_t m = { .lock = 1, .spinlock=0, .waiting = LIST_HEAD_INIT(m.waiting) }
+#define DECLARE_MUTEX_UNLOCKED(m) mutex_t m = { .lock = 0, .spinlock=0, .waiting = LIST_HEAD_INIT(m.waiting) }
 
 /**
  * \brief A mutex
