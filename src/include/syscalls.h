@@ -6,6 +6,7 @@
 #include <task.h>
 #include <types.h>
 #include <list.h>
+#include <mm.h>
 
 /* Syscall numbers */
 #define _NR_yield         0
@@ -21,6 +22,7 @@
 #define _NR_get_systime   10
 #define _NR_malloc        11
 #define _NR_free          12
+#define _NR_mmstat        13
 
 
 /* Syscall declarations */
@@ -34,8 +36,9 @@ void sys_enable_cs();
 void sys_disable_irqs();
 void sys_enable_irqs();
 void sys_get_systime(uint32_t* time);
-void* sys_malloc(uint16_t size);
+void* sys_malloc(size_t size);
 void sys_free(void* segment);
+void sys_mmstat(struct mm_stat* stat);
 
 
 #define str(s) #s
