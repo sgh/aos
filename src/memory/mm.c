@@ -27,22 +27,33 @@ struct mm_header {
 	uint16_t size:13;
 };
 
-void mm_status(void) {
+void sys_mmstat(struct mm_stat* stat) {
 	int segment = 0;
 	uint8_t* ptr = (unsigned char*)mm_start;
 	mm_header_t* header;
 	uint32_t total_size = 0;
-// 	int i;
+
+	memset(stat, 0, sizeof(struct mm_stat));
+
+	stat->size = mm_end - mm_start;
 
 	do {
 		header = (mm_header_t*)ptr;
 		total_size += header->size + sizeof(mm_header_t);
 // 		printf("Segment %d: %4d bytes (%s)\n",segment,header->size,header->free?"F":"U");
+//
+		if (header->free)
+			stat->free += header->size;
+		else
+			stat->used += header->size;
+		
 		ptr = ptr + header->size + sizeof(mm_header_t);
-// 		if (segment > largest_segmentnum)
-// 			largest_segmentnum = segment;
+
 		segment++;
 	} while (ptr<mm_end);
+
+		stat->overhead = segment * sizeof(struct mm_header);
+
 // 	printf("Total size : %4d\n",total_size);
 // 	printf("Largest segmentnum: %d\n", largest_segmentnum);
 // 	assert(total_size == memory_size);
@@ -62,7 +73,7 @@ void aos_mm_init(void* start, void* end) {
 // 	mm_status();
 }
 
-void* sys_malloc(uint16_t size)
+void* sys_malloc(size_t size)
 {
 	uint32_t segmentsize;
 	uint8_t* ptr = (uint8_t*)mm_start;
