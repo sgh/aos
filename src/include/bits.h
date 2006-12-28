@@ -34,5 +34,6 @@
 #define BIT30 (1<<30)
 #define BIT31 (1<<31)
 
+#define NOT(v) (~v)
 
 #endif
