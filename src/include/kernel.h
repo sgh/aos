@@ -28,6 +28,28 @@ struct aos_condition_handlers {
 	
 };
 
+
+/**
+ * \brief Statistics about CPU-usage
+ */
+struct cpustat {
+
+	/**
+	 * \brief The procentage of time in system-mode.
+	 */
+	uint8_t system;
+
+	/**
+	 * \brief The procentage of time in user-mode.
+	 */
+	uint8_t user;
+
+	/**
+	 * \brief The procentage of time in idle-mode.
+	 */
+	uint8_t idle;
+};
+
 __inline__ uint32_t get_usermode_sp();
 
 
