@@ -38,5 +38,15 @@ void set_timer_match(uint32_t matchval);
  */
 uint32_t read_timer();
 
+/**
+ * \brief The timer-interrupt. Executed 1000 times pr. second.
+ */
+void timer_interrupt();
+
+/**
+ * \brief Timer value at last interrupt
+ */
+extern uint32_t last_interrupt_time;
+
 #endif
 

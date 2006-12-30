@@ -12,19 +12,32 @@ extern uint32_t Top_Stack;
  * Therefor the handler-functions should be carefull not to do things that
  * rely on the failing functionality.
  *
- * All of these functions are called in privileged mode (system-mode).
+ * All of these functions are called in privileged mode (system-mode) and
+ * one should therefore be carefull to do much more that vital stuff.
  */
 struct aos_condition_handlers {
 	/**
 	 * \brief Out-Of-Memory handler called when malloc can not allocate the
-	 * requested piece of memory. The parameter containes the struct task_t
-	 * that was running when the memory-allocation occured.
+	 * requested piece of memory.
 	 *
-	 * This error is fatal for the current process but non-fatal for overall
-	 * system operation, unless of cause all processes do a malloc after this.
+	 * This error is not necessary fatal for the current process if it checks
+	 * for successfull malloc operation.
+	 * 
+	 * @param task The struct task_t that that was doing the memory allocation.
 	 */
-	void (*oom)(struct task_t*);
+	void (*oom)(struct task_t* task);
 
+	/**
+	 * \brief Stack-Alloc-Error. Called when a context-switch could not allocate
+	 * memory for a process' stack.
+	 *
+	 * This error is fatal for the current process but non-fatal for other
+	 * processes and operating system operation, unless, of cause, if  all
+	 * processes can not be switched out.
+	 *
+	 * @param task The task that failed to be task-switched.
+ */
+	void (*sae)(struct task_t* task);
 	
 };
 
@@ -52,8 +65,6 @@ struct cpustat {
 
 __inline__ uint32_t get_usermode_sp();
 
-
-void timer_interrupt();
 
 /**
  * \brief Internal function used to get the usermode stackpointer
@@ -137,6 +148,14 @@ void enable_cs();
  * @param time Pointer to store the time
  */
 void get_systime(uint32_t* time);
+
+/**
+ * \brief Calculate the difference between two uint32_t
+ * Overflow compensated
+ */
+inline static uint32_t uint32diff(uint32_t min, uint32_t max) {
+	return min<max ? max-min : max + 0xFFFFFFFF - min;
+}
 
 // extern struct task_t* idle_task;
 extern struct aos_condition_handlers* condition_handlers;
