@@ -120,9 +120,10 @@ timer_interrupt:
 	IRQ_prologue
 
 	/* Call C-interrupt-routine */
-	LDR r5, =timer_interrupt_routine
-	MOV LR, PC
-	BX r5
+	BL timer_interrupt_routine
+	@LDR r5, =timer_interrupt_routine
+	@MOV LR, PC
+	@BX r5
 
 	IRQ_epilogue
 

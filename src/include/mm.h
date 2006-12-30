@@ -37,7 +37,7 @@ void *malloc(size_t size);
 
 /**
  * \brief Free a priviously allocated piece of memory.
- * @param ptr 
+ * @param ptr Pointer to the allocated memory to free 
  */
 void free(void* ptr);
 

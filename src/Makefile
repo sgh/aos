@@ -3,7 +3,7 @@ APP = libaos
 
 MARCH = arm-lpc2xxx
 
-KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c spinlock.c kernel.c task.c
+KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c spinlock.c kernel.c task.c timer_interrupt.c
 
 DRIVER_SOURCES =  driver_core.c driver_class.c platform/platform.c
 
@@ -11,10 +11,13 @@ ARCH_SOURCES = irq.c context.s atomic.s timer_interrupt.c
 
 MM_SOURCES = mm.c fragment.c 
 
+
 SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES))  $(addprefix memory/,$(MM_SOURCES))  $(addprefix drivers/,$(DRIVER_SOURCES)) $(addprefix arch/$(MARCH)/,$(ARCH_SOURCES))
 
-CFLAGS = -mcpu=arm7tdmi -mapcs -Os -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -mthumb-interwork -mthumb
+CFLAGS = -mcpu=arm7tdmi -mapcs -Os -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -mthumb-interwork 
 #-ffunction-sections -fdata-sections
+
+THUMB = -mthumb
 
 LDFLAGS = -mthumb-interwork
 
@@ -51,8 +54,9 @@ DEPS := $(patsubst %.o,%.d,$(OBJS))
 
 
 all: application
-	$(AR) rcs ../$(APP).a $(OBJS)
-	$(SIZE) -t $(OBJS)
+	@echo Creating $(APP).a ...
+	@$(AR) rcs ../$(APP).a $(OBJS)
+	@$(SIZE) -t $(OBJS)
 
 %.o: %.c
 	@echo Compiling $< ...
