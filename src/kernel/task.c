@@ -7,21 +7,20 @@
 
 #define AOS_TASK __attribute__((noreturn))
 
-struct task_t* create_task(funcPtr entrypoint, int8_t priority) {
-	struct task_t* t;
-	t = malloc(sizeof(struct task_t));
-	init_task(t, entrypoint, priority);
-	return t;
-}
-
 /** @todo This function is architechture specific and should be moved away */
-void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
+/**
+ * \brief Initializes a struct task
+ * @param task The struct task to initialize
+ * @param entrypoint The function to thread
+ * @param priority The priority. Less is more :)
+ */
+static void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
 	REGISTER_TYPE cpsr = 0x00000010; // User-mode
 	if (((uint32_t)entrypoint & 1) == 1) // If address is thumb
 		cpsr |= 0x20;	// Set thumb bit
 // 	memset( (void*)stack, 0, 64);
 	memset(task, 0, sizeof(struct task_t));
-	task->context = malloc(sizeof(REGISTER_TYPE) * 17);
+	task->context = sys_malloc(sizeof(REGISTER_TYPE) * 17);
 // 	task->fragment = NULL;
 	task->context[0] = (uint32_t)(entrypoint);                                  // Entrypoint
 #ifdef SHARED_STACK
@@ -31,7 +30,7 @@ void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
 #endif
 	task->context[2] = 0x12345678; // LR
 	task->context[3] = 0; // r0
-	task->context[4] = cpsr;  // SPSR 
+	task->context[4] = cpsr;  // SPSR
 	task->context[5] = 0x1; // r1
 	task->context[6] = 0x2; // r2
 	task->context[7] = 0x3; // r3
@@ -45,6 +44,13 @@ void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
 	task->context[15] = 0x11; // r11
 	task->context[16] = 0x12; // r12
 	task->state = READY;
-	task->priority = priority;
-	list_push_back(&readyQ,&task->q);
+	task->prio_initial = priority;
+	process_ready(task);
+}
+
+struct task_t* sys_create_task(funcPtr entrypoint, int8_t priority) {
+	struct task_t* t;
+	t = sys_malloc(sizeof(struct task_t));
+	init_task(t, entrypoint, priority);
+	return t;
 }

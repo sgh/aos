@@ -82,14 +82,6 @@ uint32_t get_sp();
 struct task_t* create_task(funcPtr entrypoint, int8_t priority);
 
 /**
- * \brief Initializes a struct task
- * @param task The struct task to initialize
- * @param entrypoint The function to thread
- * @param priority The priority. Less is more :)
- */
-void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority);
-
-/**
  * \brief Do basic initialization.
  */
 void aos_basic_init();
@@ -100,10 +92,16 @@ void aos_basic_init();
  */
 void aos_context_init(uint32_t timer_refclk, funcPtr idle_func);
 
+/**
+ * \brief Initialize dynamic memory.
+ * @param start Pointer to first address usable by malloc.
+ * @param end Pointer to last address usable by malloc.
+ */
 void aos_mm_init(void* start, void* end);
 
 /**
- * \brief Block the current process
+ * \brief Block the current process. Remember to have places the process in a queue.
+ * Forgetting to do so would block the process forever.
  */
 void block();
 
@@ -157,9 +155,30 @@ inline static uint32_t uint32diff(uint32_t min, uint32_t max) {
 	return min<max ? max-min : max + 0xFFFFFFFF - min;
 }
 
-// extern struct task_t* idle_task;
+/**
+ * \brief Insert the process the readyQ, based on its priority.
+ * @param task The task to insert
+ */
+void process_ready(struct task_t* task);
+
+/**
+ * \brief The idle task
+ */
+extern struct task_t* idle_task;
+
+/**
+ * \brief The condition handlers
+ */
 extern struct aos_condition_handlers* condition_handlers;
+
+/**
+ * \brief Current running process
+ */
 extern struct task_t* current;
+
+/**
+ * \brief Shall we do proccess-shift.
+ */
 extern uint8_t do_context_switch;
 
 extern struct list_head readyQ;

@@ -3,16 +3,13 @@
 #include <task.h>
 #include <list.h>
 #include <macros.h>
-#include <fragment.h>
 #include <timer_interrupt.h>
 #include <bits.h>
 
 LIST_HEAD(readyQ);
 LIST_HEAD(usleepQ);
 
-/**
- * \brief Shall we do proccess-shift.
- */
+
 uint8_t do_context_switch = 0;
 
 /**
@@ -25,14 +22,9 @@ uint8_t allow_context_switch = 1;
  */
 uint8_t interrupts_disabled = 0;
 
-/**
- * \brief The condition handlers
- */
+
 struct aos_condition_handlers* condition_handlers = NULL;
 
-/**
- * \brief The idle task
- */
 struct task_t* idle_task;
 
 /**
@@ -67,7 +59,7 @@ static void do_initcalls() {
 
 }
 
-void aos_basic_init() {
+void sys_aos_basic_init() {
 	do_initcalls();
 	current = NULL;
 }
@@ -79,74 +71,6 @@ void aos_context_init(uint32_t timer_refclk, funcPtr idle_func) {
 	init_timer_interrupt(timer_interrupt, timer_refclk);
 	enable_timer_interrupt();
 	yield();
-}
-	
-void sched(void) {
-#ifdef SHARED_STACK
-	/* Copy stack away from shared system stack */
-	if (current) {
-		uint32_t len = (REGISTER_TYPE)&Top_Stack - get_usermode_sp();
-// 		void* dst = current->stack;
-		void* src = (void*)&Top_Stack - len;
-		
-		// DMEM
-// 		current->malloc_stack = malloc(len);
-// 		memcpy( current->malloc_stack, src, len);
-		
-		// Static mem
-//  		memcpy( dst, src, len);
-		
-		// Fragmem
-		current->fragment = store_fragment(src,len);
-		if ((current->fragment == NULL) && (len > 0)) { // This indicates Stack-Alloc-Error
-			current->state = CRASHED;
-			if (condition_handlers && condition_handlers->sae)
-				condition_handlers->sae(current);
-		}
-		
-		current->stack_size = len;
-		
-		if (current->state == RUNNING) {
-			current->state = READY;
-			list_push_back(&readyQ,&current->q);
-		}
-	}
-#endif
-
-	if (list_isempty(&readyQ))
-		current = idle_task;
-	else {
-		current = get_struct_task(list_get_front(&readyQ));
-		list_erase(/*&readyQ,*/ &current->q);
-	}
-	
-#ifdef SHARED_STACK
-	/* Copy stack to shared stack */
-	if (current) {
-		uint32_t len = current->stack_size;
-		void* dst = (void*)&Top_Stack - len;
-// 		void* src = current->stack;
-		
-		// DMEM
-// 		if (current->malloc_stack) {
-// 			memcpy( dst, current->malloc_stack, len);
-// 			free(current->malloc_stack);
-// 			current->malloc_stack = 0;
-// 		}
-		
-		// Static mem
-// 		memcpy( dst, src, len);
-		
-		// Fragmem
-		if (current->fragment) {
-			load_fragment(dst,current->fragment);
-			current->fragment = 0;
-		}
-		
-	}
-#endif
-	
-	current->state = RUNNING;
 }
 
 
@@ -215,7 +139,6 @@ void sys_usleep(uint32_t us) {
 	do_context_switch = 1;
 }
 
-
 void sys_block(struct list_head* q) {
 	if (current == idle_task)
 		return;
@@ -229,9 +152,8 @@ void sys_block(struct list_head* q) {
 void sys_unblock(struct task_t* task) {	
 	if (task->state == BLOCKED ) {
 		struct task_t* next = get_struct_task(list_get_front(&readyQ));
-		task->state = READY;
-		list_push_front(&readyQ, &task->q);
-		if (task->priority <= next->priority)
+		process_ready(task);
+		if (task->prio < next->prio)
 			do_context_switch = 1;
 	}
 }
@@ -255,5 +177,3 @@ void sys_disable_irqs() {
 void sys_enable_irqs() {
 	interrupts_disabled = 0;
 }
-
-

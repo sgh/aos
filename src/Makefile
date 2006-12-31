@@ -3,7 +3,7 @@ APP = libaos
 
 MARCH = arm-lpc2xxx
 
-KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c spinlock.c kernel.c task.c timer_interrupt.c
+KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c spinlock.c task.c kernel.c timer_interrupt.c
 
 DRIVER_SOURCES =  driver_core.c driver_class.c platform/platform.c
 
@@ -11,8 +11,11 @@ ARCH_SOURCES = irq.c context.s atomic.s timer_interrupt.c
 
 MM_SOURCES = mm.c fragment.c 
 
+ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
 
-SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES))  $(addprefix memory/,$(MM_SOURCES))  $(addprefix drivers/,$(DRIVER_SOURCES)) $(addprefix arch/$(MARCH)/,$(ARCH_SOURCES))
+SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES)) $(addprefix memory/,$(MM_SOURCES))  $(addprefix drivers/,$(DRIVER_SOURCES)) $(addprefix arch/$(MARCH)/,$(ARCH_SOURCES))
+
+ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
 
 CFLAGS = -mcpu=arm7tdmi -mapcs -Os -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -mthumb-interwork 
 #-ffunction-sections -fdata-sections
@@ -48,22 +51,27 @@ OBJCOPY = $(ARM_PREFIX)objcopy
 INCLUDE_DIRS = include
 INCLUDE = $(addprefix -I,$(INCLUDE_DIRS))
 
+ARM_OBJS := $(patsubst %.c,%.o,$(ARM_SOURCES))
 OBJS := $(patsubst %.c,%.o,$(SOURCES))
 OBJS := $(patsubst %.s,%.o,$(OBJS))
 DEPS := $(patsubst %.o,%.d,$(OBJS))
 
 
 all: application
-	@echo Creating $(APP).a ...
+	@echo "Creating $(APP).a ..."
 	@$(AR) rcs ../$(APP).a $(OBJS)
 	@$(SIZE) -t $(OBJS)
 
 %.o: %.c
-	@echo Compiling $< ...
+	@echo "Compiling $< ..."
+	@$(GCC) -MD $(THUMB) $(CFLAGS) -c $(INCLUDE) -o $@ $<
+
+kernel/timer_interrupt.o:  kernel/timer_interrupt.c
+	@echo "Compiling (ARM) $<  ..."
 	@$(GCC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
 
 %.o: %.s
-	@echo Assembling $< ...
+	@echo "Assembling (ARM) $< ..."
 	@$(AS) $(ASFLAGS) $(INCLUDE) -o $@ $<
 
 application: $(OBJS)

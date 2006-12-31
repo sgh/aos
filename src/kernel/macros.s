@@ -12,6 +12,7 @@
 
 
 .equ SYSTEM_MODE_NOIRQ, 0xDF @ System-mode with IRQ an FIRQ disabled
+.equ SYSTEM_MODE_IRQ, 0xDC @ System-mode with IRQ an FIRQ enabled
 
 
 /* IRQ prologue- and epilogue macros */
