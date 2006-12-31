@@ -60,7 +60,7 @@ void sys_mmstat(struct mm_stat* stat) {
 // 	printf("\n");
 }
 
-void aos_mm_init(void* start, void* end) {
+void sys_aos_mm_init(void* start, void* end) {
 	struct mm_header* head;
 	mm_start =  start;
 	mm_end = end;

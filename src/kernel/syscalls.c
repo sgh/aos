@@ -18,6 +18,9 @@ void* sys_call_table[] =
 	[_NR_malloc] sys_malloc,
 	[_NR_free] sys_free,
 	[_NR_mmstat] sys_mmstat,
+	[_NR_create_task] sys_create_task,
+	[_NR_aos_basic_init] sys_aos_basic_init,
+	[_NR_aos_mm_init] sys_aos_mm_init,
 };
 
 /* Syscall definitions */
@@ -32,8 +35,11 @@ _syscall0(void, disable_cs);
 _syscall0(void, enable_cs);
 _syscall0(void, enable_irqs);
 _syscall0(void, disable_irqs);
+_syscall0(void, aos_basic_init);
+_syscall2(void, aos_mm_init, void*,  start, void*, end);
 _syscall1(void, get_systime, uint32_t*, time);
 _syscall1(void*, malloc, size_t, size);
 _syscall1(void, free, void*, free);
 _syscall1(void, mmstat, struct mm_stat*, stat);
+_syscall2(struct task_t*, create_task, funcPtr, entrypoint, int8_t, priority);
 

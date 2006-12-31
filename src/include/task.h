@@ -27,8 +27,15 @@ struct task_t {
 
 	/**
 	 * \brief The priority of the process. Lower is higher.
+	 * This number is lowered if processes steps in front of it in the readyQ
 	 */
-	int8_t priority;
+	int8_t prio;
+
+	/**
+	 * \brief The initial priority of the process. The priority of the process is
+	 * reset to this value when inserted in the readyQ.
+	 */
+	uint8_t prio_initial;
 	
 	/**
 	 * \brief Node in process-queue.
@@ -57,6 +64,7 @@ struct task_t {
 	 * \brief Fragment-store to store stack in when doint context-switch.
 	 */
 	struct fragment_store* fragment;
+
 };
 
 #define get_struct_task(Q) (container_of(Q,struct task_t,q))
