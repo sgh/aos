@@ -1,6 +1,8 @@
 #ifndef INCLITIOMETER_H
 #define INCLITIOMETER_H
 
+#include <aos_module.h>
+
 #include <driver_core.h>
 #include <driver_class.h>
 

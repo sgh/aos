@@ -1,6 +1,8 @@
 #ifndef DRIVER_CLASS_H
 #define DRIVER_CLASS_H
 
+#include <aos_module.h>
+
 #include <driver_core.h>
 #include <types.h>
 #include <list.h>

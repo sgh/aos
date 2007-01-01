@@ -1,5 +1,6 @@
-#include <driver_core.h>
+#define AOS_KERNEL_MODULE
 
+#include <driver_core.h>
 #include "platform.h"
 #include <list.h>
 #include <macros.h>

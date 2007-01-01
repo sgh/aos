@@ -11,6 +11,11 @@
 #define SHARED_STACK
 
 /**
+ * \brief Define that eases creation of aos tasks.
+ */
+#define AOS_TASK __attribute__((noreturn))
+
+/**
  * \brief Minimum and maximum time-slice in microseconds.
  */
 #define MAX_TIME_SLICE_US 1000
@@ -50,18 +55,18 @@ struct task_t {
 	uint32_t sleep_time;
 
 	/**
-	 * \brief Pointer to the process's saved CPU-state.
+	 * \brief Pointer to the process's saved CPU-state (the registers, not the stack).
 	 */
 	REGISTER_TYPE *context;
 
 	/**
-	 * \brief Size of the space pointed to by *stack
+	 * \brief Size of the space pointed to by ::fragment
 	 * If the size is greater than zero, the process is using shared stacks.
 	 */
 	uint16_t stack_size;
 
 	/**
-	 * \brief Fragment-store to store stack in when doint context-switch.
+	 * \brief Fragment-store to store stack in when doing context-switch.
 	 */
 	struct fragment_store* fragment;
 

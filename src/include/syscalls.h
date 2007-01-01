@@ -1,6 +1,8 @@
 #ifndef _SYSCALLS_H_
 #define _SYSCALLS_H_
 
+#include <aos_module.h>
+
 // #include <kernel.h>
 #include <semaphore.h>
 #include <task.h>
@@ -19,13 +21,14 @@
 #define _NR_unblock        7
 #define _NR_disable_cs     8
 #define _NR_enable_cs      9
-#define _NR_get_systime    10
-#define _NR_malloc         11
-#define _NR_free           12
-#define _NR_mmstat         13
-#define _NR_create_task    14
-#define _NR_aos_basic_init 15
-#define _NR_aos_mm_init    16
+#define _NR_get_sysutime   10
+#define _NR_get_sysmtime   11
+#define _NR_malloc         12
+#define _NR_free           13
+#define _NR_mmstat         14
+#define _NR_create_task    15
+#define _NR_aos_basic_init 16
+#define _NR_aos_mm_init    17
 
 
 /* Syscall declarations */
@@ -39,7 +42,8 @@ void sys_disable_cs();
 void sys_enable_cs();
 void sys_disable_irqs();
 void sys_enable_irqs();
-void sys_get_systime(uint32_t* time);
+void sys_get_sysutime(uint32_t* time);
+void sys_get_sysmtime(uint32_t* time);
 void* sys_malloc(size_t size);
 void sys_free(void* segment);
 void sys_mmstat(struct mm_stat* stat);

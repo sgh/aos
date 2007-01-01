@@ -1,3 +1,5 @@
+#define AOS_KERNEL_MODULE
+
 #include <fragment.h>
 #include <string.h>
 #include <driver_core.h>

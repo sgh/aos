@@ -1,6 +1,8 @@
 #ifndef TIMER_INTERRUPT_H
 #define TIMER_INTERRUPT_H
 
+#include <aos_module.h>
+
 #include <types.h>
 
 /**
@@ -37,12 +39,6 @@ void set_timer_match(uint32_t matchval);
  * @return The match-value.
  */
 uint32_t get_timer_match();
-
-/**
- * \brief Read the current value.
- * @return The timer-value
- */
-uint32_t read_timer();
 
 /**
  * \brief The timer-interrupt. Executed 1000 times pr. second.

@@ -3,8 +3,16 @@
 
 #include <types.h>
 
-// #define offsetof(TYPE,MEMBER) (size_t)&(((TYPE*)0)->MEMBER)
-
 #define container_of(VAL,TYPE,MEMBER)  ((TYPE*)((size_t)VAL - offsetof(TYPE,MEMBER)))
+
+/**
+ * \brief Calculate the difference between two uint32_t
+ * Overflow compensated
+ * @return the difference
+ */
+inline static uint32_t uint32diff(uint32_t min, uint32_t max) {
+	return min<max ? max-min : max + UINT32_MAX - min;
+}
+
 
 #endif // _MACROS_H_
