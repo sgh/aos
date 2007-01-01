@@ -37,21 +37,26 @@ void timer_interrupt_routine() {
 			process_ready(t);
 		}
 
-		if (!list_isempty(&usleepQ)) {
-			e = list_get_front(&usleepQ); // Set e to the next to wake up
-			t = get_struct_task(e); // Get task-struct.
-
-			time_to_wake = t->sleep_time;
-			if (time_to_wake < MIN_TIME_SLICE_US) // Make sure that timeslice stays above MIN_TIME_SLICE_US
-				time_to_wake = MIN_TIME_SLICE_US;
-
-			if (time_to_wake > MAX_TIME_SLICE_US) // Make sure that timeslice stays below MAX_TIME_SLICE_US
-				time_to_wake = MAX_TIME_SLICE_US;
-		}
+		/*
+		   Enable dynamic time-slice length. This is problematic since periodic function-calls
+		   usd for regulators and such will not be called at regular intervals. This is why the following
+		   is commented out.
+		*/
+// 		if (!list_isempty(&usleepQ)) {
+// 			e = list_get_front(&usleepQ); // Set e to the next to wake up
+// 			t = get_struct_task(e); // Get task-struct.
+// 
+// 			time_to_wake = t->sleep_time;
+// 			if (time_to_wake < MIN_TIME_SLICE_US) // Make sure that timeslice stays above MIN_TIME_SLICE_US
+// 				time_to_wake = MIN_TIME_SLICE_US;
+// 
+// 			if (time_to_wake > MAX_TIME_SLICE_US) // Make sure that timeslice stays below MAX_TIME_SLICE_US
+// 				time_to_wake = MAX_TIME_SLICE_US;
+// 		}
 
 	}
 
-	set_timer_match( read_timer() + time_to_wake );
+	set_timer_match( get_timer_match() + time_to_wake );
 	clear_timer_interrupt();
 }
 

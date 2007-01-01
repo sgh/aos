@@ -46,6 +46,10 @@ void clear_timer_interrupt() {
 	VICVectAddr = 0; // Update priority hardware
 }
 
+uint32_t get_timer_match() {
+	return T0_MR0;
+}
+
 void set_timer_match(uint32_t matchval) {
 	T0_MR0 = matchval;
 }
