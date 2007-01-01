@@ -33,6 +33,12 @@ void clear_timer_interrupt();
 void set_timer_match(uint32_t matchval);
 
 /**
+ * \brief Get the timer-value at which an interrupt should next be taken.
+ * @return The match-value.
+ */
+uint32_t get_timer_match();
+
+/**
  * \brief Read the current value.
  * @return The timer-value
  */
