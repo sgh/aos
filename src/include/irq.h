@@ -1,6 +1,8 @@
 #ifndef IRQ_H
 #define IRQ_H
 
+#include <aos_module.h>
+
 #include <types.h>
 
 /**
@@ -30,19 +32,9 @@ void vector_disable(uint8_t vectornum);
 void irq_enable(uint8_t irqnum);
 
 /**
- * \brief Disable and irq
+ * \brief Disable an irq
  * @param irqnum The irq-to disable
  */
 void irq_disable(uint8_t irqnum);
-
-/**
- * \brief Syscall to unmask all interrupts
- */
-void enable_irqs();
-
-/**
- * \brief Syscall to unmask all interrupts
- */
-void disable_irqs();
 
 #endif

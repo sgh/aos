@@ -10,7 +10,7 @@
 .global timer_interrupt
 ;.global uart0_interrupt
 
-.include "kernel/macros.s"
+.include "arch/arm-lpc2xxx/macros.s"
 
 get_sp:
 	MOV r0, SP

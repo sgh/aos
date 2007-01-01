@@ -1,6 +1,8 @@
 #ifndef FRAGMENT_H
 #define FRAGMENT_H
 
+#include <aos_module.h>
+
 #include <types.h>
 
 /**

@@ -1,5 +1,9 @@
+#define AOS_KERNEL_MODULE
+
+#include <kernel.h>
 #include <task.h>
 #include <timer_interrupt.h>
+#include <timer.h>
 #include <kernel.h>
 #include <types.h>
 #include <list.h>
@@ -10,10 +14,10 @@
 void timer_interrupt_routine() {
 	struct task_t* t;
 	struct list_head* e;
-	uint32_t elapsed_time = uint32diff(last_interrupt_time, read_timer());
+	uint32_t elapsed_time = uint32diff(last_interrupt_time, read_timer32());
 	uint32_t time_to_wake = MAX_TIME_SLICE_US;
 
-	last_interrupt_time = read_timer();
+	last_interrupt_time = read_timer32();
 
 	// If a one process is waiting, do context_switch
 	if (!list_isempty(&readyQ))

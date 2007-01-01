@@ -1,11 +1,12 @@
+#define AOS_KERNEL_MODULE
+
+#include <syscalls.h>
 #include <string.h>
 #include <mm.h>
 
 #include <kernel.h>
 #include <task.h>
 #include <types.h>
-
-#define AOS_TASK __attribute__((noreturn))
 
 /** @todo This function is architechture specific and should be moved away */
 /**

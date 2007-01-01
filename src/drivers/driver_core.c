@@ -1,3 +1,5 @@
+#define AOS_KERNEL_MODULE
+
 #include <driver_core.h>
 #include "spi.h"
 #include <list.h>

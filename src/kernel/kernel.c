@@ -1,8 +1,11 @@
+#define AOS_KERNEL_MODULE
+
+#include <macros.h>
 #include <string.h>
 #include <kernel.h>
 #include <task.h>
 #include <list.h>
-#include <macros.h>
+#include <timer.h>
 #include <timer_interrupt.h>
 #include <bits.h>
 
@@ -43,8 +46,8 @@ extern funcPtr __initcalls_start__[];
 extern funcPtr __initcalls_end__[];
 
 uint32_t get_interrupt_elapsed() {
-	register uint32_t now = read_timer();
-	return now>=last_interrupt_time ? now-last_interrupt_time: 0xFFFFFFFF - (last_interrupt_time-now);
+	register uint32_t now = read_timer32();
+	return now>=last_interrupt_time ? now-last_interrupt_time: UINT32_MAX - (last_interrupt_time-now);
 }
 
 static void do_initcalls() {
@@ -66,6 +69,7 @@ void sys_aos_basic_init() {
 
 
 void aos_context_init(uint32_t timer_refclk, funcPtr idle_func) {
+	/** @TODO this should problably be a syscall too */
 	idle_task = create_task(idle_func, 0);
 	list_erase(&idle_task->q);
 	init_timer_interrupt(timer_interrupt, timer_refclk);
@@ -84,17 +88,31 @@ void sys_msleep(uint16_t ms) {
 }
 
 
+/**
+ * \brief Check if current process is the background-process.
+ * If so it should not be allowed to block in any way
+ * @return 
+ */
 static uint8_t is_background() {
 	return (current == idle_task);
 }
 
 uint32_t time_slice_elapsed() {
-	return uint32diff(last_interrupt_time, read_timer());
+	return uint32diff(last_interrupt_time, read_timer32());
 }
 
-void sys_get_systime(uint32_t* time) {
-	if (time != NULL)
-		*time = read_timer();
+void sys_get_sysutime(uint32_t* time) {
+	if (time == NULL)
+		return;
+	
+	*time = read_timer32();
+}
+
+void sys_get_sysmtime(uint32_t* time) {
+	if (time == NULL)
+		return;
+	
+	*time = read_timer64() / 1000;
 }
 
 void sys_usleep(uint32_t us) {
@@ -112,7 +130,7 @@ void sys_usleep(uint32_t us) {
 // 		while (
 // 	}
 
-	/* Run through alle sleeping processes all decrement the time our current
+	/* Run through all sleeping processes all decrement the time our current
 	processs wants to sleep. If a longer-sleeping process is reached, the
 	current process should be interted before that process.
 	*/
@@ -140,7 +158,7 @@ void sys_usleep(uint32_t us) {
 }
 
 void sys_block(struct list_head* q) {
-	if (current == idle_task)
+	if (is_background())
 		return;
 	list_erase(&current->q);
 	list_push_back(q,&current->q);

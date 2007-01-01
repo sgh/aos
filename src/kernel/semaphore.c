@@ -1,8 +1,4 @@
-#include <semaphore.h>
-#include <mutex.h>
-#include <kernel.h>
-#include <list.h>
-#include <macros.h>
+#include <aos.h>
 
 /**
  * \brief Semaphore syscall definitions

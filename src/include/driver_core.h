@@ -1,6 +1,7 @@
-
 #ifndef CORE_H
 #define CORE_H
+
+#include <aos_module.h>
 
 #include <gpio.h>
 #include <list.h>

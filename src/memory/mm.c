@@ -1,4 +1,5 @@
-// #include <stdio.h>
+#define AOS_KERNEL_MODULE
+
 #include <kernel.h>
 #include <string.h>
 #include <driver_core.h>

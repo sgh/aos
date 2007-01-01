@@ -1,3 +1,5 @@
+#define AOS_KERNEL_MODULE
+
 #include <syscalls.h>
 
 /**
@@ -14,7 +16,8 @@ void* sys_call_table[] =
 	[_NR_unblock] sys_unblock,
 	[_NR_disable_cs] sys_disable_cs,
 	[_NR_enable_cs] sys_enable_cs,
-	[_NR_get_systime] sys_get_systime,
+	[_NR_get_sysutime] sys_get_sysutime,
+	[_NR_get_sysmtime] sys_get_sysmtime,
 	[_NR_malloc] sys_malloc,
 	[_NR_free] sys_free,
 	[_NR_mmstat] sys_mmstat,
@@ -37,7 +40,8 @@ _syscall0(void, enable_irqs);
 _syscall0(void, disable_irqs);
 _syscall0(void, aos_basic_init);
 _syscall2(void, aos_mm_init, void*,  start, void*, end);
-_syscall1(void, get_systime, uint32_t*, time);
+_syscall1(void, get_sysutime, uint32_t*, time);
+_syscall1(void, get_sysmtime, uint32_t*, time);
 _syscall1(void*, malloc, size_t, size);
 _syscall1(void, free, void*, free);
 _syscall1(void, mmstat, struct mm_stat*, stat);

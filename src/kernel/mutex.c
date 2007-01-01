@@ -1,11 +1,4 @@
-
-#include <kernel.h>
-#include <macros.h>
-#include <spinlock.h>
-#include <mutex.h>
-#include <task.h>
-#include <syscalls.h>
-#include <list.h>
+#include <aos.h>
 
 void mutex_lock(mutex_t* m) {
 	spinlock_lock(&m->spinlock);

@@ -1,3 +1,4 @@
+#define AOS_KERNEL_MODULE
 
 #include <driver_core.h>
 #include <list.h>

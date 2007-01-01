@@ -5,9 +5,10 @@ MARCH = arm-lpc2xxx
 
 KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c spinlock.c task.c kernel.c timer_interrupt.c
 
-DRIVER_SOURCES =  driver_core.c driver_class.c platform/platform.c
+DRIVER_SOURCES =  
+#driver_core.c driver_class.c platform/platform.c
 
-ARCH_SOURCES = irq.c context.s atomic.s timer_interrupt.c
+ARCH_SOURCES = irq.c context.s atomic.s timer.c
 
 MM_SOURCES = mm.c fragment.c 
 
