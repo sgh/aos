@@ -65,9 +65,6 @@ uint32_t read_timer32() {
  	if (new_timer < last_timer)
 		timer_overflows++;
 
-	if (timer_overflows == 2)
-		for (;;);
-
 	last_timer = new_timer;
 	
 	return new_timer;
