@@ -26,7 +26,8 @@ uint8_t allow_context_switch = 1;
 uint8_t interrupts_disabled = 0;
 
 
-struct aos_condition_handlers* condition_handlers = NULL;
+struct aos_hooks* _aos_hooks = NULL;
+struct aos_status _aos_status;
 
 struct task_t* idle_task;
 

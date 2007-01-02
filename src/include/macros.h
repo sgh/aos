@@ -5,6 +5,10 @@
 
 #define container_of(VAL,TYPE,MEMBER)  ((TYPE*)((size_t)VAL - offsetof(TYPE,MEMBER)))
 
+#define ciel(val,max)  (val>max ? max : val)
+#define floor(val,min) (val<min ? min : val)
+#define max(a,b) (a>b ? a : b)
+
 /**
  * \brief Calculate the difference between two uint32_t
  * Overflow compensated

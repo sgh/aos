@@ -119,8 +119,7 @@ void* sys_malloc(size_t size)
 // 	printf("Not enough memory\n");
 // 	mm_status();
 	
-	if (condition_handlers && condition_handlers->oom)
-		condition_handlers->oom(current); // Call condition-handler
+	AOS_HOOK(oom_error, current); // Call hook-function
 	
 	return NULL; // Out-Of-Memory
 }
