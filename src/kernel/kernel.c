@@ -70,7 +70,7 @@ void sys_aos_basic_init() {
 
 void aos_context_init(uint32_t timer_refclk, funcPtr idle_func) {
 	/** @TODO this should problably be a syscall too */
-	idle_task = create_task(idle_func, 0);
+	idle_task = create_task(idle_func, NULL, 0);
 	list_erase(&idle_task->q);
 	init_timer_interrupt(timer_interrupt, timer_refclk);
 	enable_timer_interrupt();

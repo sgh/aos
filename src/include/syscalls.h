@@ -48,7 +48,7 @@ void* sys_malloc(size_t size);
 void sys_free(void* segment);
 void sys_mmstat(struct mm_stat* stat);
 void sys_aos_basic_init();
-struct task_t* sys_create_task(funcPtr entrypoint, int8_t priority);
+struct task_t* sys_create_task(funcPtr entrypoint, void* arg, int8_t priority);
 
 
 #define str(s) #s
@@ -80,6 +80,16 @@ rettype func(type0 arg0,type1 arg1) \
 	register uint32_t __r0 __asm__("r0") = (uint32_t)arg0;\
 	register uint32_t __r1 __asm__("r1") = (uint32_t)arg1;\
 	__asm__ ("swi " __syscallnr(func) : :"r"(__r0),"r"(__r1) ); \
+}
+
+/* 3-argument syscall */
+#define _syscall3(rettype,func,type0,arg0,type1,arg1,type2,arg2) \
+rettype func(type0 arg0,type1 arg1,type2 arg2) \
+{ \
+	register uint32_t __r0 __asm__("r0") = (uint32_t)arg0;\
+	register uint32_t __r1 __asm__("r1") = (uint32_t)arg1;\
+	register uint32_t __r2 __asm__("r2") = (uint32_t)arg2;\
+	__asm__ ("swi " __syscallnr(func) : :"r"(__r0),"r"(__r1),"r"(__r2) ); \
 }
 
 /* 4-argument syscall */
