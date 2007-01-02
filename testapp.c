@@ -1,13 +1,9 @@
 #include <string.h>
-#include <kernel.h>
+#include <aos.h>
 #include <arm/lpc2119.h>
 #include <bits.h>
-#include <timer_interrupt.h>
-#include <irq.h>
 #include <mutex.h>
 #include <atomic.h>
-#include <driver_core.h>
-#include <platform.h>
 //#include <serio.h>
 #include <mm.h>
 
@@ -129,7 +125,7 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task2(void) {
 }
 
 
-void /*__attribute__((weak)) __attribute__((noreturn)) __attribute__((nothrow))*/ idle_task()  {
+void /*__attribute__((weak)) __attribute__((noreturn)) __attribute__((nothrow))*/ idle()  {
 // 	uint8_t onoff = 0;
 // 	uint32_t count = 0;
 
@@ -171,14 +167,13 @@ void main(void) {
 // 	device_register(&lpcuart);
 
 	
-	task1_cd = create_task(task1, 0);
-	task2_cd = create_task(task2, 0);
-	idle_cd = create_task(idle_task, 0);
+	task1_cd = create_task(task1, NULL, 0);
+	task2_cd = create_task(task2, NULL, 0);
 	
 	mutex_init(&mymutex);
 
 	
 // 	for(;;);
 
-	aos_context_init(15000000);
+	aos_context_init(15000000, idle);
 }

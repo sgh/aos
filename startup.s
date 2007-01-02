@@ -128,7 +128,7 @@ Vectors:        LDR     PC, Reset_Addr
 
 Reset_Addr:     .word   Reset_Handler
 Undef_Addr:     .word   Undef_Handler
-SWI_Addr:       .word   SWI_Handler
+SWI_Addr:       .word   aos_swi_handler
 PAbt_Addr:      .word   PAbt_Handler
 DAbt_Addr:      .word   DAbt_Handler
                 .word   0                      /* Reserved Address */
