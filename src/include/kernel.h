@@ -8,12 +8,12 @@
 #include <task.h>
 #include <list.h>
 
-#include <aos.h> /** @TODO make this go away */
+#include <aos.h> /** @todo make this go away */
 
 
 /**
  * \brief linker-provided placement of the stack
- * @TODO it could be nice to have this detected automatically.
+ * @todo it could be nice to have this detected automatically.
  */
 extern uint32_t Top_Stack;
 
@@ -41,7 +41,7 @@ extern struct task_t* idle_task;
 extern struct aos_hooks* _aos_hooks;
 
 /**
- * @TODO write this
+ * @todo write this
  */
 extern struct aos_status _aos_status;
 

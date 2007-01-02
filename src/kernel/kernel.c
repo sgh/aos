@@ -70,7 +70,7 @@ void sys_aos_basic_init() {
 
 
 void aos_context_init(uint32_t timer_refclk, funcPtr idle_func) {
-	/** @TODO this should problably be a syscall too */
+	/** @todo this should problably be a syscall too */
 	idle_task = create_task(idle_func, NULL, 0);
 	list_erase(&idle_task->q);
 	init_timer_interrupt(timer_interrupt, timer_refclk);
@@ -124,7 +124,7 @@ void sys_usleep(uint32_t us) {
 	if (is_background())
 		return;
 	
-	// TODO: Implement busywait here if delay is smaller than the minimum time-slice
+	/** @todo: Implement busywait here if delay is smaller than the minimum time-slice */
 // 	if (us < MIN_TIME_SLICE_US) {
 // 		uint32_t target_time = read_timer();
 // 		sys_get_systime(&target_time);
