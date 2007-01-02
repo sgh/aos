@@ -11,7 +11,8 @@
 #define FRAGMENT_SIZE 32
 
 /**
- * \brief This describes a concept called "fragment-store".
+ * \brief This describes a concept called fragmented storage.
+ *
  * It is basically a fragmented distribution of data. It is done
  * because the lack of MMU mean that we may not be able to get 500 bytes
  * continous bytes, whereas the 500 bytes might easily be available in
