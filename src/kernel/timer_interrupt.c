@@ -14,8 +14,19 @@
 void timer_interrupt_routine() {
 	struct task_t* t;
 	struct list_head* e;
-	uint32_t elapsed_time = uint32diff(last_interrupt_time, read_timer32());
+	uint32_t now;
+	uint32_t elapsed_time;
 	uint32_t time_to_wake = MAX_TIME_SLICE_US;
+
+	
+	now = read_timer32();
+	AOS_HOOK(timer_event,now);
+	elapsed_time = uint32diff(last_interrupt_time, now);
+	elapsed_time = ciel(elapsed_time, UINT8_MAX);
+	_aos_status.timer_hook_maxtime = max(elapsed_time, _aos_status.timer_hook_maxtime);
+
+	now = read_timer32();
+	elapsed_time = uint32diff(last_interrupt_time, now);
 
 	last_interrupt_time = read_timer32();
 
@@ -84,8 +95,7 @@ void sched(void) {
 		current->fragment = store_fragment(src,len);
 		if ((current->fragment == NULL) && (len > 0)) { // This indicates Stack-Alloc-Error
 			current->state = CRASHED;
-			if (condition_handlers && condition_handlers->sae)
-				condition_handlers->sae(current);
+			AOS_HOOK(stack_alloc_fatal, current);
 		}
 		
 		current->stack_size = len;

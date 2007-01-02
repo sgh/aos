@@ -6,9 +6,6 @@
 #include <mm.h>
 #include <syscalls.h>
 
-#define ciel(var,val) (var>val?val:var)
-
-
 struct fragment_store* store_fragment(const unsigned char* data, unsigned int size) {
 	struct fragment_store* fragment;
 	struct fragment_store* retval = NULL;

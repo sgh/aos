@@ -10,6 +10,8 @@
 #include <types.h>
 #include <atomic.h>
 #include <mm.h>
+#include <aos_hooks.h>
+#include <aos_status.h>
 
 /**
  * \brief The readyQ. This is hwere processes lie when they are ready to run.
@@ -20,41 +22,6 @@ extern struct list_head readyQ;
  * \brief Current running process
  */
 extern struct task_t* current;
-
-/**
- * \brief This struct contains function pointers to function to call at
- * different conditions. Theese conditions may not be fatal, but could be.
- * Therefor the handler-functions should be carefull not to do things that
- * rely on the failing functionality.
- *
- * All of these functions are called in privileged mode (system-mode) and
- * one should therefore be carefull to do much more that vital stuff.
- */
-struct aos_condition_handlers {
-	/**
-	 * \brief Out-Of-Memory handler called when malloc can not allocate the
-	 * requested piece of memory.
-	 *
-	 * This error is not necessary fatal for the current process if it checks
-	 * for successfull malloc operation.
-	 *
-	 * @param task The struct task_t that that was doing the memory allocation.
-	 */
-	void (*oom)(struct task_t* task);
-
-	/**
-	 * \brief Stack-Alloc-Error. Called when a context-switch could not allocate
-	 * memory for a process' stack.
-	 *
-	 * This error is fatal for the current process but non-fatal for other
-	 * processes and operating system operation, unless, of cause, if  all
-	 * processes can not be switched out.
-	 *
-	 * @param task The task that failed to be task-switched.
-	 */
-	void (*sae)(struct task_t* task);
-	
-};
 
 /**
  * \brief Create task, and add it to the list of ready processes

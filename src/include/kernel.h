@@ -7,7 +7,8 @@
 #include <types.h>
 #include <task.h>
 #include <list.h>
-#include <aos.h>
+
+#include <aos.h> /** @TODO make this go away */
 
 
 /**
@@ -35,9 +36,14 @@ __inline__ uint32_t get_sp();
 extern struct task_t* idle_task;
 
 /**
- * \brief The condition handlers
+ * \brief The aos hooks
  */
-extern struct aos_condition_handlers* condition_handlers;
+extern struct aos_hooks* _aos_hooks;
+
+/**
+ * @TODO write this
+ */
+extern struct aos_status _aos_status;
 
 /**
  * \brief Shall we do proccess-shift.
