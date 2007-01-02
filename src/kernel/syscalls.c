@@ -45,5 +45,5 @@ _syscall1(void, get_sysmtime, uint32_t*, time);
 _syscall1(void*, malloc, size_t, size);
 _syscall1(void, free, void*, free);
 _syscall1(void, mmstat, struct mm_stat*, stat);
-_syscall2(struct task_t*, create_task, funcPtr, entrypoint, int8_t, priority);
+_syscall3(struct task_t*, create_task, funcPtr, entrypoint, void*, arg, int8_t, priority);
 

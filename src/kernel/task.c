@@ -13,9 +13,11 @@
  * \brief Initializes a struct task
  * @param task The struct task to initialize
  * @param entrypoint The function to thread
+ * @param arg. A void* argument for the process. Enables multiple equal
+ * processes with different data.
  * @param priority The priority. Less is more :)
  */
-static void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
+static void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priority) {
 	REGISTER_TYPE cpsr = 0x00000010; // User-mode
 	if (((uint32_t)entrypoint & 1) == 1) // If address is thumb
 		cpsr |= 0x20;	// Set thumb bit
@@ -30,7 +32,7 @@ static void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
 	task->context[1] = (uint32_t)task->context + (1024 * sizeof(REGISTER_TYPE));  // Seperate stack SP
 #endif
 	task->context[2] = 0x12345678; // LR
-	task->context[3] = 0; // r0
+	task->context[3] = (uint32_t)arg; // r0
 	task->context[4] = cpsr;  // SPSR
 	task->context[5] = 0x1; // r1
 	task->context[6] = 0x2; // r2
@@ -49,9 +51,9 @@ static void init_task(struct task_t* task,funcPtr entrypoint, int8_t priority) {
 	process_ready(task);
 }
 
-struct task_t* sys_create_task(funcPtr entrypoint, int8_t priority) {
+struct task_t* sys_create_task(funcPtr entrypoint, void* arg, int8_t priority) {
 	struct task_t* t;
 	t = sys_malloc(sizeof(struct task_t));
-	init_task(t, entrypoint, priority);
+	init_task(t, entrypoint, arg, priority);
 	return t;
 }

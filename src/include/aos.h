@@ -59,11 +59,13 @@ struct aos_condition_handlers {
 /**
  * \brief Create task, and add it to the list of ready processes
  * @param entrypoint The function to thread
+ * @param arg. A void* argument for the process. Enables multiple equal
+ * processes with different data.
  * @param priority The priority it should have. Less is more :)
  * @return Pointer to the created thread. It is not necessary to store it -
  * it can be retrieved as current from the running process.
  */
-struct task_t* create_task(funcPtr entrypoint, int8_t priority);
+struct task_t* create_task(funcPtr entrypoint, void* arg, int8_t priority);
 
 /**
  * \brief Do basic initialization.
