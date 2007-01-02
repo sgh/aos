@@ -18,7 +18,9 @@ SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES)) $(addprefix memory/,$(MM_SOURCE
 
 ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
 
-CFLAGS = -mcpu=arm7tdmi -mapcs -Os -nostartfiles -nostdlib -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -mthumb-interwork 
+CFLAGS = -mcpu=arm7tdmi -Os -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -mthumb-interwork 
+#-mapcs
+#-ffreestanding
 #-ffunction-sections -fdata-sections
 
 THUMB = -mthumb
