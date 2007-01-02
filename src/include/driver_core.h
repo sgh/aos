@@ -153,7 +153,9 @@ struct device_driver {
 
 
 /**
- * \brief Entry in the global class-list. There exists only one instance pr. class of this structure.
+ * \brief Entry in the global class-list.
+ *
+ * There exists only one instance pr. class of this structure.
  */
 struct driver_class {
 	char *name;
@@ -163,7 +165,7 @@ struct driver_class {
 
 
 /**
- * \brief This structure defines a pr. driver implementation of a class..
+ * \brief This structure defines a driver implementation of a class.
  */
 struct driver_class_fops {
 	void* fops;											/**< \brief Class-specific function-pointers. Typecasted by the respective acquire-fuctions. */
