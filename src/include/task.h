@@ -31,17 +31,11 @@ struct task_t {
 	char* name;
 
 	/**
-	 * \brief The priority of the process. Lower is higher.
-	 * This number is lowered if processes steps in front of it in the readyQ
+	 * \brief The priority of the process. Lower is better. This
+	 * priority is dynamically adjusted.
 	 */
 	int8_t prio;
 
-	/**
-	 * \brief The initial priority of the process. The priority of the process is
-	 * reset to this value when inserted in the readyQ.
-	 */
-	uint8_t prio_initial;
-	
 	/**
 	 * \brief Node in process-queue.
 	 */
@@ -53,6 +47,11 @@ struct task_t {
 	 * \brief  useconds to sleep.
 	 */
 	uint32_t sleep_time;
+
+	/**
+	 * \brief Average sleep-time. Used for dynamic prioritize
+	 */
+	//uint32_t avr_sleep_time;
 
 	/**
 	 * \brief Pointer to the process's saved CPU-state (the registers, not the stack).

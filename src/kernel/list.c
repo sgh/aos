@@ -24,13 +24,15 @@ uint8_t list_isempty(struct list_head* list) {
 }
 
 struct list_head* list_get_back(struct list_head* list) {
-	struct list_head* prev = list->prev;
-	return prev;
+	//struct list_head* prev = list->prev;
+	//return prev;
+	return  list->prev;
 }
 
 struct list_head* list_get_front(struct list_head* list) {
-	struct list_head* next = list->next;
-	return next;
+	//struct list_head* next = list->next;
+	//return next;
+	return  list->next;
 }
 
 void list_erase(struct list_head* node) {
