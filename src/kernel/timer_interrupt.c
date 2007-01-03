@@ -30,7 +30,7 @@ void timer_interrupt_routine() {
 
 	last_interrupt_time = read_timer32();
 
-	// If a one process is waiting, do context_switch
+	// If a process is waiting, do context_switch
 	if (!list_isempty(&readyQ))
 		do_context_switch = 1; // Signal context-switch
 	
@@ -49,7 +49,7 @@ void timer_interrupt_routine() {
 		if (t->sleep_time == 0) { // If process now has no time left to sleep
 // 			struct task_t* next = get_struct_task(list_get_front(&readyQ));
 			list_erase(&t->q);
-			process_ready(t);
+			process_wakeup(t);
 		}
 
 		/*
@@ -102,17 +102,16 @@ void sched(void) {
 		
 		if (current->state == RUNNING) {
 			current->state = READY;
-			//process_ready(current);
 			list_push_back(&readyQ,&current->q);
 		}
 	}
 #endif
 
-	if (list_isempty(&readyQ))
+	if (list_isempty(&readyQ)) {
 		current = idle_task; // Idle
-	else {
+	} else {
 		current = get_struct_task(list_get_front(&readyQ));
-		list_erase(/*&readyQ,*/ &current->q);
+		list_erase(&current->q);
 	}
 	
 #ifdef SHARED_STACK
@@ -145,12 +144,10 @@ void sched(void) {
 }
 
 
-void process_ready(struct task_t* task) {
+void process_wakeup(struct task_t* task) {
 	struct list_head* insertion_point = NULL;
 	struct list_head* e;
 
-	// Reset the age of the process.
-	task->prio = task->prio_initial;
 	task->state = READY;
 	
 	/*
@@ -165,14 +162,15 @@ void process_ready(struct task_t* task) {
 
 		// If place of insertion, then the current procees must be the process right after.
 		// Increment its age and break;
-		if (insertion_point) {
+		/*if (insertion_point) {
 			if (ready_task->prio > INT8_MIN) ready_task->prio--;
 			break;
-		}
+		}*/
 
-		// Equal-priority-tasks shold not step in font of each other
-		if (ready_task->prio > task->prio) {
+		// Equal-priority-tasks shold step in front of each other
+		if (ready_task->prio >= task->prio) {
 			insertion_point = e;
+			break;
 		}
 	}
 
@@ -180,4 +178,5 @@ void process_ready(struct task_t* task) {
 		list_push_front(insertion_point , &task->q);
 	else
 		list_push_back(&readyQ , &task->q);
+
 }

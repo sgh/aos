@@ -46,9 +46,8 @@ static void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t 
 	task->context[14] = 0x10; // r10
 	task->context[15] = 0x11; // r11
 	task->context[16] = 0x12; // r12
-	task->state = READY;
-	task->prio_initial = priority;
-	process_ready(task);
+	task->prio = priority;
+	list_push_back(&readyQ, &task->q);
 }
 
 struct task_t* sys_create_task(funcPtr entrypoint, void* arg, int8_t priority) {

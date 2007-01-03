@@ -171,7 +171,7 @@ void sys_block(struct list_head* q) {
 void sys_unblock(struct task_t* task) {	
 	if (task->state == BLOCKED ) {
 		struct task_t* next = get_struct_task(list_get_front(&readyQ));
-		process_ready(task);
+		process_wakeup(task);
 		if (task->prio < next->prio)
 			do_context_switch = 1;
 	}

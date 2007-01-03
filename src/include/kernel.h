@@ -58,10 +58,10 @@ extern struct list_head usleepQ;
 
 
 /**
- * \brief Insert the process the readyQ, based on its priority.
- * @param task The task to insert
+ * \brief Wakeup the process and insert it in the readyQ
+ * @param task The task to wakeup.
  */
-void process_ready(struct task_t* task);
+void process_wakeup(struct task_t* task);
 
 
 #endif // _KERNEL_H_
