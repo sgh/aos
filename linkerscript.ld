@@ -30,14 +30,15 @@ SECTIONS
 
   . = ALIGN(4);
 
+	__initcalls_start__ = . ;
   .initcalls :
   {
-    __initcalls_start__ = . ;
     *(.bus_initcalls)
     *(.class_initcalls)
     *(.driver_initcalls)
-    __initcalls_end__ = . ;
+    *(.aos_initcalls)
 	} > FLASH
+	__initcalls_end__ = . ;
 
   . = ALIGN(4);
 

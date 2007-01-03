@@ -46,7 +46,7 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task1(void) {
 //  		disable_cs();
 // 		
 
- 		disable_irqs();
+//  		disable_irqs();
 		
 		i = 0;
 		p = 0;
@@ -58,7 +58,7 @@ void /*__attribute__((noreturn)) __attribute__((nothrow))*/ task1(void) {
 				for (;;);
 			}
 		}
-		enable_irqs();
+// 		enable_irqs();
 // 		enable_cs();
 
 		ptr = malloc(200);
@@ -156,6 +156,10 @@ char __attribute__((aligned(4))) dmem[5*1024];
 // 	.device_id = 1,
 // };
 
+static testinit() {
+// 	for (;;);
+}
+
 void main(void) {
 
 	//f = sqrtf(f);
@@ -177,3 +181,6 @@ void main(void) {
 
 	aos_context_init(15000000, idle);
 }
+
+
+AOS_MODULE_INIT(testinit);
