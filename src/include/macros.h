@@ -9,6 +9,12 @@
 #define floor(val,min) (val<min ? min : val)
 #define max(a,b) (a>b ? a : b)
 
+#define CLASS_MODULE_INIT(function) void* __attribute__((section(".class_initcalls"))) class_initcall_##function = function;
+#define BUS_MODULE_INIT(function) void* __attribute__((section(".bus_initcalls"))) bus_initcall_##function = function;
+#define DRIVER_MODULE_INIT(function) void* __attribute__((section(".driver_initcalls"))) driver_initcall_##function = function;
+#define AOS_MODULE_INIT(function) void* __attribute__((section(".aos_initcalls"))) driver_initcall_##function = function;
+
+
 /**
  * \brief Calculate the difference between two uint32_t
  * Overflow compensated

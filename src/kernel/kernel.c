@@ -161,7 +161,7 @@ void sys_usleep(uint32_t us) {
 void sys_block(struct list_head* q) {
 	if (is_background())
 		return;
-	list_erase(&current->q);
+	//list_erase(&current->q); running proces is not in any queue
 	list_push_back(q,&current->q);
 	current->state = BLOCKED;
 	do_context_switch = 1;
