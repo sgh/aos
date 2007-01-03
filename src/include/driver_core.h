@@ -12,14 +12,6 @@
 #define DEVICE_NAME_SIZE 32
 #define BUS_ID_SIZE 32
 
-#define _init_ __attribute__((constructor))
-
-// #define MODULE_INIT(function) void* __attribute__((section("initcalls"))) initcall_##function = function;
-#define CLASS_MODULE_INIT(function) void* __attribute__((section("class_initcalls"))) class_initcall_##function = function;
-#define BUS_MODULE_INIT(function) void* __attribute__((section("bus_initcalls"))) bus_initcall_##function = function;
-#define DRIVER_MODULE_INIT(function) void* __attribute__((section("driver_initcalls"))) driver_initcall_##function = function;
-
-
 /**
  * \brief This list holds all the devices attached to the system.
  */
