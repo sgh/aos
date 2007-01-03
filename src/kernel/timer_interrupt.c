@@ -102,8 +102,8 @@ void sched(void) {
 		
 		if (current->state == RUNNING) {
 			current->state = READY;
-			process_ready(current);
-			//list_push_back(&readyQ,&current->q);
+			//process_ready(current);
+			list_push_back(&readyQ,&current->q);
 		}
 	}
 #endif
