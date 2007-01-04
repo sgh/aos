@@ -21,14 +21,13 @@ void timer_interrupt_routine() {
 	
 	now = read_timer32();
 	AOS_HOOK(timer_event,now);
-	elapsed_time = uint32diff(last_interrupt_time, now);
+	elapsed_time = uint32diff(last_interrupt_time, read_timer32());
 	elapsed_time = ciel(elapsed_time, UINT8_MAX);
 	_aos_status.timer_hook_maxtime = max(elapsed_time, _aos_status.timer_hook_maxtime);
 
 	now = read_timer32();
 	elapsed_time = uint32diff(last_interrupt_time, now);
-
-	last_interrupt_time = read_timer32();
+	last_interrupt_time = now;
 
 	// If a process is waiting, do context_switch
 	if (!list_isempty(&readyQ))
