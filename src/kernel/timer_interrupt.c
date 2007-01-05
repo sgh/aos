@@ -10,6 +10,59 @@
 #include <fragment.h>
 #include <macros.h>
 
+static void countdown_sleeps() {
+	struct task_t* t;
+	struct list_head* e;
+	uint32_t now;
+	uint32_t elapsed_time;
+	uint32_t time_to_wake = MAX_TIME_SLICE_US;
+	
+	now = read_timer32();
+	elapsed_time = uint32diff(last_interrupt_time, now);
+	last_interrupt_time = now;
+	
+	// If someone is sleeping
+	if (!list_isempty(&usleepQ)) {
+		e = list_get_front(&usleepQ);
+		t = get_struct_task(e);
+
+		if (t->sleep_time) { // If process had time left to sleep
+			if (t->sleep_time > elapsed_time)
+				t->sleep_time -= elapsed_time;
+			else
+				t->sleep_time = 0;
+		}
+
+		if (t->sleep_time == 0) { // If process now has no time left to sleep
+// 			struct task_t* next = get_struct_task(list_get_front(&readyQ));
+			list_erase(&t->q);
+			process_wakeup(t);
+		}
+
+		/*
+		   Enable dynamic time-slice length. This is problematic since periodic function-calls
+		   usd for regulators and such will not be called at regular intervals. This is why the following
+		   is commented out.
+		*/
+/* 		if (!list_isempty(&usleepQ)) {
+ 			e = list_get_front(&usleepQ); // Set e to the next to wake up
+ 			t = get_struct_task(e); // Get task-struct.
+ 
+ 			time_to_wake = t->sleep_time;
+ 			if (time_to_wake < MIN_TIME_SLICE_US) // Make sure that timeslice stays above MIN_TIME_SLICE_US
+ 				time_to_wake = MIN_TIME_SLICE_US;
+ 
+ 			if (time_to_wake > MAX_TIME_SLICE_US) // Make sure that timeslice stays below MAX_TIME_SLICE_US
+ 				time_to_wake = MAX_TIME_SLICE_US;
+ 		}*/
+
+	}
+
+	// If a process is waiting, do context_switch
+	if (!list_isempty(&readyQ))
+		do_context_switch = 1; // Signal context-switch
+
+}
 
 void timer_interrupt_routine() {
 	struct task_t* t;
@@ -21,10 +74,13 @@ void timer_interrupt_routine() {
 	
 	now = read_timer32();
 	AOS_HOOK(timer_event,now);
-	elapsed_time = uint32diff(last_interrupt_time, read_timer32());
+	elapsed_time = uint32diff(now, read_timer32());
 	elapsed_time = ciel(elapsed_time, UINT8_MAX);
 	_aos_status.timer_hook_maxtime = max(elapsed_time, _aos_status.timer_hook_maxtime);
 
+#ifndef INTERRUPT_SLEEP_COUNTDOWN
+	countdown_sleeps();
+#else
 	now = read_timer32();
 	elapsed_time = uint32diff(last_interrupt_time, now);
 	last_interrupt_time = now;
@@ -56,19 +112,20 @@ void timer_interrupt_routine() {
 		   usd for regulators and such will not be called at regular intervals. This is why the following
 		   is commented out.
 		*/
-// 		if (!list_isempty(&usleepQ)) {
-// 			e = list_get_front(&usleepQ); // Set e to the next to wake up
-// 			t = get_struct_task(e); // Get task-struct.
-// 
-// 			time_to_wake = t->sleep_time;
-// 			if (time_to_wake < MIN_TIME_SLICE_US) // Make sure that timeslice stays above MIN_TIME_SLICE_US
-// 				time_to_wake = MIN_TIME_SLICE_US;
-// 
-// 			if (time_to_wake > MAX_TIME_SLICE_US) // Make sure that timeslice stays below MAX_TIME_SLICE_US
-// 				time_to_wake = MAX_TIME_SLICE_US;
-// 		}
+/* 		if (!list_isempty(&usleepQ)) {
+ 			e = list_get_front(&usleepQ); // Set e to the next to wake up
+ 			t = get_struct_task(e); // Get task-struct.
+ 
+ 			time_to_wake = t->sleep_time;
+ 			if (time_to_wake < MIN_TIME_SLICE_US) // Make sure that timeslice stays above MIN_TIME_SLICE_US
+ 				time_to_wake = MIN_TIME_SLICE_US;
+ 
+ 			if (time_to_wake > MAX_TIME_SLICE_US) // Make sure that timeslice stays below MAX_TIME_SLICE_US
+ 				time_to_wake = MAX_TIME_SLICE_US;
+ 		}*/
 
 	}
+#endif
 
 	set_timer_match( get_timer_match() + time_to_wake );
 	clear_timer_interrupt();
@@ -148,6 +205,8 @@ void process_wakeup(struct task_t* task) {
 	struct list_head* e;
 
 	task->state = READY;
+	list_push_front(&readyQ , &task->q);
+	return;
 	
 	/*
 	Run through the list to insert the task after higher priority-tasks.

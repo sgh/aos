@@ -90,9 +90,9 @@ void sys_msleep(uint16_t ms) {
 
 
 /**
- * \brief Check if current process is the background-process.
+ * \brief Check if current process is the idle-process.
  * If so it should not be allowed to block in any way
- * @return 
+ * @return 0 if the current process is not the idle-process
  */
 static uint8_t is_background() {
 	return (current == idle_task);
@@ -119,7 +119,8 @@ void sys_get_sysmtime(uint32_t* time) {
 void sys_usleep(uint32_t us) {
 	struct list_head* e;
 	struct list_head* insertion_point = NULL;
-	uint32_t time = us + time_slice_elapsed();
+	uint32_t slice_elapsed = time_slice_elapsed();
+	uint32_t time = us;// + slice_elapsed;
 
 	if (is_background())
 		return;

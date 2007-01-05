@@ -15,7 +15,7 @@ static int8_t vector_num;
 static uint32_t timer_overflows = 0;
 
 void init_timer_interrupt(funcPtr handler, uint32_t timer_refclk) {
-	T0_PR = timer_refclk/1000000 - 1;		/* Scale to 1 ms steps */
+	T0_PR = timer_refclk/1000000 - 1;		/* Scale to 1 us steps */
 	T0_PC = 0;													/* Prescale-counter */
 	T0_TC = 0xFFA00000;									/* Counter-value */
 	T0_MR0 = T0_TC + MAX_TIME_SLICE_US;	/* Match-Register0 */
