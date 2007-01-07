@@ -38,7 +38,7 @@ struct task_t* idle_task;
  */
 const uint32_t context_offset = offsetof(struct task_t,context);
 
-uint32_t last_interrupt_time = 0;
+uint32_t last_context_time = 0;
 
 struct task_t* current = NULL;
 
@@ -46,10 +46,10 @@ struct task_t* current = NULL;
 extern funcPtr __initcalls_start__[];
 extern funcPtr __initcalls_end__[];
 
-uint32_t get_interrupt_elapsed() {
-	register uint32_t now = read_timer32();
-	return now>=last_interrupt_time ? now-last_interrupt_time: UINT32_MAX - (last_interrupt_time-now);
-}
+// uint32_t get_interrupt_elapsed() {
+// 	register uint32_t now = read_timer32();
+// 	return now>=last_interrupt_time ? now-last_interrupt_time: UINT32_MAX - (last_interrupt_time-now);
+// }
 
 static void do_initcalls() {
 	funcPtr* initcall;
@@ -99,7 +99,7 @@ static uint8_t is_background() {
 }
 
 uint32_t time_slice_elapsed() {
-	return uint32diff(last_interrupt_time, read_timer32());
+	return uint32diff(last_context_time, read_timer32());
 }
 
 void sys_get_sysutime(uint32_t* time) {
@@ -120,7 +120,10 @@ void sys_usleep(uint32_t us) {
 	struct list_head* e;
 	struct list_head* insertion_point = NULL;
 	uint32_t slice_elapsed = time_slice_elapsed();
-	uint32_t time = us;// + slice_elapsed;
+	uint32_t time = us + slice_elapsed;
+
+	if (time > MAX_TIME_SLICE_US) /** @fixme this work very poorly with dynamic timers-interrupt */
+		time -= MAX_TIME_SLICE_US;
 
 	if (is_background())
 		return;

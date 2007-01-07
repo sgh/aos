@@ -48,7 +48,7 @@ void timer_interrupt();
 /**
  * \brief Timer value at last interrupt
  */
-extern uint32_t last_interrupt_time;
+extern uint32_t last_context_time;
 
 #endif
 
