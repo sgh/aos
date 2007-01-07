@@ -13,24 +13,26 @@
 static void countdown_sleeps() {
 	struct task_t* t;
 	struct list_head* e;
-	uint32_t now;
+	uint32_t now = read_timer32();
 	uint32_t elapsed_time;
 	uint32_t time_to_wake = MAX_TIME_SLICE_US;
 	
-	now = read_timer32();
-	elapsed_time = uint32diff(last_interrupt_time, now);
-	last_interrupt_time = now;
-	
-	// If someone is sleeping
-	if (!list_isempty(&usleepQ)) {
+	elapsed_time = uint32diff(last_context_time, now);
+	last_context_time = now;
+
+	while (!list_isempty(&usleepQ) && elapsed_time) {
+		// If someone is sleeping
 		e = list_get_front(&usleepQ);
 		t = get_struct_task(e);
 
 		if (t->sleep_time) { // If process had time left to sleep
-			if (t->sleep_time > elapsed_time)
+			if (t->sleep_time > elapsed_time) {
 				t->sleep_time -= elapsed_time;
-			else
+				elapsed_time = 0;
+			} else {
+				elapsed_time -= t->sleep_time;
 				t->sleep_time = 0;
+			}
 		}
 
 		if (t->sleep_time == 0) { // If process now has no time left to sleep
@@ -40,28 +42,25 @@ static void countdown_sleeps() {
 		}
 
 		/*
-		   Enable dynamic time-slice length. This is problematic since periodic function-calls
-		   usd for regulators and such will not be called at regular intervals. This is why the following
-		   is commented out.
+			Enable dynamic time-slice length. This is problematic since periodic function-calls
+			usd for regulators and such will not be called at regular intervals. This is why the following
+			is commented out.
 		*/
-/* 		if (!list_isempty(&usleepQ)) {
- 			e = list_get_front(&usleepQ); // Set e to the next to wake up
- 			t = get_struct_task(e); // Get task-struct.
- 
- 			time_to_wake = t->sleep_time;
- 			if (time_to_wake < MIN_TIME_SLICE_US) // Make sure that timeslice stays above MIN_TIME_SLICE_US
- 				time_to_wake = MIN_TIME_SLICE_US;
- 
- 			if (time_to_wake > MAX_TIME_SLICE_US) // Make sure that timeslice stays below MAX_TIME_SLICE_US
- 				time_to_wake = MAX_TIME_SLICE_US;
- 		}*/
-
 	}
 
-	// If a process is waiting, do context_switch
-	if (!list_isempty(&readyQ))
-		do_context_switch = 1; // Signal context-switch
+	if (!list_isempty(&usleepQ)) {
+		e = list_get_front(&usleepQ); // Set e to the next to wake up
+		t = get_struct_task(e); // Get task-struct.
 
+		time_to_wake = t->sleep_time;
+		if (time_to_wake < MIN_TIME_SLICE_US) // Make sure that timeslice stays above MIN_TIME_SLICE_US
+			time_to_wake = MIN_TIME_SLICE_US;
+
+		if (time_to_wake > MAX_TIME_SLICE_US) // Make sure that timeslice stays below MAX_TIME_SLICE_US
+			time_to_wake = MAX_TIME_SLICE_US;
+	}
+
+	set_timer_match( get_timer_match() + time_to_wake );
 }
 
 void timer_interrupt_routine() {
@@ -78,61 +77,24 @@ void timer_interrupt_routine() {
 	elapsed_time = ciel(elapsed_time, UINT8_MAX);
 	_aos_status.timer_hook_maxtime = max(elapsed_time, _aos_status.timer_hook_maxtime);
 
-#ifndef INTERRUPT_SLEEP_COUNTDOWN
-	countdown_sleeps();
-#else
-	now = read_timer32();
-	elapsed_time = uint32diff(last_interrupt_time, now);
-	last_interrupt_time = now;
-
-	// If a process is waiting, do context_switch
-	if (!list_isempty(&readyQ))
-		do_context_switch = 1; // Signal context-switch
-	
-	// If someone is sleeping
-	if (!list_isempty(&usleepQ)) {
-		e = list_get_front(&usleepQ);
-		t = get_struct_task(e);
-
-		if (t->sleep_time) { // If process had time left to sleep
-			if (t->sleep_time > elapsed_time)
-				t->sleep_time -= elapsed_time;
-			else
-				t->sleep_time = 0;
-		}
-
-		if (t->sleep_time == 0) { // If process now has no time left to sleep
-// 			struct task_t* next = get_struct_task(list_get_front(&readyQ));
-			list_erase(&t->q);
-			process_wakeup(t);
-		}
-
-		/*
-		   Enable dynamic time-slice length. This is problematic since periodic function-calls
-		   usd for regulators and such will not be called at regular intervals. This is why the following
-		   is commented out.
-		*/
-/* 		if (!list_isempty(&usleepQ)) {
- 			e = list_get_front(&usleepQ); // Set e to the next to wake up
- 			t = get_struct_task(e); // Get task-struct.
- 
- 			time_to_wake = t->sleep_time;
- 			if (time_to_wake < MIN_TIME_SLICE_US) // Make sure that timeslice stays above MIN_TIME_SLICE_US
- 				time_to_wake = MIN_TIME_SLICE_US;
- 
- 			if (time_to_wake > MAX_TIME_SLICE_US) // Make sure that timeslice stays below MAX_TIME_SLICE_US
- 				time_to_wake = MAX_TIME_SLICE_US;
- 		}*/
-
-	}
-#endif
-
-	set_timer_match( get_timer_match() + time_to_wake );
+//	countdown_sleeps();
+ 	do_context_switch = 1;
+countdown_sleeps();	
 	clear_timer_interrupt();
 }
 
 
 void sched(void) {
+	struct task_t* next = NULL;
+//	countdown_sleeps();
+
+	if (list_isempty(&readyQ)) {
+		next = idle_task; // Idle
+	} else {
+		next = get_struct_task(list_get_front(&readyQ));
+		list_erase(&next->q);
+	}
+		
 #ifdef SHARED_STACK
 	/* Copy stack away from shared system stack */
 	if (current) {
@@ -163,17 +125,12 @@ void sched(void) {
 	}
 #endif
 
-	if (list_isempty(&readyQ)) {
-		current = idle_task; // Idle
-	} else {
-		current = get_struct_task(list_get_front(&readyQ));
-		list_erase(&current->q);
-	}
+
 	
 #ifdef SHARED_STACK
 	/* Copy stack to shared stack */
-	if (current) {
-		uint32_t len = current->stack_size;
+	if (next) {
+		uint32_t len = next->stack_size;
 		void* dst = (void*)&Top_Stack - len;
 // 		void* src = current->stack;
 		
@@ -188,15 +145,17 @@ void sched(void) {
 // 		memcpy( dst, src, len);
 		
 		// Fragmem
-		if (current->fragment) {
-			load_fragment(dst,current->fragment);
-			current->fragment = 0;
+		if (next->fragment) {
+			load_fragment(dst,next->fragment);
+			next->fragment = 0;
 		}
 		
 	}
 #endif
 	
-	current->state = RUNNING;
+	next->state = RUNNING;
+
+	current = next;
 }
 
 
@@ -206,6 +165,9 @@ void process_wakeup(struct task_t* task) {
 
 	task->state = READY;
 	list_push_front(&readyQ , &task->q);
+
+	do_context_switch = 1; // Signal context-switch
+	
 	return;
 	
 	/*

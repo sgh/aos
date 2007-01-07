@@ -21,7 +21,7 @@
  * @return the difference
  */
 inline static uint32_t uint32diff(uint32_t min, uint32_t max) {
-	return min<max ? max-min : max + UINT32_MAX - min;
+	return min<max ? max-min : (UINT32_MAX - min) + max;
 }
 
 

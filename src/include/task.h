@@ -19,7 +19,7 @@
  * \brief Minimum and maximum time-slice in microseconds.
  */
 #define MAX_TIME_SLICE_US 1000
-#define MIN_TIME_SLICE_US 100
+#define MIN_TIME_SLICE_US 1000
 
 /**
  * \brief A process
