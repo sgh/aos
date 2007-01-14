@@ -64,11 +64,11 @@ static void countdown_sleeps() {
 }
 
 void timer_interrupt_routine() {
-	struct task_t* t;
-	struct list_head* e;
+// 	struct task_t* t;
+// 	struct list_head* e;
 	uint32_t now;
 	uint32_t elapsed_time;
-	uint32_t time_to_wake = MAX_TIME_SLICE_US;
+// 	uint32_t time_to_wake = MAX_TIME_SLICE_US;
 
 	
 	now = read_timer32();
@@ -79,7 +79,7 @@ void timer_interrupt_routine() {
 
 //	countdown_sleeps();
  	do_context_switch = 1;
-countdown_sleeps();	
+	countdown_sleeps();	
 	clear_timer_interrupt();
 }
 

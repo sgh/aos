@@ -47,6 +47,10 @@ struct aos_hooks {
 
 };
 
+/**
+ * \brief Syscall to set the struct aos_hooks to use.
+ */
+void aos_hooks(struct aos_hooks* hooks);
 
 // Only provide this macro for the operating system
 #ifdef AOS_KERNEL_MODULE

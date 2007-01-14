@@ -116,6 +116,10 @@ void sys_get_sysmtime(uint32_t* time) {
 	*time = read_timer64() / 1000;
 }
 
+void sys_aos_hooks(struct aos_hooks* hooks) {
+	_aos_hooks = hooks;	
+}
+
 void sys_usleep(uint32_t us) {
 	struct list_head* e;
 	struct list_head* insertion_point = NULL;
