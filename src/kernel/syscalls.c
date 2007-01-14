@@ -24,6 +24,7 @@ void* sys_call_table[] =
 	[_NR_create_task] sys_create_task,
 	[_NR_aos_basic_init] sys_aos_basic_init,
 	[_NR_aos_mm_init] sys_aos_mm_init,
+	[_NR_aos_hooks] sys_aos_hooks,
 };
 
 /* Syscall definitions */
@@ -45,5 +46,6 @@ _syscall1(void, get_sysmtime, uint32_t*, time);
 _syscall1(void*, malloc, size_t, size);
 _syscall1(void, free, void*, free);
 _syscall1(void, mmstat, struct mm_stat*, stat);
+_syscall1(void, aos_hooks, struct aos_hooks*, hooks);
 _syscall3(struct task_t*, create_task, funcPtr, entrypoint, void*, arg, int8_t, priority);
 

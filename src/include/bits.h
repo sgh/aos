@@ -36,4 +36,6 @@
 
 #define NOT(v) (~v)
 
+#define readbit(val,bit) (((val)&(bit)) ? 1 : 0)
+
 #endif

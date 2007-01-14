@@ -9,6 +9,8 @@
 #include <types.h>
 #include <list.h>
 #include <mm.h>
+#include <aos_hooks.h>
+
 
 /* Syscall numbers */
 #define _NR_yield          0
@@ -29,6 +31,7 @@
 #define _NR_create_task    15
 #define _NR_aos_basic_init 16
 #define _NR_aos_mm_init    17
+#define _NR_aos_hooks      18
 
 
 /* Syscall declarations */
@@ -49,6 +52,7 @@ void sys_free(void* segment);
 void sys_mmstat(struct mm_stat* stat);
 void sys_aos_basic_init();
 struct task_t* sys_create_task(funcPtr entrypoint, void* arg, int8_t priority);
+void sys_aos_hooks(struct aos_hooks* hooks);
 
 
 #define str(s) #s
