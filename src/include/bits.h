@@ -38,4 +38,6 @@
 
 #define readbit(val,bit) (((val)&(bit)) ? 1 : 0)
 
+#define TOINT16(addr) (*((int16_t*)addr))
+
 #endif
