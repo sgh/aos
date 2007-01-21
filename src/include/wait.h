@@ -11,7 +11,7 @@ struct condition {
 
 void cond_init(struct condition* cond);
 		
-void cond_wait(struct condition* cond);
+void cond_wait(struct condition* cond, uint32_t timeout);
 
 void cond_signal(struct condition* cond);
 

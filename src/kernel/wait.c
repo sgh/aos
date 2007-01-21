@@ -7,7 +7,8 @@ void cond_init(struct condition* cond) {
 	mutex_init(&cond->lock);
 }
 
-void cond_wait(struct condition* cond) {
+void cond_wait(struct condition* cond, uint32_t timeout) {
+	/** @todo implement timeout- func */
 	block(&cond->waiting);
 }
 
