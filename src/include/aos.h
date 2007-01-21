@@ -3,6 +3,7 @@
 
 #include <semaphore.h>
 #include <mutex.h>
+#include <wait.h>
 #include <list.h>
 #include <macros.h>
 #include <task.h>
@@ -115,7 +116,7 @@ void get_sysmtime(uint32_t* time);
 void enable_irqs();
 
 /**
- * \brief Syscall to unmask all interrupts
+ * \brief Syscall to mask all interrupts
  */
 void disable_irqs();
 
