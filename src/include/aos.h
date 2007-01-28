@@ -123,21 +123,9 @@ void get_sysutime(uint32_t* time);
 /**
  * \brief Get the current system uptime in milliseconds
  * This overflows after 49 days.
+ *
  * @param time Pointer to store the time.
  */
 void get_sysmtime(uint32_t* time);
-
-
-/**
- * \brief Syscall to unmask all interrupts
- */
-void enable_irqs();
-
-/**
- * \brief Syscall to mask all interrupts
- */
-void disable_irqs();
-
-
 
 #endif
