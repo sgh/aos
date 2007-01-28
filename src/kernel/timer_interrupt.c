@@ -28,6 +28,11 @@
 #include <fragment.h>
 #include <macros.h>
 
+/**
+ * \brief This function counts down sleep-time of waiting processes
+ *
+ * @todo tell about the differential ordering
+ */
 static void countdown_sleeps() {
 	struct task_t* t;
 	struct list_head* e;
@@ -61,8 +66,8 @@ static void countdown_sleeps() {
 
 		/*
 			Enable dynamic time-slice length. This is problematic since periodic function-calls
-			usd for regulators and such will not be called at regular intervals. This is why the following
-			is commented out.
+			usd for regulators and such will not be called at regular intervals. This is why
+			MAX_TIME-SLICE_US and MIN_TIME_SLICE_US are both set to 1000 us in task.h
 		*/
 	}
 
@@ -82,11 +87,8 @@ static void countdown_sleeps() {
 }
 
 void timer_interrupt_routine() {
-// 	struct task_t* t;
-// 	struct list_head* e;
 	uint32_t now;
 	uint32_t elapsed_time;
-// 	uint32_t time_to_wake = MAX_TIME_SLICE_US;
 
 	
 	now = read_timer32();
@@ -95,8 +97,7 @@ void timer_interrupt_routine() {
 	elapsed_time = ciel(elapsed_time, UINT8_MAX);
 	_aos_status.timer_hook_maxtime = max(elapsed_time, _aos_status.timer_hook_maxtime);
 
-//	countdown_sleeps();
- 	do_context_switch = 1;
+// 	do_context_switch = 1;
 	countdown_sleeps();	
 	clear_timer_interrupt();
 }
