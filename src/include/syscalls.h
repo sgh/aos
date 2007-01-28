@@ -35,8 +35,8 @@
 #define _NR_test           1
 #define _NR_msleep         2
 #define _NR_usleep         3
-#define _NR_disable_irqs   4
-#define _NR_enable_irqs    5
+// #define _NR_disable_irqs   4
+// #define _NR_enable_irqs    5
 #define _NR_block          6
 #define _NR_unblock        7
 #define _NR_disable_cs     8
@@ -61,8 +61,8 @@ void sys_msleep(uint16_t ms);
 void sys_usleep(uint32_t us);
 void sys_disable_cs();
 void sys_enable_cs();
-void sys_disable_irqs();
-void sys_enable_irqs();
+// void sys_disable_irqs();
+// void sys_enable_irqs();
 void sys_get_sysutime(uint32_t* time);
 void sys_get_sysmtime(uint32_t* time);
 void* sys_malloc(size_t size);
