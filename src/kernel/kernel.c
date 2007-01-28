@@ -41,7 +41,7 @@ uint8_t allow_context_switch = 1;
 /**
  * \brief Are interrupts disabled.
  */
-uint8_t interrupts_disabled = 0;
+// uint8_t interrupts_disabled = 0;
 
 
 struct aos_hooks* _aos_hooks = NULL;
@@ -214,11 +214,11 @@ void sys_enable_cs() {
 }
 
 
-void sys_disable_irqs() {
-	interrupts_disabled = 1;
-}
+// void sys_disable_irqs() {
+// 	interrupts_disabled = 1;
+// }
 
 
-void sys_enable_irqs() {
-	interrupts_disabled = 0;
-}
+// void sys_enable_irqs() {
+// 	interrupts_disabled = 0;
+// }
