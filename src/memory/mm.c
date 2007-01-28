@@ -38,12 +38,14 @@ static uint8_t* mm_start;
 static uint8_t* mm_end;
 
 typedef struct mm_header mm_header_t;
+
+/**
+ * \brief Housekeeping structure used for each memory-allocation
+ */
 struct mm_header {
-	/*unsigned char free:1;
-	unsigned short size:15;*/
 	uint8_t free:1;
-	uint8_t padding:2;
-	uint16_t size:13;
+// 	uint8_t padding:2;
+	uint16_t size:15;
 };
 
 void sys_mmstat(struct mm_stat* stat) {
