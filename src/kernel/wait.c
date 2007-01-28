@@ -1,6 +1,6 @@
 /*
 	AOS - ARM Operating System
-	Copyright (C) 2007  SÃ¸ren Holm (sgh@sgh.dk)
+	Copyright (C) 2007  Søren Holm (sgh@sgh.dk)
 
 	This library is free software; you can redistribute it and/or
 	modify it under the terms of the GNU Lesser General Public
@@ -25,9 +25,10 @@ void cond_init(struct condition* cond) {
 	mutex_init(&cond->lock);
 }
 
-void cond_wait(struct condition* cond, uint32_t timeout) {
+uint8_t cond_wait(struct condition* cond, uint32_t timeout) {
 	/** @todo implement timeout- func */
 	block(&cond->waiting);
+	return 0;
 }
 
 void cond_signal(struct condition* cond){
