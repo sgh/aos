@@ -1,6 +1,6 @@
 /*
 	AOS - ARM Operating System
-	Copyright (C) 2007  SÃ¸ren Holm (sgh@sgh.dk)
+	Copyright (C) 2007  Søren Holm (sgh@sgh.dk)
 
 	This library is free software; you can redistribute it and/or
 	modify it under the terms of the GNU Lesser General Public
@@ -18,12 +18,25 @@
 */
 #include <aos.h>
 
+// #define UNIPROCESSOR
+
+void t() {
+}
+
 void spinlock_lock(spinlock_t* lock) {
-	while (atomic_xchg(lock,1))
-		yield();
+#ifdef UNIPROCESSOR
+	disable_irqs();
+#else
+		while (atomic_xchg(lock,1))
+			yield();
+#endif
 }
 
 
 void spinlock_unlock(spinlock_t* lock) {
+#ifdef UNIPROCESSOR
+	enable_irqs();
+#else
 	*lock = 0;
+#endif
 }
