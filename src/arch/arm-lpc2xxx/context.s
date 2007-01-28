@@ -22,6 +22,8 @@
 .global get_usermode_sp
 .global get_sp
 .global get_usermode_sp
+.global disable_irqs
+.global enable_irqs
 
 
 /* Public interrupt-handler symbols */
@@ -29,6 +31,18 @@
 ;.global uart0_interrupt
 
 .include "arch/arm-lpc2xxx/macros.s"
+
+disable_irqs:
+	MRS r0, SPSR
+	ORR r0, r0, #0xC0  @ disable IRQ and FIQ interrupts
+	MSR SPSR, r0
+	MOV PC, LR
+
+enable_irqs:
+	MRS r0, SPSR
+	BIC r0, r0, #0xC0  @ enable IRQ and FIQ interrupts
+	MSR SPSR, r0
+	MOV PC, LR
 
 get_sp:
 	MOV r0, SP
@@ -65,6 +79,14 @@ get_usermode_sp:
 aos_swi_handler:
 	/* Save registers on SWI-mode stack */
 	STMFD SP!,{r6-r12, LR}
+
+	/*
+		Now - to make sure that interrupt-latency is as minimal
+		as possible we enable interrupts here.
+	*/
+	MRS r6, SPSR
+	BIC r6, r6, #0xC0  @ enable IRQ and FIQ interrupts
+	MSR SPSR, r6
 
 	/* Read LR to see if the SWI-instruction was in ARM-, or THUMB-mode */
 	MRS r7, SPSR
@@ -303,21 +325,21 @@ _no_task_switch:
 
 	STMFD SP!,{r1} @ Store r1
 
-	@ Check if interrupts should be disabled
-	LDR r1, =interrupts_disabled
-	LDRB r1, [r1]
-	CMP r1, #0
-	BEQ interrupts_are_enabled
-
-	MRS r1, SPSR
-	ORR r1, r1, #0xC0  @ disable IRQ and FIQ interrupts
-	MSR SPSR, r1
-	B after_interrupt_endisable
-
-interrupts_are_enabled:
-	MRS r1, SPSR
-	BIC r1, r1, #0xC0  @ enable IRQ and FIQ interrupts
-	MSR SPSR, r1
+@ 	@ Check if interrupts should be disabled
+@ 	LDR r1, =interrupts_disabled
+@ 	LDRB r1, [r1]
+@ 	CMP r1, #0
+@ 	BEQ interrupts_are_enabled
+@ 
+@ 	MRS r1, SPSR
+@ 	ORR r1, r1, #0xC0  @ disable IRQ and FIQ interrupts
+@ 	MSR SPSR, r1
+@ 	B after_interrupt_endisable
+@ 
+@ interrupts_are_enabled:
+@ 	MRS r1, SPSR
+@ 	BIC r1, r1, #0xC0  @ enable IRQ and FIQ interrupts
+@ 	MSR SPSR, r1
 
 after_interrupt_endisable:
 	LDMFD SP!,{r1} @ Restore r1
