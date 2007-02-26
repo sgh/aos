@@ -56,7 +56,7 @@ struct task_t* create_task(funcPtr entrypoint, void* arg, int8_t priority);
 /**
  * \brief Do basic initialization.
  */
-void aos_basic_init();
+void aos_basic_init(void);
 
 /**
  * \brief This function initiates aos operation. NOTE: This function does NOT return.
@@ -75,7 +75,7 @@ void aos_mm_init(void* start, void* end);
  * \brief Block the current process. Remember to have placed the process in a queue.
  * Forgetting to do so would block the process forever.
  */
-void block();
+void block(void);
 
 /**
  * \brief Unblock a process
@@ -86,7 +86,7 @@ void unblock(struct task_t* task);
 /**
  * \brief Yield the process.
  */
-void yield();
+void yield(void);
 
 /**
  * \brief Sleep some milliseconds
@@ -106,12 +106,12 @@ void usleep(uint32_t us);
  * \brief Disable context-switching, effectively making the current process
  * owner of the time, except the time it takes to handle interrupts.
  */
-void disable_cs();
+void disable_cs(void);
 
 /**
  * \brief Enable context-switching and allow other processes to run
  */
-void enable_cs();
+void enable_cs(void);
 
 /**
  * \brief Get the current system uptime in microseconds.
