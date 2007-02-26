@@ -39,14 +39,14 @@ extern uint32_t Top_Stack;
  * \brief Internal function to get the usermode stackpointer.
  * @return The stackpointer from usermode
  */
-__inline__ uint32_t get_usermode_sp();
+__inline__ uint32_t get_usermode_sp(void);
 
 
 /**
  * \brief Internal function used to get the current stack-pointer.
  * @return The current stackpointer
  */
-__inline__ uint32_t get_sp();
+__inline__ uint32_t get_sp(void);
 
 /**
  * \brief The idle task
@@ -84,12 +84,12 @@ void process_wakeup(struct task_t* task);
 /**
  * \brief Unmask all interrupts
  */
-void enable_irqs();
+void enable_irqs(void);
 
 /**
  * \brief Mask all interrupts
  */
-void disable_irqs();
+void disable_irqs(void);
 
 
 #endif // _KERNEL_H_

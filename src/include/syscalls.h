@@ -55,12 +55,12 @@
 /* Syscall declarations */
 void sys_unblock(struct task_t* task);
 void sys_block(struct list_head* q);
-void sys_yield();
+void sys_yield(void);
 void sys_aos_mm_init(void* start, void* end);
 void sys_msleep(uint16_t ms);
 void sys_usleep(uint32_t us);
-void sys_disable_cs();
-void sys_enable_cs();
+void sys_disable_cs(void);
+void sys_enable_cs(void);
 // void sys_disable_irqs();
 // void sys_enable_irqs();
 void sys_get_sysutime(uint32_t* time);
@@ -68,7 +68,7 @@ void sys_get_sysmtime(uint32_t* time);
 void* sys_malloc(size_t size);
 void sys_free(void* segment);
 void sys_mmstat(struct mm_stat* stat);
-void sys_aos_basic_init();
+void sys_aos_basic_init(void);
 struct task_t* sys_create_task(funcPtr entrypoint, void* arg, int8_t priority);
 void sys_aos_hooks(struct aos_hooks* hooks);
 

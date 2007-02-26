@@ -18,17 +18,14 @@
 */
 #include <aos.h>
 
-// #define UNIPROCESSOR
-
-void t() {
-}
+//#define UNIPROCESSOR
 
 void spinlock_lock(spinlock_t* lock) {
 #ifdef UNIPROCESSOR
 	disable_irqs();
 #else
-		while (atomic_xchg(lock,1))
-			yield();
+	while (atomic_xchg(lock,1))
+		yield();
 #endif
 }
 

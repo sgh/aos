@@ -33,7 +33,7 @@
  *
  * @todo tell about the differential ordering
  */
-static void countdown_sleeps() {
+static void countdown_sleeps(void) {
 	struct task_t* t;
 	struct list_head* e;
 	uint32_t now = read_timer32();
@@ -86,7 +86,7 @@ static void countdown_sleeps() {
 	set_timer_match( get_timer_match() + time_to_wake );
 }
 
-void timer_interrupt_routine() {
+void timer_interrupt_routine(void) {
 	uint32_t now;
 	uint32_t elapsed_time;
 

@@ -28,13 +28,13 @@
  * This timer overflows after 1.1 hour
  * @return The timer-value
  */
-uint32_t read_timer32();
+uint32_t read_timer32(void);
 
 /**
  * \brief Read the current value of the usecond timer.
  * This timer overflows after 500,000 years.
  * @return The timer-value combined with number of overflows
  */
-uint64_t read_timer64();
+uint64_t read_timer64(void);
 
 #endif
