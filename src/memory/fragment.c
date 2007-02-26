@@ -93,9 +93,9 @@ void free_fragment(struct fragment_store* fragment) {
 	}
 }
 
-uint16_t size_fragment(struct fragment_store* fragment) {
-	return fragment->size;
-}
+// static uint16_t size_fragment(struct fragment_store* fragment) {
+// 	return fragment->size;
+// }
 
 
 // void  init_fragment_store() {

@@ -34,17 +34,17 @@ void init_timer_interrupt(funcPtr handler, uint32_t timer_refclk);
 /**
  * \brief Enable the timer-interrupt and start the timer
  */
-void enable_timer_interrupt();
+void enable_timer_interrupt(void);
 
 /**
  * \brief Disable the timer-interrupt and stop the timer
  */
-void disable_timer_interrupt();
+void disable_timer_interrupt(void);
 
 /**
  * \brief Clear the interrupt. Only used at the end of the interrupt-handler
  */
-void clear_timer_interrupt();
+void clear_timer_interrupt(void);
 
 /**
  * \brief Set the timer-value at which an interrupt should next be taken.
@@ -56,12 +56,12 @@ void set_timer_match(uint32_t matchval);
  * \brief Get the timer-value at which an interrupt should next be taken.
  * @return The match-value.
  */
-uint32_t get_timer_match();
+uint32_t get_timer_match(void);
 
 /**
  * \brief The timer-interrupt. Executed 1000 times pr. second.
  */
-void timer_interrupt();
+void timer_interrupt(void);
 
 /**
  * \brief Timer value at last interrupt

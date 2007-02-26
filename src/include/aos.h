@@ -75,7 +75,7 @@ void aos_mm_init(void* start, void* end);
  * \brief Block the current process. Remember to have placed the process in a queue.
  * Forgetting to do so would block the process forever.
  */
-void block(void);
+void block(struct list_head* q);
 
 /**
  * \brief Unblock a process

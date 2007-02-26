@@ -25,6 +25,7 @@
 #include <kernel.h>
 #include <irq.h>
 #include <macros.h>
+#include <timer_interrupt.h>
 
 #define TIMER0_IRQ 4
 
@@ -49,24 +50,24 @@ void init_timer_interrupt(funcPtr handler, uint32_t timer_refclk) {
 	T0_TCR = BIT0;	/* Enable timer0 */
 }
 
-void enable_timer_interrupt() {
+void enable_timer_interrupt(void) {
 	vector_enable(vector_num);
 	irq_enable(TIMER0_IRQ);
 }
 
-void disable_timer_interrupt() {
+void disable_timer_interrupt(void) {
  	vector_disable(vector_num);
 	irq_disable(TIMER0_IRQ);
 }
 
 
-void clear_timer_interrupt() {
+void clear_timer_interrupt(void) {
 	T0_IR = BIT0;    // Clear interrupt
 	VICVectAddr = 0; // Update priority hardware
 }
 
 
-uint32_t get_timer_match() {
+uint32_t get_timer_match(void) {
 	return T0_MR0;
 }
 

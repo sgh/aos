@@ -16,13 +16,16 @@
 	License along with this library; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
+#define AOS_KERNEL_MODULE
+
 #include <arm/lpc2119.h>
 #include <types.h>
 #include <bits.h>
+#include <irq.h>
 
 static uint16_t vic_address_map;
 
-int8_t request_vector(uint32_t func, uint8_t irqnum) {
+uint8_t request_vector(uint32_t func, uint8_t irqnum) {
 	uint8_t i = 0;
 	uint32_t* vector_address = (void*)&VICVectAddr0; // Address of first Vector-Address-Register
 	uint32_t* vector_control = (void*)&VICVectCntl0; // Address of first Vector-Control-Register

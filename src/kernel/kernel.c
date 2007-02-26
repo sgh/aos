@@ -69,7 +69,7 @@ extern funcPtr __initcalls_end__[];
 // 	return now>=last_interrupt_time ? now-last_interrupt_time: UINT32_MAX - (last_interrupt_time-now);
 // }
 
-static void do_initcalls() {
+static void do_initcalls(void) {
 	funcPtr* initcall;
 	
 	// Do initcalls 
@@ -112,11 +112,11 @@ void sys_msleep(uint16_t ms) {
  * If so it should not be allowed to block in any way
  * @return 0 if the current process is not the idle-process
  */
-static uint8_t is_background() {
+static uint8_t is_background(void) {
 	return (current == idle_task);
 }
 
-uint32_t time_slice_elapsed() {
+static uint32_t time_slice_elapsed(void) {
 	return uint32diff(last_context_time, read_timer32());
 }
 
