@@ -20,7 +20,8 @@
 #define _TYPES_H_
 
 #include <stddef.h>
-#include <stdint.h>
+//#include <stdint.h>
+#include <inttypes.h>
 
 typedef void (*funcPtr)(void);
 
