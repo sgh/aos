@@ -39,6 +39,7 @@
 // Compiler stuff
 #define PACKED __attribute__((packed))
 #define UNUSED __attribute__((unused))
+#define DEPRECATED __attribute__((deprecated))
 
 /**
  * \brief Calculate the difference between two uint32_t
