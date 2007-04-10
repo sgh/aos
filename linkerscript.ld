@@ -45,7 +45,6 @@ SECTIONS
   _etext = . ;
   PROVIDE (etext = .);
 
-
   .data : AT (_etext)
   {
     _data = . ;
