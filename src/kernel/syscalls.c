@@ -31,6 +31,9 @@ void* sys_call_table[] =
 	[_NR_usleep] sys_usleep,
 // 	[_NR_disable_irqs] sys_disable_irqs,
 // 	[_NR_enable_irqs] sys_enable_irqs,
+	[_NR_mutex_lock] sys_mutex_lock,
+	[_NR_mutex_unlock] sys_mutex_unlock,
+	[_NR_mutex_trylock] sys_mutex_trylock,
 	[_NR_block] sys_block,
 	[_NR_unblock] sys_unblock,
 	[_NR_disable_cs] sys_disable_cs,
@@ -41,13 +44,16 @@ void* sys_call_table[] =
 	[_NR_free] sys_free,
 	[_NR_mmstat] sys_mmstat,
 	[_NR_create_task] sys_create_task,
-	[_NR_aos_basic_init] sys_aos_basic_init,
+// 	[_NR_aos_basic_init] sys_aos_basic_init,
 	[_NR_aos_mm_init] sys_aos_mm_init,
 	[_NR_aos_hooks] sys_aos_hooks,
 };
 
 /* Syscall definitions */
 
+_syscall1(void, mutex_lock, mutex_t*, m);
+_syscall1(uint8_t, mutex_trylock, mutex_t*, m);
+_syscall1(void, mutex_unlock, mutex_t*, m);
 
 _syscall1(void, msleep, uint16_t, ms);
 _syscall1(void, usleep, uint32_t, us);
@@ -58,7 +64,7 @@ _syscall0(void, disable_cs);
 _syscall0(void, enable_cs);
 // _syscall0(void, enable_irqs);
 // _syscall0(void, disable_irqs);
-_syscall0(void, aos_basic_init);
+// _syscall0(void, aos_basic_init);
 _syscall2(void, aos_mm_init, void*,  start, void*, end);
 _syscall1(void, get_sysutime, uint32_t*, time);
 _syscall1(void, get_sysmtime, uint32_t*, time);

@@ -71,7 +71,7 @@ extern funcPtr __initcalls_end__[];
 
 static void do_initcalls(void) {
 	funcPtr* initcall;
-	
+
 	// Do initcalls 
 	initcall = __initcalls_start__;
 	while (initcall != __initcalls_end__) {
@@ -81,7 +81,7 @@ static void do_initcalls(void) {
 
 }
 
-void sys_aos_basic_init() {
+void aos_basic_init() {
 	do_initcalls();
 	current = NULL;
 }
@@ -117,6 +117,8 @@ static uint8_t is_background(void) {
 }
 
 static uint32_t time_slice_elapsed(void) {
+	/** @todo  there might be a problem with uint32diff 
+	that makes use in usleep leave some processes dead */
 	return uint32diff(last_context_time, read_timer32());
 }
 
@@ -141,7 +143,7 @@ void sys_aos_hooks(struct aos_hooks* hooks) {
 void sys_usleep(uint32_t us) {
 	struct list_head* e;
 	struct list_head* insertion_point = NULL;
-	uint32_t slice_elapsed = time_slice_elapsed();
+	uint32_t slice_elapsed = 0;//time_slice_elapsed();
 	uint32_t time = us + slice_elapsed;
 
 	if (time > MAX_TIME_SLICE_US) /** @fixme this work very poorly with dynamic timers-interrupt */
@@ -159,7 +161,7 @@ void sys_usleep(uint32_t us) {
 
 	/* Run through all sleeping processes all decrement the time our current
 	processs wants to sleep. If a longer-sleeping process is reached, the
-	current process should be interted before that process.
+	current process should be inserted before that process.
 	*/
 	list_for_each(e,&usleepQ) {
 		struct task_t* t;
@@ -187,7 +189,6 @@ void sys_usleep(uint32_t us) {
 void sys_block(struct list_head* q) {
 	if (is_background())
 		return;
-	//list_erase(&current->q); running proces is not in any queue
 	list_push_back(q,&current->q);
 	current->state = BLOCKED;
 	do_context_switch = 1;
@@ -198,8 +199,8 @@ void sys_unblock(struct task_t* task) {
 	if (task->state == BLOCKED ) {
 		struct task_t* next = get_struct_task(list_get_front(&readyQ));
 		process_wakeup(task);
-		if (task->prio < next->prio)
-			do_context_switch = 1;
+// 		if (task->prio < next->prio)
+// 			do_context_switch = 1;
 	}
 }
 

@@ -37,6 +37,7 @@
  */
 static void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priority) {
 	REGISTER_TYPE cpsr = 0x00000010; // User-mode
+// 	REGISTER_TYPE cpsr = 0x0000001F; // System-mode
 	if (((uint32_t)entrypoint & 1) == 1) // If address is thumb
 		cpsr |= 0x20;	// Set thumb bit
 // 	memset( (void*)stack, 0, 64);

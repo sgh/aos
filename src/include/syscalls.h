@@ -47,10 +47,12 @@
 #define _NR_free           13
 #define _NR_mmstat         14
 #define _NR_create_task    15
-#define _NR_aos_basic_init 16
+// #define _NR_aos_basic_init 16
 #define _NR_aos_mm_init    17
 #define _NR_aos_hooks      18
-
+#define _NR_mutex_lock     19
+#define _NR_mutex_unlock   20
+#define _NR_mutex_trylock   21
 
 /* Syscall declarations */
 void sys_unblock(struct task_t* task);
@@ -63,12 +65,15 @@ void sys_disable_cs(void);
 void sys_enable_cs(void);
 // void sys_disable_irqs();
 // void sys_enable_irqs();
+void sys_mutex_lock(mutex_t* m);
+uint8_t sys_mutex_trylock(mutex_t* m);
+void sys_mutex_unlock(mutex_t* m);
 void sys_get_sysutime(uint32_t* time);
 void sys_get_sysmtime(uint32_t* time);
 void* sys_malloc(size_t size);
 void sys_free(void* segment);
 void sys_mmstat(struct mm_stat* stat);
-void sys_aos_basic_init(void);
+// void sys_aos_basic_init(void);
 struct task_t* sys_create_task(funcPtr entrypoint, void* arg, int8_t priority);
 void sys_aos_hooks(struct aos_hooks* hooks);
 
