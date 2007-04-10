@@ -34,6 +34,7 @@ void spinlock_unlock(spinlock_t* lock) {
 #ifdef UNIPROCESSOR
 	enable_irqs();
 #else
-	*lock = 0;
+	//*lock = 0;
+	atomic_xchg(lock,0);
 #endif
 }

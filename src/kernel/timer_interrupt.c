@@ -97,7 +97,6 @@ void timer_interrupt_routine(void) {
 	elapsed_time = ciel(elapsed_time, UINT8_MAX);
 	_aos_status.timer_hook_maxtime = max(elapsed_time, _aos_status.timer_hook_maxtime);
 
-// 	do_context_switch = 1;
 	countdown_sleeps();	
 	clear_timer_interrupt();
 }
@@ -183,11 +182,11 @@ void process_wakeup(struct task_t* task) {
 	struct list_head* e;
 
 	task->state = READY;
-	list_push_front(&readyQ , &task->q);
+//	list_push_front(&readyQ , &task->q);
 
-	do_context_switch = 1; // Signal context-switch
+//	do_context_switch = 1; // Signal context-switch
 	
-	return;
+//	return;
 	
 	/*
 	Run through the list to insert the task after higher priority-tasks.
@@ -215,7 +214,9 @@ void process_wakeup(struct task_t* task) {
 
 	if (insertion_point)
 		list_push_front(insertion_point , &task->q);
-	else
+	else {
 		list_push_back(&readyQ , &task->q);
+	}	
+	do_context_switch = 1; // Signal context-switch
 
 }

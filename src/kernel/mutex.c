@@ -16,32 +16,34 @@
 	License along with this library; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-#include <aos.h>
+#define AOS_KERNEL_MODULE
+// #include <aos.h>
+#include <kernel.h>
 
-void mutex_lock(mutex_t* m) {
-	spinlock_lock(&m->spinlock);
+void sys_mutex_lock(mutex_t* m) {
+// 	spinlock_lock(&m->spinlock);
 
 	if (!m->lock) { // Mutex is not locked - lock it
 		m->lock = 1;
-		spinlock_unlock(&m->spinlock);
+// 		spinlock_unlock(&m->spinlock);
 		return;
 	}
 
-	spinlock_unlock(&m->spinlock);
+// 	spinlock_unlock(&m->spinlock);
 	
-	block(&m->waiting);
+	sys_block(&m->waiting);
 
 }
 
-uint8_t mutex_trylock(mutex_t* m) {
-	spinlock_lock(&m->spinlock);
+uint8_t sys_mutex_trylock(mutex_t* m) {
+// 	spinlock_lock(&m->spinlock);
 
 	if (!m->lock) { // Mutex is not locked - lock it
 		m->lock = 1;
-		spinlock_unlock(&m->spinlock);
+// 		spinlock_unlock(&m->spinlock);
 		return 1;
 	}
-	spinlock_unlock(&m->spinlock);
+// 	spinlock_unlock(&m->spinlock);
 
 	return 0;
 }
@@ -50,20 +52,19 @@ void mutex_init(mutex_t* m) {
 	INIT_LIST_HEAD(&m->waiting);
 }
 
-void mutex_unlock(mutex_t* m) {
+void sys_mutex_unlock(mutex_t* m) {
 	struct task_t* next;
-	
-	spinlock_lock(&m->spinlock);
+// 	spinlock_lock(&m->spinlock);
 	if (list_isempty(&m->waiting)) { // If none is waiting
 		m->lock = 0;
-		spinlock_unlock(&m->spinlock);
+// 		spinlock_unlock(&m->spinlock);
 		return;
 	}
 
 	next = get_struct_task(list_get_front(&m->waiting));
 	list_erase(&next->q);
-	spinlock_unlock(&m->spinlock);
+// 	spinlock_unlock(&m->spinlock);
 	
-	unblock(next);
+	sys_unblock(next);
 }
 
