@@ -1,7 +1,8 @@
 
 APP = testapp
 
-SOURCES = testgpio.c handlers.c init_cpu.c startarm.s
+#SOURCES = testgpio.c handlers.c init_cpu.c startarm.s
+SOURCES = startup.s testapp.c
 
 CFLAGS = -mcpu=arm7tdmi -O0 -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration  -mthumb-interwork
 #-mthumb 
@@ -12,8 +13,8 @@ ASFLAGS = -mcpu=arm7tdmi -mthumb-interwork
 LDFLAGS = -nostartfiles  -nodefaultlibs  -nostdlib -mthumb-interwork
 #--gc-sections
 	
-#LINKERSCRIPT = linkerscript.ld
-LINKERSCRIPT = lpc2364_rom.ld
+LINKERSCRIPT = linkerscript.ld
+#LINKERSCRIPT = lpc2364_rom.ld
 
 LIBS = -laos -lm -lgcc -lnosys -lc
 
@@ -43,8 +44,8 @@ DEPS := $(patsubst %.o,%.d,$(OBJS))
 
 
 all: ${OBJS}
-	$(MAKE) -C src
-	$(GCC)  $(CFLAGS) ${LDFLAGS} -Wl,-Map=$(APP).map  -T $(LINKERSCRIPT) $(INCLUDE) -o $(APP).elf ${LIBDIRS} ${OBJS} ${LIBS} 
+	$(MAKE) -C src 
+	$(GCC) $(CFLAGS) ${LDFLAGS} -Wl,-Map=$(APP).map  -T $(LINKERSCRIPT) $(INCLUDE) -o $(APP).elf ${LIBDIRS} ${OBJS} ${LIBS} 
 	$(OBJCOPY) -O ihex $(APP).elf $(APP).hex
 	$(OBJCOPY) -O binary $(APP).elf $(APP).bin
 	$(SIZE) -t $(OBJS)
