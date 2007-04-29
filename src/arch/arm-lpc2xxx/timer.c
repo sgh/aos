@@ -26,6 +26,7 @@
 #include <irq.h>
 #include <macros.h>
 #include <timer_interrupt.h>
+#include <config.h>
 
 #define TIMER0_IRQ 4
 
@@ -36,28 +37,25 @@ static uint32_t timer_overflows = 0;
 void init_timer_interrupt(funcPtr handler, uint32_t timer_refclk) {
 	T0_PR = timer_refclk/1000000 - 1;		/* Scale to 1 us steps */
 	T0_PC = 0;													/* Prescale-counter */
-	//T0_TC = 0xFFA00000;									/* Counter-value */
 	T0_TC = 0x00000000;									/* Counter-value */
-	T0_MR0 = T0_TC + MAX_TIME_SLICE_US;	/* Match-Register0 */
+	T0_MR0 = T0_TC + (1000000/HZ);	/* Match-Register0 */
 	
-// 	VICVectCntl0 = 4 + BIT5;
-// 	VICVectAddr0 = (uint32)timer_interrupt;
-	vector_num = request_vector((uint32_t)handler, TIMER0_IRQ);
-	
-	if ( vector_num == -1 )
-		for (;;);
+
+// 	vector_num = request_vector((uint32_t)handler, TIMER0_IRQ);
+// 	if ( vector_num == -1 )
+// 		for (;;);
 	
 	T0_MCR = BIT0;	/* Interrupt on Math-Register0 */
 	T0_TCR = BIT0;	/* Enable timer0 */
 }
 
 void enable_timer_interrupt(void) {
-	vector_enable(vector_num);
+// 	vector_enable(vector_num);
 	irq_enable(TIMER0_IRQ);
 }
 
 void disable_timer_interrupt(void) {
- 	vector_disable(vector_num);
+//  	vector_disable(vector_num);
 	irq_disable(TIMER0_IRQ);
 }
 
