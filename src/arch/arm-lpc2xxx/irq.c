@@ -22,8 +22,10 @@
 #include <types.h>
 #include <bits.h>
 #include <irq.h>
+#include <macros.h>
 
 static uint16_t vic_address_map;
+
 
 uint8_t request_vector(uint32_t func, uint8_t irqnum) {
 	uint8_t i = 0;
@@ -79,4 +81,36 @@ void irq_disable(uint8_t irqnum) {
 	if (irqnum>31)
 		return;
 	VICIntEnable &= ~(BIT0<<irqnum); /* Enable Interrrupt */
+}
+
+void aos_irq_handler(void);
+
+void interrupt_init(void) {
+	VICDefVectAddr = (uint32_t)aos_irq_handler;
+}
+
+
+void interrupt_dispatch(int vector) {
+	irq_handler(vector);
+}
+
+
+void interrupt_handler(void) {
+	int vector;
+	int bits;
+
+	bits = VICIRQStatus;
+
+retry:
+		for (vector = 0; vector<32; vector++) {
+	if (bits & (1<<vector))
+		break;
+		}
+
+		interrupt_dispatch(vector);
+
+		bits = VICIRQStatus;
+
+		if (bits)
+			goto retry;
 }
