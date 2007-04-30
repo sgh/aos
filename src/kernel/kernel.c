@@ -115,7 +115,7 @@ void sys_msleep(uint16_t ms) {
  * If so it should not be allowed to block in any way
  * @return 0 if the current process is not the idle-process
  */
-static uint8_t is_background(void) {
+uint8_t is_background(void) {
 	return (current == idle_task);
 }
 

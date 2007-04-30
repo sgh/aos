@@ -81,5 +81,6 @@ extern struct list_head usleepQ;
  */
 void process_wakeup(struct task_t* task);
 
+uint8_t is_background(void);
 
 #endif // _KERNEL_H_
