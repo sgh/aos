@@ -29,17 +29,17 @@
  * @param timer_refclk The timer-frequency. This is used to calculate
  * the currect timer prescaler
  */
-void init_timer_interrupt(funcPtr handler, uint32_t timer_refclk);
+void init_clock(uint32_t timer_refclk);
 
 /**
  * \brief Enable the timer-interrupt and start the timer
  */
-void enable_timer_interrupt(void);
+void enable_clock(void);
 
 /**
  * \brief Disable the timer-interrupt and stop the timer
  */
-void disable_timer_interrupt(void);
+void disable_clock(void);
 
 /**
  * \brief Clear the interrupt. Only used at the end of the interrupt-handler
@@ -61,7 +61,7 @@ uint32_t get_timer_match(void);
 /**
  * \brief The timer-interrupt. Executed 1000 times pr. second.
  */
-void timer_interrupt(void);
+void timer_clock(void);
 
 /**
  * \brief Timer value at last interrupt

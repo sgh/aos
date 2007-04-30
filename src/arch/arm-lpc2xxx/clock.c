@@ -25,55 +25,52 @@
 #include <kernel.h>
 #include <irq.h>
 #include <macros.h>
-#include <timer_interrupt.h>
+#include <clock.h>
 #include <config.h>
 
 #define TIMER0_IRQ 4
 
-static int8_t vector_num;
+// static int8_t vector_num;
 
 static uint32_t timer_overflows = 0;
 
-void init_timer_interrupt(funcPtr handler, uint32_t timer_refclk) {
+void timer_interrupt(void);
+
+static void clock_isr(void) {
+	timer_clock();
+	timer_interrupt();
+	T0_IR = BIT0;    // Clear interrupt
+}
+
+void init_clock(uint32_t timer_refclk) {
 	T0_PR = timer_refclk/1000000 - 1;		/* Scale to 1 us steps */
 	T0_PC = 0;													/* Prescale-counter */
 	T0_TC = 0x00000000;									/* Counter-value */
 	T0_MR0 = T0_TC + (1000000/HZ);	/* Match-Register0 */
-	
 
-// 	vector_num = request_vector((uint32_t)handler, TIMER0_IRQ);
-// 	if ( vector_num == -1 )
-// 		for (;;);
+	irq_attach(TIMER0_IRQ, clock_isr);
 	
-	T0_MCR = BIT0;	/* Interrupt on Math-Register0 */
+	T0_MCR = BIT0|BIT1; /* Interrupt on Math-Register0 */
 	T0_TCR = BIT0;	/* Enable timer0 */
 }
 
-void enable_timer_interrupt(void) {
-// 	vector_enable(vector_num);
-	irq_enable(TIMER0_IRQ);
+void enable_clock(void) {
+	interrupt_unmask(TIMER0_IRQ);
 }
 
-void disable_timer_interrupt(void) {
-//  	vector_disable(vector_num);
-	irq_disable(TIMER0_IRQ);
-}
-
-
-void clear_timer_interrupt(void) {
-	T0_IR = BIT0;    // Clear interrupt
-	VICVectAddr = 0; // Update priority hardware
+void disable_clock(void) {
+	interrupt_mask(TIMER0_IRQ);
 }
 
 
-uint32_t get_timer_match(void) {
-	return T0_MR0;
-}
+// uint32_t get_timer_match(void) {
+// 	return T0_MR0;
+// }
 
 
-void set_timer_match(uint32_t matchval) {
-	T0_MR0 = matchval;
-}
+// void set_timer_match(uint32_t matchval) {
+// 	T0_MR0 = matchval;
+// }
 
 
 uint32_t read_timer32() {
@@ -87,7 +84,6 @@ uint32_t read_timer32() {
 	
 	return new_timer;
 }
-
 
 uint64_t read_timer64() {
 	uint32_t timerval = read_timer32();

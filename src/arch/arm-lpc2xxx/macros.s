@@ -37,10 +37,6 @@
 		/* Save r0-r12,LR on User-mode stack */
 	STMFD SP!,{r0-r12,LR}
 
-	/* Reduce interrupt latencies by enabling interrupts here */
-	MRS r0, SPSR
-	BIC r0, r0, #0xC0  @ enable IRQ and FIQ interrupts
-	MSR SPSR, r0
 .endm
 
 .macro IRQ_epilogue

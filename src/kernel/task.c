@@ -46,7 +46,7 @@ static void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t 
 // 	task->fragment = NULL;
 	task->context[0] = (uint32_t)(entrypoint);                                  // Entrypoint
 #ifdef SHARED_STACK
-	task->context[1] = (uint32_t)&Top_Stack;  // Shared stack SP
+	task->context[1] = (uint32_t)&__stack_usr_top__;  // Shared stack SP
 #else
 	task->context[1] = (uint32_t)task->context + (1024 * sizeof(REGISTER_TYPE));  // Seperate stack SP
 #endif
@@ -66,6 +66,7 @@ static void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t 
 	task->context[15] = 0x11; // r11
 	task->context[16] = 0x12; // r12
 	task->prio = priority;
+	task->sleep_timer.type = TMR_STOP;
 	list_push_back(&readyQ, &task->q);
 }
 

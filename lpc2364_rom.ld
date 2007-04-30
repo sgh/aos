@@ -123,7 +123,6 @@ MEMORY
 }
 
 
-PROVIDE (Top_Stack = 0x40003B74 );
 
 /* 
  * Define entry point, found in startarm.s

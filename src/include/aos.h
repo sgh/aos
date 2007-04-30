@@ -62,7 +62,7 @@ void aos_basic_init(void);
  * \brief This function initiates aos operation. NOTE: This function does NOT return.
  * @param timer_refclk The frequency of the timer used as context-switch interrupt.
  */
-void aos_context_init(uint32_t timer_refclk, funcPtr idle_func);
+void aos_context_init(uint32_t timer_refclk);
 
 /**
  * \brief Initialize dynamic memory.

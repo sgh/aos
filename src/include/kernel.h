@@ -33,7 +33,7 @@
  * \brief linker-provided placement of the stack
  * @todo it could be nice to have this detected automatically.
  */
-extern uint32_t Top_Stack;
+extern uint32_t __stack_usr_top__;
 
 /**
  * \brief Internal function to get the usermode stackpointer.
@@ -80,16 +80,6 @@ extern struct list_head usleepQ;
  * @param task The task to wakeup.
  */
 void process_wakeup(struct task_t* task);
-
-/**
- * \brief Unmask all interrupts
- */
-void enable_irqs(void);
-
-/**
- * \brief Mask all interrupts
- */
-void disable_irqs(void);
 
 
 #endif // _KERNEL_H_

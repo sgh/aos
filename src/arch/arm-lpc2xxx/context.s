@@ -19,6 +19,7 @@
 
 /* public symbols */
 .global aos_swi_handler
+.global aos_irq_handler
 .global get_usermode_sp
 .global get_sp
 .global get_usermode_sp
@@ -27,7 +28,8 @@
 
 
 /* Public interrupt-handler symbols */
-.global timer_interrupt
+@ .global led_irq_start
+@ .global led_irq_end
 ;.global uart0_interrupt
 
 .include "arch/arm-lpc2xxx/macros.s"
@@ -156,16 +158,25 @@ _get_current_context_store:
 	Timer-interrupt handler:
 		Called as a result of interrupts from Timer0
 */
-timer_interrupt:
+aos_irq_handler:
 	IRQ_prologue
-
-	/* Call C-interrupt-routine */
-	BL timer_interrupt_routine
-	@LDR r5, =timer_interrupt_routine
-	@MOV LR, PC
-	@BX r5
-
+@ 	BL led_irq_start
+	BL interrupt_handler
+@ 	BL led_irq_end
 	IRQ_epilogue
+
+@ @ timer_interrupt:
+@ 	IRQ_prologue
+@ 	BL led_irq_start
+@ 
+@ 	/* Call C-interrupt-routine */
+@ 	BL timer_interrupt_routine
+@ 	@LDR r5, =timer_interrupt_routine
+@ 	@MOV LR, PC
+@ 	@BX r5
+@ 
+@ 	BL led_irq_end
+@ 	IRQ_epilogue
 
 
 /*
@@ -174,6 +185,7 @@ timer_interrupt:
 		Does context-switching if do_context_switch != 0
 */
 return_from_interrupt:
+@ 	BL led_irq_start
 	/* Save r0 on stack - we restore it later */
 	STMFD SP!,{r0}
 	
@@ -346,4 +358,9 @@ after_interrupt_endisable:
 	
 return_from_irq:
 	LDMFD SP!,{r0}
+
+@ 	STMFD SP!,{LR} @ Store LR
+@ 	BL led_irq_end
+@ 	LDMFD SP!,{LR} @ Load LR
+
 	MOVS PC, LR

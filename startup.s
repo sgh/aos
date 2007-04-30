@@ -15,6 +15,18 @@
 
 # *** Startup Code (executed after Reset) ***
 
+/*
+ * Located in init_cpu.c
+ */
+.extern        Init_Wait
+.extern        Init_Clocks
+.extern        Init_MAM
+.extern        Init_Pins
+.extern        Init_CPU
+.extern        Init_Modules
+.extern        Exit_Main
+
+
 
 # Standard definitions of Mode bits and Interrupt (I & F) flags in PSRs
 
@@ -145,80 +157,98 @@ FIQ_Handler:    B       FIQ_Handler
 
 # Reset Handler
 
-Reset_Handler:  
+Reset_Handler:
 
 
-.if PLL_SETUP
-                LDR     R0, =PLL_BASE
-                MOV     R1, #0xAA
-                MOV     R2, #0x55
+@ .if PLL_SETUP
+@                 LDR     R0, =PLL_BASE
+@                 MOV     R1, #0xAA
+@                 MOV     R2, #0x55
+@ 
+@ # Configure and Enable PLL
+@                 MOV     R3, #PLLCFG_Val
+@                 STR     R3, [R0, #PLLCFG_OFS] 
+@                 MOV     R3, #PLLCON_PLLE
+@                 STR     R3, [R0, #PLLCON_OFS]
+@                 STR     R1, [R0, #PLLFEED_OFS]
+@                 STR     R2, [R0, #PLLFEED_OFS]
+@ 
+@ # Wait until PLL Locked.
+@ PLL_Loop:       LDR     R3, [R0, #PLLSTAT_OFS]
+@                 ANDS    R3, R3, #PLLSTAT_PLOCK
+@                 BEQ     PLL_Loop
+@ 
+@ # Switch to PLL Clock
+@                 MOV     R3, #(PLLCON_PLLE | PLLCON_PLLC)
+@                 STR     R3, [R0, #PLLCON_OFS]
+@                 STR     R1, [R0, #PLLFEED_OFS]
+@                 STR     R2, [R0, #PLLFEED_OFS]
+@ .endif
+		/* 
+		
+ * Setup basic stack for initialize code
+ */
+              LDR    R0,=__stack_svc_top__
+              MSR    CPSR_c, #Mode_SVC|I_Bit|F_Bit
+              MOV    SP,R0
 
-# Configure and Enable PLL
-                MOV     R3, #PLLCFG_Val
-                STR     R3, [R0, #PLLCFG_OFS] 
-                MOV     R3, #PLLCON_PLLE
-                STR     R3, [R0, #PLLCON_OFS]
-                STR     R1, [R0, #PLLFEED_OFS]
-                STR     R2, [R0, #PLLFEED_OFS]
+/* 
+ * Wait a moment so that ULink can interrupt use
+ *  This is done before the PLL is running.
+ */
+              BL     Init_Wait
 
-# Wait until PLL Locked.
-PLL_Loop:       LDR     R3, [R0, #PLLSTAT_OFS]
-                ANDS    R3, R3, #PLLSTAT_PLOCK
-                BEQ     PLL_Loop
+/* 
+ * Initalize basic modules
+ */
+              BL     Init_Clocks
 
-# Switch to PLL Clock
-                MOV     R3, #(PLLCON_PLLE | PLLCON_PLLC)
-                STR     R3, [R0, #PLLCON_OFS]
-                STR     R1, [R0, #PLLFEED_OFS]
-                STR     R2, [R0, #PLLFEED_OFS]
-.endif
-
-
-.if MAM_SETUP
-                LDR     R0, =MAM_BASE
-                MOV     R1, #MAMTIM_Val
-                STR     R1, [R0, #MAMTIM_OFS] 
-                MOV     R1, #MAMCR_Val
-                STR     R1, [R0, #MAMCR_OFS] 
-.endif
+							BL     Init_MAM
 
 
 # Initialise Interrupt System
 #  ...
 
+.extern        __stack_svc_top__
+.extern        __stack_irq_top__
+.extern        __stack_fiq_top__
+.extern        __stack_und_top__
 
 # Setup Stack for each mode
 
-                LDR     R0, =Top_Stack
+@                 LDR     R0, =Top_Stack
 
-#  Enter Undefined Instruction Mode and set its Stack Pointer
-                MSR     CPSR_c, #Mode_UND|I_Bit|F_Bit
-                MOV     SP, R0
-                SUB     R0, R0, #UND_Stack_Size
+/*         Undefined instruction -> Undefined mode, uses Undefined stack    */
+              LDR   R0,=__stack_und_top__
+              MSR   CPSR_c, #Mode_UND|I_Bit|F_Bit
+              MOV   SP,R0
 
-#  Enter Abort Mode and set its Stack Pointer
-                MSR     CPSR_c, #Mode_ABT|I_Bit|F_Bit
-                MOV     SP, R0
-                SUB     R0, R0, #ABT_Stack_Size
+/*         Abort (prefetch+data) -> Abort mode, uses Undefined stack        */
+              MSR    CPSR_c, #Mode_ABT|I_Bit|F_Bit
+              MOV    SP,R0
 
-#  Enter FIQ Mode and set its Stack Pointer
-                MSR     CPSR_c, #Mode_FIQ|I_Bit|F_Bit
-                MOV     SP, R0
-                SUB     R0, R0, #FIQ_Stack_Size
+/*         FIQ -> FIQ mode, use FIQ stack                                   */
+              LDR    R0,=__stack_fiq_top__
+              MSR    CPSR_c, #Mode_FIQ|I_Bit|F_Bit
+              MOV    SP,R0
 
-#  Enter IRQ Mode and set its Stack Pointer
-                MSR     CPSR_c, #Mode_IRQ|I_Bit|F_Bit
-                MOV     SP, R0
-                SUB     R0, R0, #IRQ_Stack_Size
+/*         IRQ -> IRQ mode, use IRQ stack                                   */
+              LDR    R0,=__stack_irq_top__
+              MSR    CPSR_c, #Mode_IRQ|I_Bit|F_Bit
+              MOV    SP,R0
 
-#  Enter Supervisor Mode and set its Stack Pointer
-                MSR     CPSR_c, #Mode_SVC|I_Bit|F_Bit
-                MOV     SP, R0
-                SUB     R0, R0, #SVC_Stack_Size
+/*         Supervisor mode, use supervisor stack                            */
+              LDR    R0,=__stack_svc_top__
+              MSR    CPSR_c, #Mode_SVC|I_Bit|F_Bit
+              MOV    SP,R0
+									
+/*         User mode, use user stack                            */
+              LDR    R0,=__stack_usr_top__
+              MSR    CPSR_c, #Mode_USR|I_Bit|F_Bit
+              MOV    SP,R0
 
-#  Enter User Mode and set its Stack Pointer
-                MSR     CPSR_c, #Mode_USR
-                MOV     SP, R0
+/*         We keep running in user mode                               */
+
 
 #  Setup a default Stack Limit (when compiled with "-mapcs-stack-check")
                 SUB     SL, SP, #USR_Stack_Size

@@ -21,6 +21,7 @@
 
 #include <types.h>
 #include <list.h>
+#include <timer.h>
 
 /**
  * \brief This is defined if the system should be using a shared stack.
@@ -64,7 +65,7 @@ struct task_t {
 	/**
 	 * \brief  useconds to sleep.
 	 */
-	uint32_t sleep_time;
+	struct timer sleep_timer;
 
 	/**
 	 * \brief Average sleep-time. Used for dynamic prioritize
