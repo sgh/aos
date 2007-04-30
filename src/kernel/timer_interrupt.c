@@ -48,13 +48,6 @@ void led_irq_end(void);
 
 void sched(void) {
 	struct task_t* next = NULL;
-
-	if (list_isempty(&readyQ)) {
-		next = idle_task; // Idle
-	} else {
-		next = get_struct_task(list_get_front(&readyQ));
-		list_erase(&next->q);
-	}
 		
 #ifdef SHARED_STACK
 	/* Copy stack away from shared system stack */
@@ -81,12 +74,18 @@ void sched(void) {
 		
 		if (current->state == RUNNING) {
 			current->state = READY;
-			list_push_back(&readyQ,&current->q);
+			if (!is_background())
+				list_push_back(&readyQ,&current->q);
 		}
 	}
 #endif
 
-
+	if (list_isempty(&readyQ)) {
+		next = idle_task; // Idle
+	} else {
+		next = get_struct_task(list_get_front(&readyQ));
+		list_erase(&next->q);
+	}
 	
 #ifdef SHARED_STACK
 	/* Copy stack to shared stack */

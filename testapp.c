@@ -52,7 +52,7 @@ mutex_t mymutex;
 mutex_t count_lock;
 int count = 100;
 
-void mswork(uint16_t ms) {
+void mswork(uint32_t ms) {
 	volatile unsigned int delay;
 // 	uint32_t time;
 	delay = 10*ms;
@@ -75,8 +75,8 @@ void AOS_TASK task1(void) {
 
 // 		mutex_unlock(&mymutex);
 
-// 		msleep(100);
-		mswork(20000);
+		msleep(500);
+		mswork(200000);
 		state ^= 1;
 	}
 }
@@ -96,7 +96,7 @@ void AOS_TASK task2(void) {
 // 		if (count == 0)
 // 			mutex_unlock(&mymutex);
 
-// 		msleep(500);
+		msleep(500);
 		mswork(1000);
 // 		yield();
 		state ^= 1;
@@ -158,7 +158,7 @@ void main(void) {
 	
 	task1_cd = create_task(task1, NULL, 0);
 
-// 	task2_cd = create_task(task2, NULL, 0);
+	task2_cd = create_task(task2, NULL, 0);
 // // // 	task3_cd = create_task(task3, NULL, 0);
 	
 // 	for (i=0; i<1; i++)
@@ -171,17 +171,17 @@ void main(void) {
 	aos_context_init(15000000);
 	i = 0;
 	for (;;) {
-// 		i++;
-// 
-// 		if (i == 50000) {
-// 			GPIO1_IOCLR = BIT23;
-// 		}
-// 
-// 		if (i == 100000) {
-// 			GPIO1_IOSET = BIT23;
-// 			i=0;
-// 		}
-// 		
+		i++;
+/*
+		if (i == 100000) {
+			GPIO1_IOCLR = BIT21;
+		}
+
+		if (i == 200000) {
+			GPIO1_IOSET = BIT21;
+			i=0;
+		}
+		*/
 	}
 	
 }
