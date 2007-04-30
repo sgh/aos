@@ -39,7 +39,9 @@ void timer_interrupt(void) {
 	elapsed_time = uint32diff(now, read_timer32());
 	elapsed_time = ciel(elapsed_time, UINT8_MAX);
 	_aos_status.timer_hook_maxtime = max(elapsed_time, _aos_status.timer_hook_maxtime);
-	do_context_switch = 1;
+
+	if (!list_isempty(&readyQ))
+		do_context_switch = 1;
 }
 
 void led_irq_start(void);
@@ -48,7 +50,7 @@ void led_irq_end(void);
 
 void sched(void) {
 	struct task_t* next = NULL;
-		
+	
 #ifdef SHARED_STACK
 	/* Copy stack away from shared system stack */
 	if (current) {
@@ -86,6 +88,7 @@ void sched(void) {
 		next = get_struct_task(list_get_front(&readyQ));
 		list_erase(&next->q);
 	}
+
 	
 #ifdef SHARED_STACK
 	/* Copy stack to shared stack */
@@ -116,6 +119,7 @@ void sched(void) {
 	next->state = RUNNING;
 
 	current = next;
+	do_context_switch = 0;
 }
 
 
@@ -124,12 +128,12 @@ void process_wakeup(struct task_t* task) {
 	struct list_head* e;
 
 	task->state = READY;
-	list_push_front(&readyQ , &task->q);
+// 	list_push_front(&readyQ , &task->q);
 
-	do_context_switch = 1; // Signal context-switch
+// 	do_context_switch = 1; // Signal context-switch
 
 // 	list_push_back(&readyQ , &task->q);
-	return;
+// 	return;
 	
 	/*
 	Run through the list to insert the task after higher priority-tasks.
@@ -155,11 +159,12 @@ void process_wakeup(struct task_t* task) {
 		}
 	}
 
-	if (insertion_point)
+	if (insertion_point) {
+		do_context_switch = 1; // Signal context-switch
 		list_push_front(insertion_point , &task->q);
-	else {
+	} else {
 		list_push_back(&readyQ , &task->q);
 	}
-	do_context_switch = 1; // Signal context-switch
+	
 
 }
