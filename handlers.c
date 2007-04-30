@@ -13,38 +13,30 @@ void FIQ_Handler(void)   __attribute__ ((interrupt));
 /*
  * Implementation
  */
-void Undef_Handler(void)
-{
-	while (1)
-		;
+void Undef_Handler(void) {
+	while (1) ;
 }
 
-void SWI_Handler(void)
-{
-	while (1)
-		;
+
+void SWI_Handler(void) {
+	while (1) ;
 }
 
-void PAbt_Handler(void)
-{
-	while (1)
-		;
+void PAbt_Handler(void) {
+	while (1) ;
 }
 
-void DAbt_Handler(void)
-{
-	while (1)
-		;
+void DAbt_Handler(void) {
+	while (1) ;
 }
-/*
+
 void IRQ_Handler(void)
 {
-
+	while (1) ;
 }
-*/
-void FIQ_Handler(void)
-{
 
+void FIQ_Handler(void) {
+	while (1) ; 
 }
 
 

@@ -3,12 +3,12 @@ APP = libaos
 
 MARCH = arm-lpc2xxx
 
-KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c spinlock.c task.c kernel.c timer_interrupt.c wait.c
+KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c spinlock.c task.c kernel.c timer_interrupt.c wait.c irq.c timer.c
 
 DRIVER_SOURCES =  
 #driver_core.c driver_class.c platform/platform.c
 
-ARCH_SOURCES = irq.c context.s atomic.s timer.c
+ARCH_SOURCES = interrupt.c context.s atomic.s clock.c
 
 MM_SOURCES = mm.c fragment.c 
 
@@ -18,12 +18,13 @@ SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES)) $(addprefix memory/,$(MM_SOURCE
 
 ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
 
-CFLAGS = -mcpu=arm7tdmi -Os -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -mthumb-interwork 
+CFLAGS = -mcpu=arm7tdmi -O3 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -mthumb-interwork 
 #-mapcs
 #-ffreestanding
 #-ffunction-sections -fdata-sections
 
-THUMB = -mthumb
+THUMB =
+#-mthumb
 
 LDFLAGS = -mthumb-interwork
 

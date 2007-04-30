@@ -20,7 +20,7 @@
 
 #include <kernel.h>
 #include <task.h>
-#include <timer_interrupt.h>
+#include <clock.h>
 #include <timer.h>
 #include <kernel.h>
 #include <types.h>
@@ -28,83 +28,26 @@
 #include <fragment.h>
 #include <macros.h>
 
-/**
- * \brief This function counts down sleep-time of waiting processes
- *
- * @todo tell about the differential ordering
- */
-static void countdown_sleeps(void) {
-	struct task_t* t;
-	struct list_head* e;
-	uint32_t now = read_timer32();
-	uint32_t elapsed_time;
-	uint32_t time_to_wake = MAX_TIME_SLICE_US;
-	
-	elapsed_time = uint32diff(last_context_time, now);
-	last_context_time = now;
+#include <arm/lpc2119.h>
 
-	while (!list_isempty(&usleepQ) && elapsed_time) {
-		// If someone is sleeping
-		e = list_get_front(&usleepQ);
-		t = get_struct_task(e);
-
-		if (t->sleep_time) { // If process had time left to sleep
-			if (t->sleep_time > elapsed_time) {
-				t->sleep_time -= elapsed_time;
-				elapsed_time = 0;
-			} else {
-				elapsed_time -= t->sleep_time;
-				t->sleep_time = 0;
-			}
-		}
-
-		if (t->sleep_time == 0) { // If process now has no time left to sleep
-// 			struct task_t* next = get_struct_task(list_get_front(&readyQ));
-			list_erase(&t->q);
-			process_wakeup(t);
-		}
-
-		/*
-			Enable dynamic time-slice length. This is problematic since periodic function-calls
-			usd for regulators and such will not be called at regular intervals. This is why
-			MAX_TIME-SLICE_US and MIN_TIME_SLICE_US are both set to 1000 us in task.h
-		*/
-	}
-
-	if (!list_isempty(&usleepQ)) {
-		e = list_get_front(&usleepQ); // Set e to the next to wake up
-		t = get_struct_task(e); // Get task-struct.
-
-		time_to_wake = t->sleep_time;
-		if (time_to_wake < MIN_TIME_SLICE_US) // Make sure that timeslice stays above MIN_TIME_SLICE_US
-			time_to_wake = MIN_TIME_SLICE_US;
-
-		if (time_to_wake > MAX_TIME_SLICE_US) // Make sure that timeslice stays below MAX_TIME_SLICE_US
-			time_to_wake = MAX_TIME_SLICE_US;
-	}
-
-	set_timer_match( get_timer_match() + time_to_wake );
-}
-
-void timer_interrupt_routine(void) {
+void timer_interrupt(void) {
 	uint32_t now;
 	uint32_t elapsed_time;
 
-	
 	now = read_timer32();
 	AOS_HOOK(timer_event,now);
 	elapsed_time = uint32diff(now, read_timer32());
 	elapsed_time = ciel(elapsed_time, UINT8_MAX);
 	_aos_status.timer_hook_maxtime = max(elapsed_time, _aos_status.timer_hook_maxtime);
-
-	countdown_sleeps();	
-	clear_timer_interrupt();
+	do_context_switch = 1;
 }
+
+void led_irq_start(void);
+void led_irq_end(void);
 
 
 void sched(void) {
 	struct task_t* next = NULL;
-//	countdown_sleeps();
 
 	if (list_isempty(&readyQ)) {
 		next = idle_task; // Idle
@@ -116,9 +59,9 @@ void sched(void) {
 #ifdef SHARED_STACK
 	/* Copy stack away from shared system stack */
 	if (current) {
-		uint32_t len = (REGISTER_TYPE)&Top_Stack - get_usermode_sp();
+		uint32_t len = (REGISTER_TYPE)&__stack_usr_top__ - get_usermode_sp();
 // 		void* dst = current->stack;
-		void* src = (void*)&Top_Stack - len;
+		void* src = (void*)&__stack_usr_top__ - len;
 		
 		// DMEM
 // 		current->malloc_stack = malloc(len);
@@ -149,7 +92,7 @@ void sched(void) {
 	/* Copy stack to shared stack */
 	if (next) {
 		uint32_t len = next->stack_size;
-		void* dst = (void*)&Top_Stack - len;
+		void* dst = (void*)&__stack_usr_top__ - len;
 // 		void* src = current->stack;
 		
 		// DMEM
@@ -182,11 +125,12 @@ void process_wakeup(struct task_t* task) {
 	struct list_head* e;
 
 	task->state = READY;
-//	list_push_front(&readyQ , &task->q);
+	list_push_front(&readyQ , &task->q);
 
-//	do_context_switch = 1; // Signal context-switch
-	
-//	return;
+	do_context_switch = 1; // Signal context-switch
+
+// 	list_push_back(&readyQ , &task->q);
+	return;
 	
 	/*
 	Run through the list to insert the task after higher priority-tasks.
@@ -216,7 +160,7 @@ void process_wakeup(struct task_t* task) {
 		list_push_front(insertion_point , &task->q);
 	else {
 		list_push_back(&readyQ , &task->q);
-	}	
+	}
 	do_context_switch = 1; // Signal context-switch
 
 }

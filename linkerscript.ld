@@ -1,32 +1,36 @@
 
 MEMORY
 {
- 	FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 256k
-  RAM (rw) : ORIGIN = 0x40000000, LENGTH = 16k
+  flash    (rx) : ORIGIN = 0x00000000, LENGTH = 256K
+  ram      (rw) : ORIGIN = 0x40000000, LENGTH = 0x2000
+  ramstack (rw) : ORIGIN = 0x40002000, LENGTH = 0x2000
+ 
 }
-/*PROVIDE (Top_Stack = 0x40000000 + 16k - 4);*/
-PROVIDE (Top_Stack = 0x40003B74 );
 
+/* 
+ * Define entry point, found in startarm.s
+ */
+ENTRY(_reset_handler);
 
 SECTIONS
 {
+	startup : 
+  { 
+    *(.startup)
+  } > flash =0
 
   .text :
   {
-    KEEP(startup.o (.text))         /* Startup code */
     *(.text)                   /* remaining code */
-
     *(.glue_7t) *(.glue_7)
-
-  } > FLASH =0
+  } > flash
 
   . = ALIGN(4);
-
 
   .rodata :
   {
     *(.rodata)
-  } > FLASH
+  } > flash
 
   . = ALIGN(4);
 
@@ -37,38 +41,62 @@ SECTIONS
     *(.class_initcalls)
     *(.driver_initcalls)
     *(.aos_initcalls)
-	} > FLASH
+	} > flash
 	__initcalls_end__ = . ;
 
   . = ALIGN(4);
 
-  _etext = . ;
+	_etext = . ;
+	__end_of_text__  = .;
+	__data_beg_src__ = .;
   PROVIDE (etext = .);
 
   .data : AT (_etext)
   {
+  	__data_beg__     = .;
     _data = . ;
     *(.data)
     SORT(CONSTRUCTORS)
-  } >RAM
+  } > ram
   . = ALIGN(4);
+  __data_end__     = .;
 
   _edata = . ;
    PROVIDE (edata = .);
 
   .bss :
   {
+		__bss_beg__ = .;
     __bss_start = . ;
     __bss_start__ = . ;
     *(.bss)
     *(COMMON)
-  } >RAM
+  } > ram
   . = ALIGN(4);
-  __bss_end__ = . ;
   __bss_end__ = . ;
 
   _end = .;
   PROVIDE (end = .);
+  
+	stacklayout :
+	{
+		__stack_usr_bottom__ = .;
+		. = . + 0x0400*2; /* 2 kb */
+		__stack_usr_top__    = .;
+		__stack_svc_bottom__ = .;
+		. = . + 0x0400*2; /* 2 kb */
+		__stack_svc_top__    = .;
+		__stack_irq_bottom__ = .;
+		. = . + 0x0400*1; /* 1 kb */
+		__stack_irq_top__    = .;
+		__stack_fiq_bottom__ = .;
+		. = . + 0x0080; /* 128 bytes */
+		__stack_fiq_top__    = .;
+		__stack_und_bottom__ = .;
+		. = . + 0x0080; /* 128 bytes */
+		__stack_und_top__    = .;
+		__stack_iap_bottom__ = .;
+	} >ramstack
 
 }
 

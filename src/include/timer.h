@@ -19,9 +19,25 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include <aos_module.h>
+#define AOS_KERNEL_MODULE
 
+#include <aos_module.h>
+#include <list.h>
 #include <types.h>
+
+struct timer {
+	uint8_t type;
+	uint32_t expire;
+	void (*func)(void*);
+	void* arg;
+	struct list_head node;
+};
+
+#define TMR_STOP      1
+#define TMR_PERIODIC  2
+#define TMR_TIMEOUT   4
+
+volatile uint32_t system_ticks;
 
 /**
  * \brief Read the current value of the usecond timer.
@@ -36,5 +52,9 @@ uint32_t read_timer32(void);
  * @return The timer-value combined with number of overflows
  */
 uint64_t read_timer64(void);
+
+void timer_stop(struct timer* tmr);
+
+void timer_timeout(struct timer* tmr, void (*func)(void*), void* arg, uint32_t expire);
 
 #endif

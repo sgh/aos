@@ -35,7 +35,8 @@
 .extern        __bss_beg__
 .extern        __bss_end__
 
-.extern        __stack_scv_top__
+.extern        __stack_usr_top__
+.extern        __stack_svc_top__
 .extern        __stack_irq_top__
 .extern        __stack_fiq_top__
 .extern        __stack_und_top__
@@ -45,9 +46,12 @@
  */
 .extern        Undef_Handler
 .extern        SWI_Handler
+.extern        aos_swi_handler
+.extern        aos_irq_handler
 .extern        PAbt_Handler
 .extern        DAbt_Handler
 .extern        FIQ_Handler
+.extern        IRQ_Handler
 
 /*
  * Located in init_cpu.c
@@ -138,14 +142,16 @@ _vectors:
               LDR   PC,PAbt_Addr
               LDR   PC,DAbt_Addr
               NOP                             /* Used for Checksum */
-              LDR   PC,[PC,#-0x0120]
+							LDR     PC, [PC, #-0x0FF0]     /* Vector from VicVectAddr */
+@               LDR   PC,[PC,#-0x0120] @               LDR   PC,IRQ_Addr
               LDR   PC,FIQ_Addr
 
 Undef_Addr:   .word   Undef_Handler
-SWI_Addr:     .word   SWI_Handler
+SWI_Addr:     .word   aos_swi_handler 
 PAbt_Addr:    .word   PAbt_Handler
 DAbt_Addr:    .word   DAbt_Handler
 FIQ_Addr:     .word   FIQ_Handler
+@IRQ_Addr:     .word   aos_irq_handler
 
 
 /*****************************************************************************
@@ -179,59 +185,11 @@ PROTECTION_CODE:
 .global _reset_handler
 
 _reset_handler:
-/*
- * Setup ports 0 and 1 in Slow mode
- */
- /*
-              LDR    R1,=IOPIN0_VALUE
-              LDR    R0,=IOPIN0
-              STR    R1,[R0,#0x0]
-
-              LDR    R1,=IODIR0_VALUE
-              LDR    R0,=IODIR0
-              STR    R1,[R0,#0x0]
-
-              LDR    R1,=IOPIN1_VALUE
-              LDR    R0,=IOPIN1
-              STR    R1,[R0,#0x0]
-
-              LDR    R1,=IODIR1_VALUE
-              LDR    R0,=IODIR1
-              STR    R1,[R0,#0x0]
-*/
-/*
- * Setup ports 2,3 and 4 in Fast mode
- */
-/*
-              LDR    R1,=IOPIN2_VALUE
-              LDR    R0,=IOPIN2
-              STR    R1,[R0,#0x0]
-
-              LDR    R1,=IODIR2_VALUE
-              LDR    R0,=IODIR2
-              STR    R1,[R0,#0x0]
-
-              LDR    R1,=IOPIN3_VALUE
-              LDR    R0,=IOPIN3
-              STR    R1,[R0,#0x0]
-
-              LDR    R1,=IODIR3_VALUE
-              LDR    R0,=IODIR3
-              STR    R1,[R0,#0x0]
-
-              LDR    R1,=IOPIN4_VALUE
-              LDR    R0,=IOPIN4
-              STR    R1,[R0,#0x0]
-
-              LDR    R1,=IODIR4_VALUE
-              LDR    R0,=IODIR4
-              STR    R1,[R0,#0x0]
-*/
 
 /* 
- * Setup basic stack for initialize code
+ * Setup basic stack for initialize code (SVC-mode)
  */
-              LDR    R0,=__stack_scv_top__
+              LDR    R0,=__stack_svc_top__
               MSR    CPSR_c, #Mode_SVC|I_Bit|F_Bit
               MOV    SP,R0
 
@@ -272,11 +230,16 @@ _reset_handler:
               MOV    SP,R0
 
 /*         Supervisor mode, use supervisor stack                            */
-              LDR    R0,=__stack_scv_top__
+							LDR    R0,=__stack_svc_top__
               MSR    CPSR_c, #Mode_SVC|I_Bit|F_Bit
               MOV    SP,R0
 
-/*         We keep running in supervisor mode                               */
+/*         User mode, use user stack                            */
+              LDR    R0,=__stack_usr_top__
+              MSR    CPSR_c, #Mode_USR|I_Bit|F_Bit
+              MOV    SP,R0
+
+/*         We keep running in user mode                               */
 
 /*
  * Initialize .data : Copy from Flash to RAM
@@ -309,7 +272,7 @@ LoopZI:       CMP    R1, R2
 /*
  * Enable interrupts
  */
-              MSR    CPSR_c, #Mode_SVC
+             /* MSR    CPSR_c, #Mode_SYS*/
 
 /*
  * Jump to main
