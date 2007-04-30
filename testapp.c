@@ -50,9 +50,10 @@ mutex_t mymutex;
 #define SLEEPUNIT 1
 
 mutex_t count_lock;
-int count = 100;
+// int count = 100;
 
 void mswork(uint32_t ms) {
+// 	return;
 	volatile unsigned int delay;
 // 	uint32_t time;
 	delay = 10*ms;
@@ -65,17 +66,16 @@ void AOS_TASK task1(void) {
 	char state = 0;
 	for (;;) {
 		
-// 		mutex_lock(&mymutex);
-// 		mswork(10);
+		mutex_lock(&mymutex);
 
 		if (state)
 			GPIO1_IOSET = BIT22;
 		else
 			GPIO1_IOCLR = BIT22;
 
-// 		mutex_unlock(&mymutex);
+		mutex_unlock(&mymutex);
 
-		msleep(500);
+		msleep(200);
 		mswork(200000);
 		state ^= 1;
 	}
@@ -83,23 +83,23 @@ void AOS_TASK task1(void) {
 
 
 void AOS_TASK task2(void) {
-	int count = 0;
+	
 	char state = 0;
 	for (;;) {
-// 		if (count == 0)
-// 			mutex_lock(&mymutex);
-// 		mswork(15);
+
+		mutex_lock(&mymutex);
+		mswork(10000);
 		if (state)
 			GPIO1_IOSET = BIT23;
 		else
 			GPIO1_IOCLR = BIT23;
-// 		if (count == 0)
-// 			mutex_unlock(&mymutex);
 
-		msleep(500);
-		mswork(1000);
-// 		yield();
+		mutex_unlock(&mymutex);
+
+		msleep(250);
+		
 		state ^= 1;
+		
 	}
 }
 
@@ -180,8 +180,8 @@ void main(void) {
 		if (i == 200000) {
 			GPIO1_IOSET = BIT21;
 			i=0;
-		}
-		*/
+		}*/
+		
 	}
 	
 }

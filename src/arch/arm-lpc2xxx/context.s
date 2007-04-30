@@ -203,13 +203,6 @@ return_from_interrupt:
 
 @======================================================================================
 
-	/* Set do_context_switch to 0 */
-	STMFD SP!,{r1}	@ Store r1
-	LDR r0, =do_context_switch
-	MOV r1, #0
-	STRB r1, [r0]
-	LDMFD SP!,{r1} @ Restore r1
-
 	/* If current is 0, then we must not try so save current context */
 	LDR r0, =current
 	LDR r0, [r0]
@@ -288,9 +281,7 @@ return_from_interrupt:
 _after_task_save:
 	/* From this point on we have all registers to our self */
 
-	LDR r5, =sched
-	MOV LR, PC
-	BX r5
+	BL sched
 
 	/* Here the process restore starts. WATCH THE REGISTERS */
 	BL _get_current_context_store
@@ -335,7 +326,7 @@ _after_task_save:
 @======================================================================================
 _no_task_switch:
 
-	STMFD SP!,{r1} @ Store r1
+@ 	STMFD SP!,{r1} @ Store r1
 
 @ 	@ Check if interrupts should be disabled
 @ 	LDR r1, =interrupts_disabled
@@ -353,8 +344,8 @@ _no_task_switch:
 @ 	BIC r1, r1, #0xC0  @ enable IRQ and FIQ interrupts
 @ 	MSR SPSR, r1
 
-after_interrupt_endisable:
-	LDMFD SP!,{r1} @ Restore r1
+@ after_interrupt_endisable:
+@ 	LDMFD SP!,{r1} @ Restore r1
 	
 return_from_irq:
 	LDMFD SP!,{r0}
