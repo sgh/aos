@@ -46,8 +46,7 @@
  */
 .extern        Undef_Handler
 .extern        SWI_Handler
-.extern        aos_swi_handler
-.extern        aos_irq_handler
+.extern        aos_swi_entry
 .extern        PAbt_Handler
 .extern        DAbt_Handler
 .extern        FIQ_Handler
@@ -147,11 +146,10 @@ _vectors:
               LDR   PC,FIQ_Addr
 
 Undef_Addr:   .word   Undef_Handler
-SWI_Addr:     .word   aos_swi_handler 
+SWI_Addr:     .word   aos_swi_entry
 PAbt_Addr:    .word   PAbt_Handler
 DAbt_Addr:    .word   DAbt_Handler
 FIQ_Addr:     .word   FIQ_Handler
-@IRQ_Addr:     .word   aos_irq_handler
 
 
 /*****************************************************************************

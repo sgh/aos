@@ -60,7 +60,7 @@ struct task_t {
 	 */
 	struct list_head q;	
 	
-	enum task_state {RUNNING, READY, BLOCKED, CRASHED} state;
+	enum task_state {RUNNING, READY, SLEEPING, BLOCKED, CRASHED} state;
 	
 	/**
 	 * \brief  useconds to sleep.
@@ -82,6 +82,8 @@ struct task_t {
 	 * If the size is greater than zero, the process is using shared stacks.
 	 */
 	uint16_t stack_size;
+
+	uint32_t ticks;
 
 	/**
 	 * \brief Fragment-store to store stack in when doing context-switch.

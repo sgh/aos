@@ -34,11 +34,12 @@
 
 static uint32_t timer_overflows = 0;
 
-void timer_interrupt(void);
+void sched_clock(void);
 
 static void clock_isr(void) {
 	timer_clock();
-	timer_interrupt();
+	sched_clock();
+	system_ticks++;
 	T0_IR = BIT0;    // Clear interrupt
 }
 
@@ -73,19 +74,19 @@ void disable_clock(void) {
 // }
 
 
-uint32_t read_timer32() {
-	static uint32_t last_timer = 0;
-	register uint32_t new_timer = T0_TC;
-
- 	if (new_timer < last_timer)
-		timer_overflows++;
-
-	last_timer = new_timer;
-	
-	return new_timer;
-}
-
-uint64_t read_timer64() {
-	uint32_t timerval = read_timer32();
-	return timerval + (((uint64_t)timer_overflows)<<32);
-}
+// uint32_t read_timer32() {
+// 	static uint32_t last_timer = 0;
+// 	register uint32_t new_timer = T0_TC;
+// 
+//  	if (new_timer < last_timer)
+// 		timer_overflows++;
+// 
+// 	last_timer = new_timer;
+// 	
+// 	return new_timer;
+// }
+// 
+// uint64_t read_timer64() {
+// 	uint32_t timerval = read_timer32();
+// 	return timerval + (((uint64_t)timer_overflows)<<32);
+// }

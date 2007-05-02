@@ -57,7 +57,7 @@ struct task_t* idle_task;
  */
 const uint32_t context_offset = offsetof(struct task_t,context);
 
-uint32_t last_context_time = 0;
+// uint32_t last_context_time = 0;
 
 struct task_t* current = NULL;
 
@@ -105,10 +105,6 @@ void sys_yield(void) {
 }
 
 
-void sys_msleep(uint16_t ms) {
-	sys_usleep(ms*1000);
-}
-
 
 /**
  * \brief Check if current process is the idle-process.
@@ -129,34 +125,37 @@ void sys_get_sysutime(uint32_t* time) {
 	if (time == NULL)
 		return;
 	
-	*time = read_timer32();
+	*time = ticks2us(system_ticks);
 }
 
 void sys_get_sysmtime(uint32_t* time) {
 	if (time == NULL)
 		return;
 	
-	*time = read_timer64() / 1000;
+	*time = ticks2us(system_ticks);
 }
 
 void sys_aos_hooks(struct aos_hooks* hooks) {
 	_aos_hooks = hooks;	
 }
 
+
 void sys_usleep(uint32_t us) {
+	timer_timeout(&current->sleep_timer, process_wakeup, current, us2ticks(us));
 
-	if (is_background())
-		return;
-
-	timer_timeout(&current->sleep_timer, process_wakeup, current, us/1000);
-
-	current->state = BLOCKED;
+	current->state = SLEEPING;
 	do_context_switch = 1;
 }
 
+void sys_msleep(uint16_t ms) {
+	timer_timeout(&current->sleep_timer, process_wakeup, current, ms2ticks(ms));
+
+	current->state = SLEEPING;
+	do_context_switch = 1;
+}
+
+
 void sys_block(struct list_head* q) {
-	if (is_background())
-		return;
 	list_push_back(q,&current->q);
 	current->state = BLOCKED;
 	do_context_switch = 1;
