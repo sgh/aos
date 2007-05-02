@@ -18,8 +18,8 @@
 */
 
 /* public symbols */
-.global aos_swi_handler
-.global aos_irq_handler
+.global aos_swi_entry
+.global aos_irq_entry
 .global get_usermode_sp
 .global get_sp
 .global get_usermode_sp
@@ -78,7 +78,7 @@ get_usermode_sp:
 		Leave r0-r5 alone because they hold the arguments
 		and r0 the return value
 */
-aos_swi_handler:
+aos_swi_entry:
 	/* Save registers on SWI-mode stack */
 	STMFD SP!,{r6-r12, LR}
 
@@ -142,41 +142,14 @@ _get_current_context_store:
 	LDR r0, [r0]
 	MOV PC, LR
 
-/*
-	UART0-interrupt handler
-*/
-@uart0_interrupt:
-@	IRQ_prologue
-@
-@	/* Call C-interrupt-routine */
-@	BL uart0_interrupt_routine
-@	
-@	IRQ_epilogue
-
 
 /*
-	Timer-interrupt handler:
-		Called as a result of interrupts from Timer0
+	Common-interrupt entry
 */
-aos_irq_handler:
+aos_irq_entry:
 	IRQ_prologue
-@ 	BL led_irq_start
 	BL interrupt_handler
-@ 	BL led_irq_end
 	IRQ_epilogue
-
-@ @ timer_interrupt:
-@ 	IRQ_prologue
-@ 	BL led_irq_start
-@ 
-@ 	/* Call C-interrupt-routine */
-@ 	BL timer_interrupt_routine
-@ 	@LDR r5, =timer_interrupt_routine
-@ 	@MOV LR, PC
-@ 	@BX r5
-@ 
-@ 	BL led_irq_end
-@ 	IRQ_epilogue
 
 
 /*

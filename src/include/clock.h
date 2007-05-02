@@ -44,19 +44,19 @@ void disable_clock(void);
 /**
  * \brief Clear the interrupt. Only used at the end of the interrupt-handler
  */
-void clear_timer_interrupt(void);
+// void clear_timer_interrupt(void);
 
 /**
  * \brief Set the timer-value at which an interrupt should next be taken.
  * @param matchval The targe-value of the timer
  */
-void set_timer_match(uint32_t matchval);
+// void set_timer_match(uint32_t matchval);
 
 /**
  * \brief Get the timer-value at which an interrupt should next be taken.
  * @return The match-value.
  */
-uint32_t get_timer_match(void);
+// uint32_t get_timer_match(void);
 
 /**
  * \brief The timer-interrupt. Executed 1000 times pr. second.
@@ -66,7 +66,7 @@ void timer_clock(void);
 /**
  * \brief Timer value at last interrupt
  */
-extern uint32_t last_context_time;
+// extern uint32_t last_context_time;
 
 #endif
 

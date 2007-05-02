@@ -30,23 +30,13 @@
 
 #include <arm/lpc2119.h>
 
-void timer_interrupt(void) {
-	uint32_t now;
-	uint32_t elapsed_time;
+void sched_clock(void) {
+	AOS_HOOK(timer_event,ticks2ms(system_ticks));
 
-	now = read_timer32();
-	AOS_HOOK(timer_event,now);
-	elapsed_time = uint32diff(now, read_timer32());
-	elapsed_time = ciel(elapsed_time, UINT8_MAX);
-	_aos_status.timer_hook_maxtime = max(elapsed_time, _aos_status.timer_hook_maxtime);
-
+	current->ticks++;
 	if (!list_isempty(&readyQ))
 		do_context_switch = 1;
 }
-
-void led_irq_start(void);
-void led_irq_end(void);
-
 
 void sched(void) {
 	struct task_t* next = NULL;
@@ -136,31 +126,24 @@ void process_wakeup(struct task_t* task) {
 // 	return;
 	
 	/*
-	Run through the list to insert the task after higher priority-tasks.
-	The process is inserted before the first process with a lower priority
-	than the process itself. This way we can maintain an ordrered readyQ
-	with aging implemented as task->priority_age += 1 if a process steps in front of it
+		Run through the list to insert the task after higher priority-tasks.
+		The process is inserted before the first process with a lower priority.
 	*/
 	list_for_each(e,&readyQ) {
 		struct task_t* ready_task;
 		ready_task = get_struct_task(e);
 
-		// If place of insertion, then the current procees must be the process right after.
-		// Increment its age and break;
-		/*if (insertion_point) {
-			if (ready_task->prio > INT8_MIN) ready_task->prio--;
-			break;
-		}*/
-
-		// Equal-priority-tasks shold step in front of each other
-		if (ready_task->prio >= task->prio) {
+		// Process may not step in front of equal-priority tasks
+		if (ready_task->prio > task->prio) {
 			insertion_point = e;
 			break;
 		}
 	}
 
 	if (insertion_point) {
-		do_context_switch = 1; // Signal context-switch
+		/* Now, if process is insersed as the first in the readyQ, do context-switch */
+		if (insertion_point == &readyQ)
+			do_context_switch = 1; // Signal context-switch
 		list_push_front(insertion_point , &task->q);
 	} else {
 		list_push_back(&readyQ , &task->q);

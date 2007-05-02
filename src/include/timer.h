@@ -37,21 +37,21 @@ struct timer {
 #define TMR_PERIODIC  2
 #define TMR_TIMEOUT   4
 
-volatile uint32_t system_ticks;
+extern volatile uint32_t system_ticks;
 
 /**
  * \brief Read the current value of the usecond timer.
  * This timer overflows after 1.1 hour
  * @return The timer-value
  */
-uint32_t read_timer32(void);
+// uint32_t read_timer32(void);
 
 /**
  * \brief Read the current value of the usecond timer.
  * This timer overflows after 500,000 years.
  * @return The timer-value combined with number of overflows
  */
-uint64_t read_timer64(void);
+// uint64_t read_timer64(void);
 
 void timer_stop(struct timer* tmr);
 

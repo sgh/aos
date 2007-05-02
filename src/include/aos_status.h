@@ -22,7 +22,6 @@
 
 struct aos_status {
 
-	uint8_t timer_hook_maxtime;
 
 };
 

@@ -59,7 +59,7 @@ struct aos_hooks {
 	 * Watch out what you are doing in this function, since excesive use of
 	 * cpu-ressources will kill the system.
 	 *
-	 * @param time The current value of the micro-second timer.
+	 * @param time The current time in milliseconds
 	 */
 	void (*timer_event)(uint32_t time);
 

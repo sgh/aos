@@ -26,19 +26,19 @@ void led_irq_end(void) {
 void timer_hook(uint32_t time) {
 	static int count;
 	static char state = 0;
-	
-	if (count == 30) {
-#ifndef LPC2364
-		state ^= 1;
-		if (state)
-			GPIO1_IOSET = BIT21;
-		else
-			GPIO1_IOCLR = BIT21;
-#else
-#endif
-		count = 0;
-	}
-	count++;
+	GPIO1_IOSET = BIT21;
+// 	if (count == 30) {
+// #ifndef LPC2364
+// 		state ^= 1;
+// 		if (state)
+// 			GPIO1_IOSET = BIT21;
+// 		else
+// 			GPIO1_IOCLR = BIT21;
+// #else
+// #endif
+// 		count = 0;
+// 	}
+// 	count++;
 }
 
 struct aos_hooks testapp_aos_hooks = {
@@ -67,16 +67,15 @@ void AOS_TASK task1(void) {
 	for (;;) {
 		
 		mutex_lock(&mymutex);
-
+		mswork(100000);
 		if (state)
 			GPIO1_IOSET = BIT22;
 		else
 			GPIO1_IOCLR = BIT22;
-
+		mswork(100000);
 		mutex_unlock(&mymutex);
 
 		msleep(200);
-		mswork(200000);
 		state ^= 1;
 	}
 }
@@ -88,12 +87,12 @@ void AOS_TASK task2(void) {
 	for (;;) {
 
 		mutex_lock(&mymutex);
-		mswork(10000);
+		mswork(5000);
 		if (state)
 			GPIO1_IOSET = BIT23;
 		else
 			GPIO1_IOCLR = BIT23;
-
+		mswork(5000);
 		mutex_unlock(&mymutex);
 
 		msleep(250);
@@ -104,25 +103,25 @@ void AOS_TASK task2(void) {
 }
 
 void AOS_TASK task3(void) {
+	char state;
 	for (;;) {
-// 		mutex_lock(&mymutex);
-		mswork(25);
-// 		mutex_unlock(&mymutex);
-
-// 		msleep(4*count);
-		msleep(1000);
+		if (state)
+			GPIO1_IOSET = BIT23;
+		else
+			GPIO1_IOCLR = BIT23;
+		msleep(250);
 		
+		state ^= 1;
 	}
 }
 
 
 void AOS_TASK task_arr(void) {
 	for (;;) {
-		for (;;);
 		mutex_lock(&mymutex);
-		mswork(5);
+		mswork(50);
 		mutex_unlock(&mymutex);
-		msleep(1000);
+		msleep(1);
 	}
 }
 
@@ -159,10 +158,10 @@ void main(void) {
 	task1_cd = create_task(task1, NULL, 0);
 
 	task2_cd = create_task(task2, NULL, 0);
-// // // 	task3_cd = create_task(task3, NULL, 0);
+// 	task3_cd = create_task(task3, NULL, 0);
 	
-// 	for (i=0; i<1; i++)
-// 		create_task(task_arr, NULL/*(i+2)*2*/, 0);
+	for (i=0; i<10; i++)
+		create_task(task_arr, NULL/*(i+2)*2*/, 0);
 	
 	aos_hooks(&testapp_aos_hooks);
 	mutex_init(&mymutex);
@@ -171,16 +170,16 @@ void main(void) {
 	aos_context_init(15000000);
 	i = 0;
 	for (;;) {
-		i++;
-/*
-		if (i == 100000) {
-			GPIO1_IOCLR = BIT21;
-		}
+// 		i++;
 
-		if (i == 200000) {
-			GPIO1_IOSET = BIT21;
-			i=0;
-		}*/
+// 		if (i == 100000) {
+			GPIO1_IOCLR = BIT21;
+// 		}
+
+// 		if (i == 200000) {
+// 			GPIO1_IOSET = BIT21;
+// 			i=0;
+// 		}
 		
 	}
 	
