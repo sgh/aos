@@ -10,6 +10,7 @@ struct irq {
 
 static volatile uint32_t saved_irq_state;
 static volatile uint32_t nr_irq_lock;
+uint32_t irq_nest_count;
 
 struct irq irq_table[32];
 

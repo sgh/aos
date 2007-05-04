@@ -25,7 +25,6 @@
 #include <list.h>
 #include <macros.h>
 #include <task.h>
-#include <spinlock.h>
 #include <types.h>
 #include <atomic.h>
 #include <mm.h>

@@ -28,8 +28,8 @@
 
 
 /* Public interrupt-handler symbols */
-@ .global led_irq_start
-@ .global led_irq_end
+.global led_irq_start
+.global led_irq_end
 ;.global uart0_interrupt
 
 .include "arch/arm-lpc2xxx/macros.s"
@@ -158,7 +158,6 @@ aos_irq_entry:
 		Does context-switching if do_context_switch != 0
 */
 return_from_interrupt:
-@ 	BL led_irq_start
 	/* Save r0 on stack - we restore it later */
 	STMFD SP!,{r0}
 	
@@ -167,6 +166,11 @@ return_from_interrupt:
 	LDRB r0, [r0]
 	CMP r0, #0
 	BEQ _no_task_switch
+
+/* Indicate task-switch start */
+	STMFD SP!,{r0-r3,LR}
+	BL led_irq_start
+	LDMFD SP!,{r0-r3,LR}
 
 	/* If allow_context_switch is 0, then we must not do context_switch this time */
 	LDR r0, =allow_context_switch
@@ -182,19 +186,19 @@ return_from_interrupt:
 	CMP r0, #0
 	BEQ _after_task_save
 	
-	/* Save r1 on stack since the next routine-call will destroy it */
-	STMFD SP!,{r1}
+	/* Save r1,LR on stack since the next routine-call will destroy it */
+	STMFD SP!,{r1,LR}
 	
 	/*
 		Call routine to calculate location of context-store.
 		We MUST save LR here. It is the return-address in User-mode
 	*/
-	STMFD SP!,{LR}
+@ 	STMFD SP!,{LR}
 	BL _get_current_context_store
-	LDMFD SP!,{LR}
+@ 	LDMFD SP!,{LR}
 	
-	/* Restore r1 again */
-	LDMFD SP!,{r1}
+	/* Restore r1,LR again */
+	LDMFD SP!,{r1,LR}
 
 
 /*
@@ -323,8 +327,9 @@ _no_task_switch:
 return_from_irq:
 	LDMFD SP!,{r0}
 
-@ 	STMFD SP!,{LR} @ Store LR
-@ 	BL led_irq_end
-@ 	LDMFD SP!,{LR} @ Load LR
+/* Indicate task-switch end */
+	STMFD SP!,{r0-r3,LR} @ Store LR
+	BL led_irq_end
+	LDMFD SP!,{r0-r3,LR} @ Load LR
 
 	MOVS PC, LR

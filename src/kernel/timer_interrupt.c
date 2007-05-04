@@ -28,7 +28,7 @@
 #include <fragment.h>
 #include <macros.h>
 
-#include <arm/lpc2119.h>
+void sched(void);
 
 void sched_clock(void) {
 	AOS_HOOK(timer_event,ticks2ms(system_ticks));
@@ -108,23 +108,24 @@ void sched(void) {
 	
 	next->state = RUNNING;
 
-	current = next;
-	do_context_switch = 0;
-}
 
+	if (current == next)
+		for (;;);
+	
+	current = next;
+
+		// Clear context-switch-flag
+	do_context_switch = 0;
+
+	// Maintain statistics
+	num_context_switch++;
+}
 
 void process_wakeup(struct task_t* task) {
 	struct list_head* insertion_point = NULL;
 	struct list_head* e;
 
 	task->state = READY;
-// 	list_push_front(&readyQ , &task->q);
-
-// 	do_context_switch = 1; // Signal context-switch
-
-// 	list_push_back(&readyQ , &task->q);
-// 	return;
-	
 	/*
 		Run through the list to insert the task after higher priority-tasks.
 		The process is inserted before the first process with a lower priority.

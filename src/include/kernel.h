@@ -28,15 +28,18 @@
 
 #include <aos.h> /** @todo make this go away */
 
+/**
+ * \brief Total number of context-switches in current uptime
+ */
+extern uint32_t num_context_switch;
 
 /**
- * \brief linker-provided placement of the stack
- * @todo it could be nice to have this detected automatically.
+ * \brief linker-provided placement of the userspace stack
  */
 extern uint32_t __stack_usr_top__;
 
 /**
- * \brief Internal function to get the usermode stackpointer.
+ * \brief Internal function to get the current usermode stackpointer.
  * @return The stackpointer from usermode
  */
 __inline__ uint32_t get_usermode_sp(void);
@@ -70,17 +73,23 @@ extern uint8_t do_context_switch;
 
 
 /**
- * \brief This queue hold processes that sleep.
+ * \brief This queue of processes that are currently sleeping.
  */
 extern struct list_head usleepQ;
 
 
 /**
- * \brief Wakeup the process and insert it in the readyQ
+ * \brief Wakeup the process and insert it in the readyQ.
  * @param task The task to wakeup.
  */
 void process_wakeup(struct task_t* task);
 
+void sched_clock(void);
+
+/**
+ * \brief Check if current process is the background-process.
+ * @return 1 if the current process is the background-process
+ */
 uint8_t is_background(void);
 
 #endif // _KERNEL_H_
