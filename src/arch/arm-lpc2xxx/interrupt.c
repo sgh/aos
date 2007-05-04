@@ -25,6 +25,7 @@
 #include <macros.h>
 #include <interrupt.h>
 
+void interrupt_handler(void);
 
 
 void interrupt_unmask(uint8_t irqnum) {

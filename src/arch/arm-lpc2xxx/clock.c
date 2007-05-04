@@ -32,9 +32,7 @@
 
 // static int8_t vector_num;
 
-static uint32_t timer_overflows = 0;
-
-void sched_clock(void);
+// static uint32_t timer_overflows = 0;
 
 static void clock_isr(void) {
 	timer_clock();

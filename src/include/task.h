@@ -35,12 +35,6 @@
 #define AOS_TASK __attribute__((noreturn))
 
 /**
- * \brief Minimum and maximum time-slice in microseconds.
- */
-#define MAX_TIME_SLICE_US 1000
-#define MIN_TIME_SLICE_US 1000
-
-/**
  * \brief A process
  */
 struct task_t {

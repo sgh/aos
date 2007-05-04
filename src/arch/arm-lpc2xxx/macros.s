@@ -22,10 +22,7 @@
 .extern sched
 .extern current
 .extern do_task_switch
-
-/* Extern C interrupt-handlers */
-.extern timer_interrupt_routine
-.extern uart0_interrupt_routine
+.extern irq_nest_count
 
 
 .equ SYSTEM_MODE_NOIRQ, 0xDF @ System-mode with IRQ an FIRQ disabled
@@ -34,14 +31,28 @@
 
 /* IRQ prologue- and epilogue macros */
 .macro IRQ_prologue
-		/* Save r0-r12,LR on User-mode stack */
-	STMFD SP!,{r0-r12,LR}
+	/* Save r0-r12,LR on User-mode stack */
+@ 	STMFD SP!,{r0-r12,LR}
+	STMFD SP!,{r0-r3,r12,LR}
+	
+	/* Increment irq nesting level */
+	LDR r0, =irq_nest_count
+	LDR r1, [r0]
+	ADD r1, r1, #1
+	STR r1, [r0]
 
 .endm
 
 .macro IRQ_epilogue
+	/* Decrement irq nesting level */
+	LDR r0, =irq_nest_count
+	LDR r1, [r0]
+	SUB r1, r1, #1
+	STR r1, [r0]
+
 	/* Restore r0-r12,LR frim User-mode-stack */
-	LDMFD SP!,{r0-r12,LR}
+@ 	LDMFD SP!,{r0-r12,LR}
+	LDMFD SP!,{r0-r3,r12,LR}
 	
 	/* Substract 4 from return addres - we do this to correctly return in a general matter */
 	SUB LR, LR, #4

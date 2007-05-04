@@ -44,6 +44,8 @@ uint8_t allow_context_switch = 1;
  */
 // uint8_t interrupts_disabled = 0;
 
+uint32_t num_context_switch;
+
 
 struct aos_hooks* _aos_hooks = NULL;
 struct aos_status _aos_status;
@@ -139,16 +141,17 @@ void sys_aos_hooks(struct aos_hooks* hooks) {
 	_aos_hooks = hooks;	
 }
 
+// void (*func)(void*)
 
 void sys_usleep(uint32_t us) {
-	timer_timeout(&current->sleep_timer, process_wakeup, current, us2ticks(us));
+	timer_timeout(&current->sleep_timer, (void*) process_wakeup, current, us2ticks(us));
 
 	current->state = SLEEPING;
 	do_context_switch = 1;
 }
 
 void sys_msleep(uint16_t ms) {
-	timer_timeout(&current->sleep_timer, process_wakeup, current, ms2ticks(ms));
+	timer_timeout(&current->sleep_timer, (void*) process_wakeup, current, ms2ticks(ms));
 
 	current->state = SLEEPING;
 	do_context_switch = 1;
@@ -159,16 +162,13 @@ void sys_block(struct list_head* q) {
 	list_push_back(q,&current->q);
 	current->state = BLOCKED;
 	do_context_switch = 1;
+	/** @todo maybe the decition of weither to do context-switch should be done somewhere central */
 }
 
 
 void sys_unblock(struct task_t* task) {	
-	if (task->state == BLOCKED ) {
-		struct task_t* next = get_struct_task(list_get_front(&readyQ));
+	if (task->state == BLOCKED )
 		process_wakeup(task);
-		if (task->prio < next->prio)
-			do_context_switch = 1;
-	}
 }
 
 

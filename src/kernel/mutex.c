@@ -21,30 +21,22 @@
 #include <kernel.h>
 
 void sys_mutex_lock(mutex_t* m) {
-// 	spinlock_lock(&m->spinlock);
 
 	if (!m->lock) { // Mutex is not locked - lock it
 		m->lock = 1;
-// 		spinlock_unlock(&m->spinlock);
 		return;
 	}
 
-// 	spinlock_unlock(&m->spinlock);
-	
 	sys_block(&m->waiting);
-
 }
 
 uint8_t sys_mutex_trylock(mutex_t* m) {
-// 	spinlock_lock(&m->spinlock);
-
+	
 	if (!m->lock) { // Mutex is not locked - lock it
 		m->lock = 1;
-// 		spinlock_unlock(&m->spinlock);
 		return 1;
 	}
-// 	spinlock_unlock(&m->spinlock);
-
+	
 	return 0;
 }
 
@@ -54,16 +46,14 @@ void mutex_init(mutex_t* m) {
 
 void sys_mutex_unlock(mutex_t* m) {
 	struct task_t* next;
-// 	spinlock_lock(&m->spinlock);
+
 	if (list_isempty(&m->waiting)) { // If none is waiting
 		m->lock = 0;
-// 		spinlock_unlock(&m->spinlock);
 		return;
 	}
 
 	next = get_struct_task(list_get_front(&m->waiting));
 	list_erase(&next->q);
-// 	spinlock_unlock(&m->spinlock);
 	
 	sys_unblock(next);
 }

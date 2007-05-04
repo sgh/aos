@@ -16,29 +16,17 @@ struct task_t* task2_cd;
 struct task_t* task3_cd;
 
 void led_irq_start(void) {
-// 	GPIO1_IOSET = BIT21;
+	GPIO1_IOSET = BIT21;
 }
 
 void led_irq_end(void) {
-// 	GPIO1_IOCLR = BIT21;
+	GPIO1_IOCLR = BIT21;
 }
 
 void timer_hook(uint32_t time) {
 	static int count;
 	static char state = 0;
-	GPIO1_IOSET = BIT21;
-// 	if (count == 30) {
-// #ifndef LPC2364
-// 		state ^= 1;
-// 		if (state)
-// 			GPIO1_IOSET = BIT21;
-// 		else
-// 			GPIO1_IOCLR = BIT21;
-// #else
-// #endif
-// 		count = 0;
-// 	}
-// 	count++;
+// 	GPIO1_IOSET = BIT21;
 }
 
 struct aos_hooks testapp_aos_hooks = {
@@ -109,7 +97,7 @@ void AOS_TASK task3(void) {
 			GPIO1_IOSET = BIT23;
 		else
 			GPIO1_IOCLR = BIT23;
-		msleep(250);
+		msleep(1000);
 		
 		state ^= 1;
 	}
@@ -121,7 +109,7 @@ void AOS_TASK task_arr(void) {
 		mutex_lock(&mymutex);
 		mswork(50);
 		mutex_unlock(&mymutex);
-		msleep(1);
+		msleep(100);
 	}
 }
 
@@ -155,13 +143,13 @@ void main(void) {
 // 	device_register(&lpcuart);
 
 	
-	task1_cd = create_task(task1, NULL, 0);
+// 	task1_cd = create_task(task1, NULL, 0);
 
-	task2_cd = create_task(task2, NULL, 0);
-// 	task3_cd = create_task(task3, NULL, 0);
+// 	task2_cd = create_task(task2, NULL, 0);
+	task3_cd = create_task(task3, NULL, 0);
 	
-	for (i=0; i<10; i++)
-		create_task(task_arr, NULL/*(i+2)*2*/, 0);
+// 	for (i=0; i<10; i++)
+// 		create_task(task_arr, NULL/*(i+2)*2*/, 0);
 	
 	aos_hooks(&testapp_aos_hooks);
 	mutex_init(&mymutex);
@@ -170,17 +158,7 @@ void main(void) {
 	aos_context_init(15000000);
 	i = 0;
 	for (;;) {
-// 		i++;
-
-// 		if (i == 100000) {
-			GPIO1_IOCLR = BIT21;
-// 		}
-
-// 		if (i == 200000) {
-// 			GPIO1_IOSET = BIT21;
-// 			i=0;
-// 		}
-		
+// 		GPIO1_IOCLR = BIT21;
 	}
 	
 }
