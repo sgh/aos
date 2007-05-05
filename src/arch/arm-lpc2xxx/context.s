@@ -22,9 +22,7 @@
 .global aos_irq_entry
 .global get_usermode_sp
 .global get_sp
-.global get_usermode_sp
-.global disable_irqs
-.global enable_irqs
+.global memcpy
 
 
 /* Public interrupt-handler symbols */
@@ -193,9 +191,7 @@ return_from_interrupt:
 		Call routine to calculate location of context-store.
 		We MUST save LR here. It is the return-address in User-mode
 	*/
-@ 	STMFD SP!,{LR}
 	BL _get_current_context_store
-@ 	LDMFD SP!,{LR}
 	
 	/* Restore r1,LR again */
 	LDMFD SP!,{r1,LR}
@@ -236,10 +232,11 @@ return_from_interrupt:
 	MRS r10, CPSR
 	
 	/* Switch to system-mode */
-	MOV r9, r10
-	BIC r9,r9, #0xFF
-	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
-	MSR CPSR, r9
+@ 	MOV r9, r10
+@ 	BIC r9,r9, #0xFF
+@ 	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
+@ 	MSR CPSR, r9
+	MSR CPSR_c, #SYSTEM_MODE_NOIRQ
 
 	/* Move SP to r2 - so we can access it from interrupt-mode */
 	MOV r2, SP
@@ -248,8 +245,9 @@ return_from_interrupt:
 	MOV r3, LR
 		
 	/* Switch to previously saved mode */
-	MOV r9, r10
-	MSR CPSR, r9
+@ 	MOV r9, r10
+@ 	MSR CPSR, r9
+	MSR CPSR, r10
 	
 	/* Save r2-r3 (SP, LR) at [r0 + 4] */
 	ADD r0, r0, #4
@@ -270,18 +268,20 @@ _after_task_save:
 	MRS r10, CPSR
 	
 	/* Switch to system-mode */
-	MOV r9, r10
-	BIC r9,r9, #0xFF
-	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
-	MSR CPSR, r9
+@ 	MOV r9, r10
+@ 	BIC r9,r9, #0xFF
+@ 	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
+@ 	MSR CPSR, r9
+	MSR CPSR_c, #SYSTEM_MODE_NOIRQ
 
 	/* Set SP and LR */
 	MOV SP, r1
 	MOV LR, r2
 	
 	/* Switch to previously saved mode */
-	MOV r9, r10
-	MSR CPSR, r9
+@ 	MOV r9, r10
+@ 	MSR CPSR, r9
+	MSR CPSR, r10
 	
 	/* Load value of r0 */
 	LDR r1, [r0]
@@ -333,3 +333,42 @@ return_from_irq:
 	LDMFD SP!,{r0-r3,LR} @ Load LR
 
 	MOVS PC, LR
+
+/* Optimized memcopy
+		r0: dst
+		r1: src
+		r2: len
+*/
+___________memcpy:
+	STMFD SP!, {r4,LR}
+
+	BL memcpy1
+
+	LDMFD SP!, {r4,LR}
+	MOV PC, LR
+
+memcpy1:
+memcpyloop1:
+	CMP r2, #1
+	BEQ memcpy1end
+	LDRB r3, [r1]
+	STRB r3, [r0]
+	ADD r0, r0, #1
+	ADD r1, r1, #1
+	SUB r2, r2, #1
+	B memcpyloop1
+memcpy1end:
+	MOV PC, LR
+
+memcpy4:
+memcpyloop4:
+	CMP r2, #1
+	BEQ memcpy4end
+	LDRB r3, [r1]
+	STRB r3, [r0]
+	ADD r0, r0, #1
+	ADD r1, r1, #1
+	SUB r2, r2, #1
+	B memcpyloop1
+memcpy4end:
+	MOV PC,	 LR
