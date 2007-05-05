@@ -7,6 +7,7 @@
 #include <atomic.h>
 //#include <serio.h>
 #include <mm.h>
+#include <irq.h>
 #include <aos_hooks.h>
 
 // #define LPC2364 
@@ -92,13 +93,17 @@ void AOS_TASK task2(void) {
 
 void AOS_TASK task3(void) {
 	char state;
+	char buf[1024];
+	buf [0] = 5;
 	for (;;) {
+		
 		if (state)
 			GPIO1_IOSET = BIT23;
 		else
 			GPIO1_IOCLR = BIT23;
-		msleep(1000);
-		
+		msleep(500);
+		if (buf[0] != 5)
+			for (;;);
 		state ^= 1;
 	}
 }
@@ -112,6 +117,46 @@ void AOS_TASK task_arr(void) {
 		msleep(100);
 	}
 }
+
+#define TIMER1_IRQ 5
+
+void test_Handler(void) {
+	volatile int test;
+	static int count;
+	static char state = 0;
+// 	for (test=0; test<10; test++);
+
+	T1_IR = BIT0;    // Clear interrupt
+
+	count ++;
+	if (count == 1000) {
+		state ^= 1;
+		count = 0;
+	}
+	if (state/*irq_nest_count > 1*/)
+		GPIO1_IOSET = BIT22;
+	else
+		GPIO1_IOCLR = BIT22;
+// 	t1_hits++;
+// 	t1_diff = T1_TC - T1_MR0;
+
+// 	T1_MR0 = /*T1_TC +*/ 100;
+
+}
+
+void init_timer1(void) {
+	T1_PR = 15000000/1000000 - 1;   /* Scale to 1 us steps */
+	T1_PC = 0;                          /* Prescale-counter */
+	T1_TC = 0;                  /* Counter-value */
+	T1_MR0 = 50; /* Match-Register0 */
+	irq_attach(TIMER1_IRQ, test_Handler);
+	T1_MCR = BIT1|BIT0; /* Interrupt on Math-Register0  reset at match */
+	T1_TCR = BIT0;  /* Enable timer1 */
+
+  //VICIntSelect |= ( (uint32_t) 1 ) << t1_vector;
+	interrupt_unmask(TIMER1_IRQ);
+}
+
 
 char __attribute__((aligned(4))) dmem[3*1024];
 
@@ -157,7 +202,9 @@ void main(void) {
 	
 	aos_context_init(15000000);
 	i = 0;
+	init_timer1();
 	for (;;) {
+		i++;
 // 		GPIO1_IOCLR = BIT21;
 	}
 	

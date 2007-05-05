@@ -10,7 +10,7 @@ struct irq {
 
 static volatile uint32_t saved_irq_state;
 static volatile uint32_t nr_irq_lock;
-uint32_t irq_nest_count;
+uint32_t volatile irq_nest_count;
 
 struct irq irq_table[32];
 
@@ -21,7 +21,10 @@ int irq_attach(int irqnum, void (*isr)(void)) {
 }
 
 void irq_handler(int vector) {
+
+// 	interrupt_enable();
 	irq_table[vector].isr();
+// 	interrupt_disable();
 }
 
 void irq_lock(void) {
