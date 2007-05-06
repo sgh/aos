@@ -32,18 +32,6 @@
 
 .include "arch/arm-lpc2xxx/macros.s"
 
-disable_irqs:
-	MRS r0, SPSR
-	ORR r0, r0, #0xC0  @ disable IRQ and FIQ interrupts
-	MSR SPSR, r0
-	MOV PC, LR
-
-enable_irqs:
-	MRS r0, SPSR
-	BIC r0, r0, #0xC0  @ enable IRQ and FIQ interrupts
-	MSR SPSR, r0
-	MOV PC, LR
-
 get_sp:
 	MOV r0, SP
 	MOV PC, LR
@@ -56,7 +44,7 @@ get_usermode_sp:
 	/* Switch to system-mode */
 	MOV r9, r10
 	BIC r9,r9,#0xFF
-	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
+	ORR r9, r9, #PSR_MODE_SYS|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
 	MSR CPSR, r9
 	
 	MOV r0, SP /* Save stackpointer */
@@ -158,7 +146,7 @@ aos_irq_entry:
 return_from_interrupt:
 	/* Save r0 on stack - we restore it later */
 	STMFD SP!,{r0}
-	
+
 	/* Are we going to switch tasks */
 	LDR r0, =do_context_switch
 	LDRB r0, [r0]
@@ -234,7 +222,7 @@ return_from_interrupt:
 	/* Switch to system-mode */
 	MOV r9, r10
 	BIC r9,r9, #0xFF
-	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
+	ORR r9, r9, #PSR_MODE_SYS|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
 	MSR CPSR, r9
 
 	/* Move SP to r2 - so we can access it from interrupt-mode */
@@ -255,6 +243,7 @@ return_from_interrupt:
 _after_task_save:
 	/* From this point on we have all registers to our self */
 
+	/** @todo Make sched() interruptible */
 	BL sched
 
 	/* Here the process restore starts. WATCH THE REGISTERS */
@@ -268,8 +257,8 @@ _after_task_save:
 	
 	/* Switch to system-mode */
 	MOV r9, r10
-	BIC r9,r9, #0xFF
-	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
+	BIC r9,r9, #PSR_MODE
+	ORR r9, r9, #PSR_MODE_SYS|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
 	MSR CPSR, r9
 
 	/* Set SP and LR */

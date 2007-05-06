@@ -30,7 +30,6 @@
  */
 typedef struct {
 	int16_t count;						/**< \brief The semaphore count */
-	mutex_t lock;							/**< \brief The mutex used to lock */
 	struct list_head waiting;	/**< \brief The list of waiting processes */
 } semaphore_t;
 

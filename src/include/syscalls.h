@@ -53,7 +53,12 @@
 #define _NR_mutex_lock     19
 #define _NR_mutex_unlock   20
 #define _NR_mutex_trylock  21
-#define _NR_user_syscall   22
+#define _NR_mutex_init     22
+#define _NR_mutex_trylock  23
+#define _NR_sem_init       24
+#define _NR_sem_up         25
+#define _NR_sem_down       26
+#define _NR_user_syscall   27
 
 /* Syscall declarations */
 uint32_t sys_user_syscall(uint32_t syscallnr, void* data);
@@ -67,6 +72,7 @@ void sys_disable_cs(void);
 void sys_enable_cs(void);
 // void sys_disable_irqs();
 // void sys_enable_irqs();
+void sys_mutex_init(mutex_t* m);
 void sys_mutex_lock(mutex_t* m);
 uint8_t sys_mutex_trylock(mutex_t* m);
 void sys_mutex_unlock(mutex_t* m);
@@ -78,6 +84,10 @@ void sys_mmstat(struct mm_stat* stat);
 // void sys_aos_basic_init(void);
 struct task_t* sys_create_task(funcPtr entrypoint, void* arg, int8_t priority);
 void sys_aos_hooks(struct aos_hooks* hooks);
+
+void sys_sem_init(semaphore_t* s, int16_t count);
+void sys_sem_down(semaphore_t* s);
+void sys_sem_up(semaphore_t* s);
 
 
 #define str(s) #s

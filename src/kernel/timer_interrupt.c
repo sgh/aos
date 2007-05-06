@@ -27,6 +27,7 @@
 #include <list.h>
 #include <fragment.h>
 #include <macros.h>
+#include <interrupt.h>
 
 void sched(void);
 
@@ -56,7 +57,9 @@ void sched(void) {
 //  		memcpy( dst, src, len);
 		
 		// Fragmem
+// 		interrupt_enable();
 		current->fragment = store_fragment(src,len);
+// 		interrupt_disable();
 		if ((current->fragment == NULL) && (len > 0)) { // This indicates Stack-Alloc-Error
 			current->state = CRASHED;
 			AOS_HOOK(stack_alloc_fatal, current);
@@ -99,7 +102,9 @@ void sched(void) {
 		
 		// Fragmem
 		if (next->fragment) {
+// 			interrupt_enable();
 			load_fragment(dst,next->fragment);
+// 			interrupt_disable();
 			next->fragment = 0;
 		}
 		
