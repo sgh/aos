@@ -119,7 +119,7 @@ void AOS_TASK task_arr(void) {
 }
 
 #define TIMER1_IRQ 5
-
+extern uint32_t volatile irq_nest_count;
 void test_Handler(void) {
 	volatile int test;
 	static int count;
@@ -128,20 +128,13 @@ void test_Handler(void) {
 
 	T1_IR = BIT0;    // Clear interrupt
 
-	count ++;
-	if (count == 1000) {
-		state ^= 1;
-		count = 0;
-	}
-	if (state/*irq_nest_count > 1*/)
-		GPIO1_IOSET = BIT22;
+	if (irq_nest_count > 1)
+		count++;
+
+	if (count & BIT4)
+			GPIO1_IOSET = BIT22;
 	else
 		GPIO1_IOCLR = BIT22;
-// 	t1_hits++;
-// 	t1_diff = T1_TC - T1_MR0;
-
-// 	T1_MR0 = /*T1_TC +*/ 100;
-
 }
 
 void init_timer1(void) {

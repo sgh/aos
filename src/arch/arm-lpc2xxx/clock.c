@@ -35,10 +35,12 @@
 // static uint32_t timer_overflows = 0;
 
 static void clock_isr(void) {
+	irq_lock();
 	timer_clock();
 	sched_clock();
 	system_ticks++;
 	T0_IR = BIT0;    // Clear interrupt
+	irq_unlock();
 }
 
 void init_clock(uint32_t timer_refclk) {
