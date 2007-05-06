@@ -31,6 +31,7 @@ void* sys_call_table[] =
 	[_NR_usleep] sys_usleep,
 // 	[_NR_disable_irqs] sys_disable_irqs,
 // 	[_NR_enable_irqs] sys_enable_irqs,
+	[_NR_mutex_init] sys_mutex_init,
 	[_NR_mutex_lock] sys_mutex_lock,
 	[_NR_mutex_unlock] sys_mutex_unlock,
 	[_NR_mutex_trylock] sys_mutex_trylock,
@@ -47,14 +48,14 @@ void* sys_call_table[] =
 // 	[_NR_aos_basic_init] sys_aos_basic_init,
 	[_NR_aos_mm_init] sys_aos_mm_init,
 	[_NR_aos_hooks] sys_aos_hooks,
+	[_NR_sem_init] sys_sem_init,
+	[_NR_sem_up] sys_sem_up,
+	[_NR_sem_down] sys_sem_down,
 	[_NR_user_syscall] sys_user_syscall,
 };
 
 /* Syscall definitions */
 
-_syscall1(void, mutex_lock, mutex_t*, m);
-_syscall1(uint8_t, mutex_trylock, mutex_t*, m);
-_syscall1(void, mutex_unlock, mutex_t*, m);
 
 _syscall2(uint32_t, user_syscall, uint32_t, syscallnr, void*, data);
 _syscall1(void, msleep, uint16_t, ms);
@@ -64,15 +65,23 @@ _syscall1(void, block, struct list_head*, q);
 _syscall0(void, yield);
 _syscall0(void, disable_cs);
 _syscall0(void, enable_cs);
+_syscall3(struct task_t*, create_task, funcPtr, entrypoint, void*, arg, int8_t, priority);
 // _syscall0(void, enable_irqs);
 // _syscall0(void, disable_irqs);
 // _syscall0(void, aos_basic_init);
+
+/* Memory-functions */
 _syscall2(void, aos_mm_init, void*,  start, void*, end);
-_syscall1(void, get_sysutime, uint32_t*, time);
-_syscall1(void, get_sysmtime, uint32_t*, time);
 _syscall1(void*, malloc, size_t, size);
 _syscall1(void, free, void*, free);
 _syscall1(void, mmstat, struct mm_stat*, stat);
+
+/* Time-functions */
+_syscall1(void, get_sysutime, uint32_t*, time);
+_syscall1(void, get_sysmtime, uint32_t*, time);
+
+/* Statistics-functions */
 _syscall1(void, aos_hooks, struct aos_hooks*, hooks);
-_syscall3(struct task_t*, create_task, funcPtr, entrypoint, void*, arg, int8_t, priority);
+
+
 

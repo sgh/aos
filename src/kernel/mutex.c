@@ -20,13 +20,19 @@
 // #include <aos.h>
 #include <kernel.h>
 
-void sys_mutex_lock(mutex_t* m) {
+/**
+ * \brief Mutes syscall definitions
+ */
+_syscall1(void, mutex_init, mutex_t*, m);
+_syscall1(void, mutex_lock, mutex_t*, m);
+_syscall1(uint8_t, mutex_trylock, mutex_t*, m);
+_syscall1(void, mutex_unlock, mutex_t*, m);
 
+void sys_mutex_lock(mutex_t* m) {
 	if (!m->lock) { // Mutex is not locked - lock it
 		m->lock = 1;
 		return;
 	}
-
 	sys_block(&m->waiting);
 }
 
@@ -40,7 +46,7 @@ uint8_t sys_mutex_trylock(mutex_t* m) {
 	return 0;
 }
 
-void mutex_init(mutex_t* m) {
+void sys_mutex_init(mutex_t* m) {
 	INIT_LIST_HEAD(&m->waiting);
 }
 
@@ -54,7 +60,7 @@ void sys_mutex_unlock(mutex_t* m) {
 
 	next = get_struct_task(list_get_front(&m->waiting));
 	list_erase(&next->q);
-	
+
 	sys_unblock(next);
 }
 

@@ -110,11 +110,12 @@ void AOS_TASK task3(void) {
 
 
 void AOS_TASK task_arr(void) {
+	
 	for (;;) {
-		mutex_lock(&mymutex);
+		mutex_lock(&mymutex);	
 		mswork(50);
 		mutex_unlock(&mymutex);
-		msleep(100);
+		msleep(10);
 	}
 }
 
@@ -128,10 +129,10 @@ void test_Handler(void) {
 
 	T1_IR = BIT0;    // Clear interrupt
 
-	if (irq_nest_count > 1)
+// 	if (irq_nest_count > 1)
 		count++;
 
-	if (count & BIT4)
+	if (count & BIT0)
 			GPIO1_IOSET = BIT22;
 	else
 		GPIO1_IOCLR = BIT22;
@@ -141,7 +142,7 @@ void init_timer1(void) {
 	T1_PR = 15000000/1000000 - 1;   /* Scale to 1 us steps */
 	T1_PC = 0;                          /* Prescale-counter */
 	T1_TC = 0;                  /* Counter-value */
-	T1_MR0 = 50; /* Match-Register0 */
+	T1_MR0 = 10; /* Match-Register0 */
 	irq_attach(TIMER1_IRQ, test_Handler);
 	T1_MCR = BIT1|BIT0; /* Interrupt on Math-Register0  reset at match */
 	T1_TCR = BIT0;  /* Enable timer1 */

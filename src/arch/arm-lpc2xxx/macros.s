@@ -32,6 +32,7 @@
 .equ PSR_MODE_USR, 0x10
 .equ PSR_MODE_SVC, 0x13
 .equ PSR_MODE_IRQ, 0x12
+.equ PSR_MODE_SYS, 0x1F
 
 .equ PSR_NOIRQ, 0xC0
 
@@ -52,7 +53,6 @@
 	STMFD SP!,{r0}
 
 	/* Switch to system-mode */
-@ 	MSR CPSR_c, SYSTEM_MODE_NOIRQ
 	MRS r0, CPSR
 	BIC r0,r0, #PSR_MODE
 	ORR r0, r0, #PSR_MODE_SVC|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
@@ -62,7 +62,6 @@
 .macro IRQ_epilogue
 
 	/* Switch to IRQ-mode */
-@ 	MSR CPSR_c, IRQ_MODE_NOIRQ
 	MRS r0, CPSR
 	BIC r0,r0, #PSR_MODE
 	ORR r0, r0, #PSR_MODE_IRQ|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
@@ -92,6 +91,6 @@
 	/* Return via. common returncode if on top-level irq */
 	BEQ return_from_interrupt
 
-	/* If nesting count is not zero, just return */
+	/* If nesting count is not zero, just return to whereever the interrupt was asserted */
 	MOVS PC, LR
 .endm
