@@ -127,4 +127,6 @@ void get_sysutime(uint32_t* time);
  */
 void get_sysmtime(uint32_t* time);
 
+uint32_t user_syscall(uint32_t syscallnr, void* data);
+
 #endif
