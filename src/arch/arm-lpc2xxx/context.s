@@ -232,11 +232,10 @@ return_from_interrupt:
 	MRS r10, CPSR
 	
 	/* Switch to system-mode */
-@ 	MOV r9, r10
-@ 	BIC r9,r9, #0xFF
-@ 	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
-@ 	MSR CPSR, r9
-	MSR CPSR_c, #SYSTEM_MODE_NOIRQ
+	MOV r9, r10
+	BIC r9,r9, #0xFF
+	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
+	MSR CPSR, r9
 
 	/* Move SP to r2 - so we can access it from interrupt-mode */
 	MOV r2, SP
@@ -268,11 +267,10 @@ _after_task_save:
 	MRS r10, CPSR
 	
 	/* Switch to system-mode */
-@ 	MOV r9, r10
-@ 	BIC r9,r9, #0xFF
-@ 	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
-@ 	MSR CPSR, r9
-	MSR CPSR_c, #SYSTEM_MODE_NOIRQ
+	MOV r9, r10
+	BIC r9,r9, #0xFF
+	ORR r9, r9, #SYSTEM_MODE_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
+	MSR CPSR, r9
 
 	/* Set SP and LR */
 	MOV SP, r1

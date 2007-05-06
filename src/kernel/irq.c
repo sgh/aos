@@ -22,9 +22,9 @@ int irq_attach(int irqnum, void (*isr)(void)) {
 
 void irq_handler(int vector) {
 
-// 	interrupt_enable();
+	interrupt_enable();
 	irq_table[vector].isr();
-// 	interrupt_disable();
+	interrupt_disable();
 }
 
 void irq_lock(void) {

@@ -27,7 +27,13 @@
 
 .equ SYSTEM_MODE_NOIRQ, 0xDF @ System-mode with IRQ an FIRQ disabled
 .equ SYSTEM_MODE_IRQ, 0xDC @ System-mode with IRQ an FIRQ enabled
-.equ IRQ_MODE_NOIRQ, 0x92 @ System-mode with IRQ an FIRQ disabled
+
+.equ PSR_MODE,     0x1F
+.equ PSR_MODE_USR, 0x10
+.equ PSR_MODE_SVC, 0x13
+.equ PSR_MODE_IRQ, 0x12
+
+.equ PSR_NOIRQ, 0xC0
 
 
 /* IRQ prologue- and epilogue macros */
@@ -41,22 +47,30 @@
 	ADD r1, r1, #1
 	STR r1, [r0]
 
-	/* Store IRQ context */
+	/* Store callee cpu-state context */
 	MRS r0, SPSR
 	STMFD SP!,{r0}
 
 	/* Switch to system-mode */
 @ 	MSR CPSR_c, SYSTEM_MODE_NOIRQ
+	MRS r0, CPSR
+	BIC r0,r0, #PSR_MODE
+	ORR r0, r0, #PSR_MODE_SVC|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
+	MSR CPSR, r0
 .endm
 
 .macro IRQ_epilogue
 
 	/* Switch to IRQ-mode */
 @ 	MSR CPSR_c, IRQ_MODE_NOIRQ
+	MRS r0, CPSR
+	BIC r0,r0, #PSR_MODE
+	ORR r0, r0, #PSR_MODE_IRQ|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
+	MSR CPSR, r0
 		
-	/* Restore IRQ context */
+	/* Retore callee cpu-state context */
 	LDMFD SP!,{r0}
-	MSR SPSR_cf, r0
+	MSR SPSR, r0
 
 	/* Decrement irq nesting level */
 	LDR r0, =irq_nest_count
