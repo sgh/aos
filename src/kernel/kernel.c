@@ -72,6 +72,12 @@ extern funcPtr __initcalls_end__[];
 // 	return now>=last_interrupt_time ? now-last_interrupt_time: UINT32_MAX - (last_interrupt_time-now);
 // }
 
+
+uint32_t sys_user_syscall(uint32_t syscallnr, void* data) {
+	if (_aos_hooks && _aos_hooks->user_syscall )
+	return _aos_hooks->user_syscall(syscallnr, data);
+}
+
 static void do_initcalls(void) {
 	funcPtr* initcall;
 

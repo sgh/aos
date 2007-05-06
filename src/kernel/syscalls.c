@@ -47,6 +47,7 @@ void* sys_call_table[] =
 // 	[_NR_aos_basic_init] sys_aos_basic_init,
 	[_NR_aos_mm_init] sys_aos_mm_init,
 	[_NR_aos_hooks] sys_aos_hooks,
+	[_NR_user_syscall] sys_user_syscall,
 };
 
 /* Syscall definitions */
@@ -55,6 +56,7 @@ _syscall1(void, mutex_lock, mutex_t*, m);
 _syscall1(uint8_t, mutex_trylock, mutex_t*, m);
 _syscall1(void, mutex_unlock, mutex_t*, m);
 
+_syscall2(uint32_t, user_syscall, uint32_t, syscallnr, void*, data);
 _syscall1(void, msleep, uint16_t, ms);
 _syscall1(void, usleep, uint32_t, us);
 _syscall1(void, unblock, struct task_t*, task);

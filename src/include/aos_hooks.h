@@ -64,6 +64,8 @@ struct aos_hooks {
 	void (*timer_event)(uint32_t time);
 
 	void (*crash_event)(struct task_t* task);
+
+	uint32_t (*user_syscall)(uint32_t syscallnr, void* data);
 };
 
 /**

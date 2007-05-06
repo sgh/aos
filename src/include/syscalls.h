@@ -52,9 +52,11 @@
 #define _NR_aos_hooks      18
 #define _NR_mutex_lock     19
 #define _NR_mutex_unlock   20
-#define _NR_mutex_trylock   21
+#define _NR_mutex_trylock  21
+#define _NR_user_syscall   22
 
 /* Syscall declarations */
+uint32_t sys_user_syscall(uint32_t syscallnr, void* data);
 void sys_unblock(struct task_t* task);
 void sys_block(struct list_head* q);
 void sys_yield(void);
