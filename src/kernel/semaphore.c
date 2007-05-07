@@ -28,6 +28,7 @@
  */
 _syscall1(void, sem_down, semaphore_t*, s);
 _syscall1(void, sem_up, semaphore_t*, s);
+_syscall2(void, sem_init, semaphore_t*, s, int16_t, count);
 
 void sys_sem_init(semaphore_t* s, int16_t count) {
 	s->count = count;
