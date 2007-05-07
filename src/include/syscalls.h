@@ -54,11 +54,10 @@
 #define _NR_mutex_unlock   20
 #define _NR_mutex_trylock  21
 #define _NR_mutex_init     22
-#define _NR_mutex_trylock  23
-#define _NR_sem_init       24
-#define _NR_sem_up         25
-#define _NR_sem_down       26
-#define _NR_user_syscall   27
+#define _NR_sem_init       23
+#define _NR_sem_up         24
+#define _NR_sem_down       25
+#define _NR_user_syscall   26
 
 /* Syscall declarations */
 uint32_t sys_user_syscall(uint32_t syscallnr, void* data);
