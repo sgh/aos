@@ -23,7 +23,7 @@
  *
  ***************************************************************************/
 
-#include <arm/lpc21xx.h>
+#include <arm/lpc23xx.h>
 
 /*****************************************************************************
  * Defines the clock values in Hz
@@ -55,16 +55,16 @@ static void wait(void)
 
 void Init_Wait(void)
 {
-	unsigned int i;
-	unsigned int j;
-
-	for (j = 0; j < CONFIG_INITWAIT_J; j++)
-	{
-		for (i = 0; i < CONFIG_INITWAIT_I; i++)
-		{
-			wait();
-		}
-	}
+/* 	unsigned int i;
+ 	unsigned int j;
+ 
+ 	for (j = 0; j < CONFIG_INITWAIT_J; j++)
+ 	{
+ 		for (i = 0; i < CONFIG_INITWAIT_I; i++)
+ 		{
+ 			wait();
+ 		}
+ 	}*/
 }
 
 /*****************************************************************************
