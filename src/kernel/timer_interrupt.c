@@ -35,9 +35,9 @@ void sched_clock(void) {
 	AOS_HOOK(timer_event,ticks2ms(system_ticks));
 
 	current->ticks++;
-	current->time_left--;
 	if (!current->time_left && !list_isempty(&readyQ))
 		do_context_switch = 1;
+	current->time_left--;
 }
 
 
