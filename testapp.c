@@ -1,7 +1,7 @@
 #include <string.h>
 #include <aos.h>
-#include <arm/lpc2119.h>
-// #include <arm/lpc23xx.h>
+//#include <arm/lpc2119.h>
+#include <arm/lpc23xx.h>
 #include <bits.h>
 #include <mutex.h>
 #include <atomic.h>
@@ -10,24 +10,43 @@
 #include <irq.h>
 #include <aos_hooks.h>
 
-// #define LPC2364 
+#define LPC2364 
 
 struct task_t* task1_cd;
 struct task_t* task2_cd;
 struct task_t* task3_cd;
 
 void led_irq_start(void) {
-	GPIO1_IOSET = BIT21;
+// 	GPIO1_IOSET = BIT21;
 }
 
 void led_irq_end(void) {
-	GPIO1_IOCLR = BIT21;
+// 	GPIO1_IOCLR = BIT21;
 }
 
 void timer_hook(uint32_t time) {
 	static int count;
 	static char state = 0;
-// 	GPIO1_IOSET = BIT21;
+	return;
+// 		for (;;) FIO2SET = 0xFFFFFFFF;
+	count++;
+	if (count == 100) {
+		count = 0;
+		state ^= 1;
+	}
+	state = 1;
+	if (state)
+#ifdef LPC2364
+		FIO2SET = BIT1;
+#else
+		GPIO1_IOSET = BIT23;
+#endif
+	else
+#ifdef LPC2364
+		FIO2CLR = BIT1;
+#else
+		GPIO1_IOCLR = BIT23;
+#endif
 }
 
 struct aos_hooks testapp_aos_hooks = {
@@ -57,10 +76,10 @@ void AOS_TASK task1(void) {
 		
 		mutex_lock(&mymutex);
 		mswork(100000);
-		if (state)
-			GPIO1_IOSET = BIT22;
-		else
-			GPIO1_IOCLR = BIT22;
+// 		if (state)
+// 			GPIO1_IOSET = BIT22;
+// 		else
+// 			GPIO1_IOCLR = BIT22;
 		mswork(100000);
 		mutex_unlock(&mymutex);
 
@@ -77,10 +96,10 @@ void AOS_TASK task2(void) {
 
 		mutex_lock(&mymutex);
 		mswork(5000);
-		if (state)
-			GPIO1_IOSET = BIT23;
-		else
-			GPIO1_IOCLR = BIT23;
+// 		if (state)
+// 			GPIO1_IOSET = BIT23;
+// 		else
+// 			GPIO1_IOCLR = BIT23;
 		mswork(5000);
 		mutex_unlock(&mymutex);
 
@@ -98,12 +117,20 @@ void AOS_TASK task3(void) {
 	for (;;) {
 		
 		if (state)
+#ifdef LPC2364
+			FIO2SET = 0xFFFFFFFF-1;
+#else
 			GPIO1_IOSET = BIT23;
+#endif
 		else
+#ifdef LPC2364
+			FIO2CLR = 0xFFFFFFFF-1;
+#else
 			GPIO1_IOCLR = BIT23;
+#endif
 		msleep(500);
-		if (buf[0] != 5)
-			for (;;);
+// 		if (buf[0] != 5)
+// 			for (;;);
 		state ^= 1;
 	}
 }
@@ -120,6 +147,8 @@ void AOS_TASK task_arr(void) {
 }
 
 #define TIMER1_IRQ 5
+
+#ifdef US_TIMER
 extern uint32_t volatile irq_nest_count;
 void test_Handler(void) {
 	volatile int test;
@@ -150,27 +179,19 @@ void init_timer1(void) {
   //VICIntSelect |= ( (uint32_t) 1 ) << t1_vector;
 	interrupt_unmask(TIMER1_IRQ);
 }
-
+#endif
 
 char __attribute__((aligned(4))) dmem[3*1024];
 
 void main(void) {
-	int i;
-	//f = sqrtf(f);
+	volatile int i;
 #ifdef LPC2364
 	PINSEL10 = 0;           /* Disable ETM interface, enable LEDs */
 	FIO2DIR  = 0x000000FF;  /* P2.0..7 defined as Outputs         */
 	FIO2MASK = 0x00000000;
 	FIO2CLR  = 0xFF;
-
-	for (;;) {
-		FIO2CLR = 0xFFFFFFFF;
-		FIO2SET = 0xFFFFFFFF;
-	}
-	for (;;);
 #else
 	GPIO1_IODIR |= 0xFFFFFFFF;
-// 	for (;;);
 #endif
 
 
@@ -190,16 +211,20 @@ void main(void) {
 // 	for (i=0; i<10; i++)
 // 		create_task(task_arr, NULL/*(i+2)*2*/, 0);
 	
-	aos_hooks(&testapp_aos_hooks);
+// 	aos_hooks(&testapp_aos_hooks);
 	mutex_init(&mymutex);
 	mutex_init(&count_lock);
 	
 	aos_context_init(15000000);
 	i = 0;
+#ifdef US_TIMER
 	init_timer1();
+#endif
 	for (;;) {
-		i++;
-// 		GPIO1_IOCLR = BIT21;
+		FIO2CLR = BIT0;
+		for (i=0; i<200000; i++);
+		FIO2SET = BIT0;
+		for (i=0; i<200000; i++);
 	}
 	
 }
