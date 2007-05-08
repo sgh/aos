@@ -140,7 +140,7 @@ void sys_get_sysmtime(uint32_t* time) {
 	if (time == NULL)
 		return;
 	
-	*time = ticks2us(system_ticks);
+	*time = ticks2ms(system_ticks);
 }
 
 void sys_aos_hooks(struct aos_hooks* hooks) {
@@ -173,7 +173,7 @@ void sys_block(struct list_head* q) {
 
 
 void sys_unblock(struct task_t* task) {	
-	if (task->state == BLOCKED )
+	if (task->state == BLOCKED)
 		process_wakeup(task);
 }
 
