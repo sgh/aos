@@ -65,7 +65,7 @@ void sched(void) {
 		// Fragmem
 // 		interrupt_enable();
 		if (sp > top_stack)
-			assert_printf(top_stack, sp);
+			AOS_HOOK(crash_event,current);
 		current->fragment = store_fragment(src,len);
 // 		interrupt_disable();
 		if ((current->fragment == NULL) && (len > 0)) { // This indicates Stack-Alloc-Error
