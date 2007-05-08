@@ -79,6 +79,8 @@ struct task_t {
 
 	uint32_t ticks;
 
+	uint32_t time_left;
+
 	/**
 	 * \brief Fragment-store to store stack in when doing context-switch.
 	 */
