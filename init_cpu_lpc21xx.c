@@ -55,7 +55,7 @@ static void wait(void)
 
 void Init_Wait(void)
 {
-	unsigned int i;
+/*	unsigned int i;
 	unsigned int j;
 
 	for (j = 0; j < CONFIG_INITWAIT_J; j++)
@@ -64,7 +64,7 @@ void Init_Wait(void)
 		{
 			wait();
 		}
-	}
+	}*/
 }
 
 /*****************************************************************************
