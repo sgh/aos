@@ -2,8 +2,8 @@
 APP = testapp
 
 #SOURCES = testgpio.c handlers.c init_cpu.c startarm.s
-SOURCES = startarm.s testapp.c init_cpu_lpc21xx.c handlers.c
-#SOURCES = startup.s testapp.c init_cpu_lpc21xx.c handlers.c
+#SOURCES = startarm.s testapp.c init_cpu_lpc21xx.c handlers.c
+SOURCES = startarm.s testapp.c init_cpu.c handlers.c
 
 CFLAGS = -mcpu=arm7tdmi -O0 -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration  -mthumb-interwork
 #-mthumb 

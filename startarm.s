@@ -141,8 +141,8 @@ _vectors:
               LDR   PC,PAbt_Addr
               LDR   PC,DAbt_Addr
               NOP                             /* Used for Checksum */
-							LDR     PC, [PC, #-0x0FF0]     /* Vector from VicVectAddr */
-@               LDR   PC,[PC,#-0x0120] @               LDR   PC,IRQ_Addr
+@							LDR     PC, [PC, #-0x0FF0]     /* Vector from VicVectAddr */
+              LDR   PC,[PC,#-0x0120] @               LDR   PC,IRQ_Addr
               LDR   PC,FIQ_Addr
 
 Undef_Addr:   .word   Undef_Handler
