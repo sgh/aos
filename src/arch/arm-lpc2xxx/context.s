@@ -1,6 +1,6 @@
 /*
 	AOS - ARM Operating System
-	Copyright (C) 2007  Søren Holm (sgh@sgh.dk)
+	Copyright (C) 2007  SÃ¸ren Holm (sgh@sgh.dk)
 
 	This library is free software; you can redistribute it and/or
 	modify it under the terms of the GNU Lesser General Public
@@ -22,12 +22,13 @@
 .global aos_irq_entry
 .global get_usermode_sp
 .global get_sp
-.global memcpy
+.global get_usermode_sp
+.global disable_irqs
+.global enable_irqs
 
 
 /* Public interrupt-handler symbols */
-.global led_irq_start
-.global led_irq_end
+.global timer_interrupt
 ;.global uart0_interrupt
 
 .include "arch/arm-lpc2xxx/macros.s"
@@ -153,11 +154,6 @@ return_from_interrupt:
 	CMP r0, #0
 	BEQ _no_task_switch
 
-/* Indicate task-switch start */
-	STMFD SP!,{r0-r3,LR}
-	BL led_irq_start
-	LDMFD SP!,{r0-r3,LR}
-
 	/* If allow_context_switch is 0, then we must not do context_switch this time */
 	LDR r0, =allow_context_switch
 	LDRB r0, [r0]
@@ -165,6 +161,13 @@ return_from_interrupt:
 	BEQ _no_task_switch
 
 @======================================================================================
+
+	/* Set do_context_switch to 0 */
+	STMFD SP!,{r1}	@ Store r1
+	LDR r0, =do_context_switch
+	MOV r1, #0
+	STRB r1, [r0]
+	LDMFD SP!,{r1} @ Restore r1
 
 	/* If current is 0, then we must not try so save current context */
 	LDR r0, =current
@@ -179,7 +182,9 @@ return_from_interrupt:
 		Call routine to calculate location of context-store.
 		We MUST save LR here. It is the return-address in User-mode
 	*/
+	STMFD SP!,{LR}
 	BL _get_current_context_store
+	LDMFD SP!,{LR}
 	
 	/* Restore r1,LR again */
 	LDMFD SP!,{r1,LR}
@@ -313,49 +318,5 @@ _no_task_switch:
 	
 return_from_irq:
 	LDMFD SP!,{r0}
-
-/* Indicate task-switch end */
-	STMFD SP!,{r0-r3,LR} @ Store LR
-	BL led_irq_end
-	LDMFD SP!,{r0-r3,LR} @ Load LR
-
 	MOVS PC, LR
 
-/* Optimized memcopy
-		r0: dst
-		r1: src
-		r2: len
-*/
-___________memcpy:
-	STMFD SP!, {r4,LR}
-
-	BL memcpy1
-
-	LDMFD SP!, {r4,LR}
-	MOV PC, LR
-
-memcpy1:
-memcpyloop1:
-	CMP r2, #1
-	BEQ memcpy1end
-	LDRB r3, [r1]
-	STRB r3, [r0]
-	ADD r0, r0, #1
-	ADD r1, r1, #1
-	SUB r2, r2, #1
-	B memcpyloop1
-memcpy1end:
-	MOV PC, LR
-
-memcpy4:
-memcpyloop4:
-	CMP r2, #1
-	BEQ memcpy4end
-	LDRB r3, [r1]
-	STRB r3, [r0]
-	ADD r0, r0, #1
-	ADD r1, r1, #1
-	SUB r2, r2, #1
-	B memcpyloop1
-memcpy4end:
-	MOV PC,	 LR
