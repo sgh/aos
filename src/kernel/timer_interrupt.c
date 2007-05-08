@@ -35,9 +35,13 @@ void sched_clock(void) {
 	AOS_HOOK(timer_event,ticks2ms(system_ticks));
 
 	current->ticks++;
-	if (!list_isempty(&readyQ))
+	current->time_left--;
+	if (!current->time_left && !list_isempty(&readyQ))
 		do_context_switch = 1;
 }
+
+
+void assert_printf(uint32_t a, uint32_t b);
 
 void sched(void) {
 	struct task_t* next = NULL;
@@ -45,7 +49,9 @@ void sched(void) {
 #ifdef SHARED_STACK
 	/* Copy stack away from shared system stack */
 	if (current) {
-		uint32_t len = (REGISTER_TYPE)&__stack_usr_top__ - get_usermode_sp();
+		uint32_t top_stack = (REGISTER_TYPE)&__stack_usr_top__;
+		uint32_t sp = get_usermode_sp();
+		uint32_t len = top_stack - sp;
 // 		void* dst = current->stack;
 		void* src = (void*)&__stack_usr_top__ - len;
 		
@@ -58,6 +64,8 @@ void sched(void) {
 		
 		// Fragmem
 // 		interrupt_enable();
+		if (sp > top_stack)
+			assert_printf(top_stack, sp);
 		current->fragment = store_fragment(src,len);
 // 		interrupt_disable();
 		if ((current->fragment == NULL) && (len > 0)) { // This indicates Stack-Alloc-Error
@@ -119,7 +127,9 @@ void sched(void) {
 	
 	current = next;
 
-		// Clear context-switch-flag
+	current->time_left = ms2ticks(TIME_SLICE_MS);
+
+	// Clear context-switch-flag
 	do_context_switch = 0;
 
 	// Maintain statistics
@@ -130,30 +140,34 @@ void process_wakeup(struct task_t* task) {
 	struct list_head* insertion_point = NULL;
 	struct list_head* e;
 
+	if (task->state == SLEEPING)
+		insertion_point = &readyQ;
+		
 	task->state = READY;
 	/*
 		Run through the list to insert the task after higher priority-tasks.
 		The process is inserted before the first process with a lower priority.
 	*/
-	list_for_each(e,&readyQ) {
-		struct task_t* ready_task;
-		ready_task = get_struct_task(e);
-
-		// Process may not step in front of equal-priority tasks
-		if (ready_task->prio > task->prio) {
-			insertion_point = e;
-			break;
+	if (!insertion_point) {
+		list_for_each(e,&readyQ) {
+			struct task_t* ready_task;
+			ready_task = get_struct_task(e);
+	
+			// Process may not step in front of equal-priority tasks
+			if (ready_task->prio > task->prio) {
+				insertion_point = e;
+				break;
+			}
 		}
 	}
 
 	if (insertion_point) {
-		/* Now, if process is insersed as the first in the readyQ, do context-switch */
+		/* Now, if process is inserted as the first in the readyQ, do context-switch */
 		if (insertion_point == &readyQ)
 			do_context_switch = 1; // Signal context-switch
 		list_push_front(insertion_point , &task->q);
 	} else {
 		list_push_back(&readyQ , &task->q);
 	}
-	
 
 }
