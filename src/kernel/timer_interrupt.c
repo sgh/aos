@@ -35,13 +35,20 @@ void sched_clock(void) {
 	AOS_HOOK(timer_event,ticks2ms(system_ticks));
 
 	current->ticks++;
-	if (!current->time_left && !list_isempty(&readyQ))
-		do_context_switch = 1;
-	current->time_left--;
+
+	/*
+		Check If current process has time left to run. If its time is up change
+		context if any processes in the readyQ
+	*/
+	if (!current->time_left) {
+
+		if (!list_isempty(&readyQ))
+			do_context_switch = 1;
+
+	} else // Very important to avoid underflow of time_left member
+		current->time_left--;
 }
 
-
-void assert_printf(uint32_t a, uint32_t b);
 
 void sched(void) {
 	struct task_t* next = NULL;
@@ -161,13 +168,22 @@ void process_wakeup(struct task_t* task) {
 		}
 	}
 
+	/*
+		If insertionpoint is found 1 or more processe exist in the readyQ
+	*/
 	if (insertion_point) {
 		/* Now, if process is inserted as the first in the readyQ, do context-switch */
+		list_push_front(insertion_point , &task->q);
 		if (insertion_point == &readyQ)
 			do_context_switch = 1; // Signal context-switch
-		list_push_front(insertion_point , &task->q);
-	} else {
-		list_push_back(&readyQ , &task->q);
+	} else { 
+		/*	
+			insertion_point==NULL => No processes in the readyQ
+			Put in readyQ and do context-switch immediately
+		*/
+		list_push_front(&readyQ , &task->q);
+		do_context_switch = 1; // Signal context-switch
 	}
+
 
 }
