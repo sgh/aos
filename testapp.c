@@ -9,6 +9,10 @@
 #include <mm.h>
 #include <irq.h>
 #include <aos_hooks.h>
+#include <semaphore.h>
+#include <syscalls.h>
+
+#define AOS_KERNEL_MODULE
 
 #define LPC2364 
 
@@ -110,21 +114,142 @@ void AOS_TASK task2(void) {
 	}
 }
 
+semaphore_t uart0_rxempty_sem;
+
+
+struct fifo_buffer {
+	uint8_t buf[128];
+	uint8_t pidx;
+	uint8_t gidx;
+	uint8_t num;
+};
+ 
+struct fifo_buffer uart0_rxbuffer;
+
+struct fifo_buffer uart0_txbuffer;
+
+static void put_fifo(struct fifo_buffer* fifo, char c) {
+	if (fifo->num == sizeof(fifo->buf))
+		return;
+	fifo->buf[fifo->pidx] = c;
+	fifo->pidx++;
+	fifo->pidx %= sizeof(fifo->buf);
+	fifo->num++;
+}
+
+static char get_fifo(struct fifo_buffer* fifo, char* c) {
+	if (fifo->num == 0)
+		return 0;
+	*c = fifo->buf[fifo->gidx];
+	fifo->gidx++;
+	fifo->gidx %= sizeof(fifo->buf);
+	fifo->num--;
+	return 1;
+}
+
+static void init_fifo(struct fifo_buffer* fifo) {
+	memset(fifo,0,sizeof(struct fifo_buffer));
+}
+
+void uart0_isr() {
+	uint32_t iir;
+	char c;
+	uint32_t tmp;
+	static char state = 1;
+
+retry:
+	iir = U0IIR;
+	switch (iir&0x0E) {
+		case 6: // RLS Receive Line Status
+			tmp = U0LSR;
+			U0THR = 'A';
+			break;
+		case 12: // CTI Character Timerout interrupt
+		case 4: // RDA Receive data interrupt
+			
+			c = U0RBR;
+			if (state)
+				FIO2SET = BIT2;
+			else
+				FIO2CLR = BIT2;
+			state ^= 1;
+			put_fifo(&uart0_rxbuffer,c);
+			sys_sem_up(&uart0_rxempty_sem);
+			U0THR = 'B';
+			break;
+		case 2: // THRE Interrupt
+			U0THR = 'C';
+// 			if (U0LSR&0x20) { // Transmit FIFO empty
+// 				int fifoready = 16;
+// 				while (fifoready-- && get_fifo(&uart0_txbuffer,&c))
+// 					U0THR = c;
+// 			}
+			break;
+		case 0:
+			tmp = U1MSR;
+			U0THR = 'D';
+			break;
+		default:
+			U0THR = 'X';
+			
+// 			for (;;);
+	}
+	
+	
+	if (iir) goto retry;
+}
+
+#define UART0_IRQ     0x06        // UART_0 IRQ-vector
+
 void AOS_TASK task3(void) {
 	char state;
+	char c;
 	char buf[1024];
 	buf [0] = 5;
+	uint32_t baud_rate = 19200;
+	uint32_t pclock = 72000000;
+	
+	init_fifo(&uart0_txbuffer);
+	init_fifo(&uart0_rxbuffer);
+	
+	sem_init(&uart0_rxempty_sem, 0);
+#ifdef LPC2364
+  PCLKSEL0 &= ~( BIT7 | BIT9 );  // just to make sure they are cleared
+	PCLKSEL0 |=  ( BIT6 | BIT8 );
+#endif
+
+#ifdef LPC2364
+		PINSEL0 |=  ( BIT4 | BIT6 );   																// Enable TxD0 and RxD0
+		PINSEL0 &= ~( BIT5 | BIT7 );
+#endif
+
+		U0FDR   &= ~( BIT0|BIT1|BIT2 | BIT5|BIT6|BIT7); 							// BIT0-2 Fractional divider not used, BIT5-7 MULT
+		U0FDR		|=  ( BIT4 );															 						// Mult set to 1
+
+		U0LCR    =  ( BIT0 | BIT1 | BIT7 );             							// 8 bits, no Parity, 1 Stop bit, DLAB=1
+		U0DLL    =  (255 & (pclock/(baud_rate*16)));		              // Set baud Rate
+		U0DLM    =   ( ( pclock / (baud_rate*16) ) >> 8 );	          // Set baud rate, High divisor latch = 0
+		U0LCR   &= ~( BIT7 );                       									// DLAB = 0, access to divisor latch disabled
+		
+		U0FCR   |=  ( BIT0 ); 																        // BIT0: Enable FIFO
+
+		U0FCR		|=  ( BIT1 | BIT2 | BIT6 | BIT7 );		  							// BIT1-2 Clr rx/tx buffer (Not necessary)
+																																	// BIT6-7: 14 characters in rx fifo triggers interrupt
+		U0IER	 = ( BIT0 /*| BIT1*/ );  // Enable Receive data available interrupt - set in irq.c,
+
+		irq_attach(UART0_IRQ, uart0_isr);
+		interrupt_unmask(UART0_IRQ);
 	for (;;) {
 		
 		if (state)
 #ifdef LPC2364
-			FIO2SET = 0xFFFFFFFF-1;
+			FIO2SET = BIT7;
 #else
 			GPIO1_IOSET = BIT23;
 #endif
 		else
 #ifdef LPC2364
-			FIO2CLR = 0xFFFFFFFF-1;
+			FIO2CLR = BIT7;
 #else
 			GPIO1_IOCLR = BIT23;
 #endif
@@ -132,6 +257,13 @@ void AOS_TASK task3(void) {
 // 		if (buf[0] != 5)
 // 			for (;;);
 		state ^= 1;
+// 		while (!(U0LSR & 0x20)); // not needed if interruptbased with THRE (transmit hold register empty)
+// 		U0THR = 'U';
+		
+		
+		sem_down(&uart0_rxempty_sem);
+		get_fifo(&uart0_rxbuffer, &c);
+// 		U0THR = c;
 	}
 }
 
@@ -142,7 +274,8 @@ void AOS_TASK task_arr(void) {
 		mutex_lock(&mymutex);	
 		mswork(50);
 		mutex_unlock(&mymutex);
-		msleep(10);
+// 		msleep(1000);
+// 		sem_up(&uart0_rxempty_sem);
 	}
 }
 
