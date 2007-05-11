@@ -151,52 +151,43 @@ static void init_fifo(struct fifo_buffer* fifo) {
 	memset(fifo,0,sizeof(struct fifo_buffer));
 }
 
-void uart0_isr() {
+void uart0_isr(void) {
 	uint32_t iir;
 	char c;
 	uint32_t tmp;
 	static char state = 1;
 
-retry:
-	iir = U0IIR;
-	switch (iir&0x0E) {
-		case 6: // RLS Receive Line Status
-			tmp = U0LSR;
-			U0THR = 'A';
-			break;
-		case 12: // CTI Character Timerout interrupt
-		case 4: // RDA Receive data interrupt
-			
-			c = U0RBR;
-			if (state)
-				FIO2SET = BIT2;
-			else
-				FIO2CLR = BIT2;
-			state ^= 1;
-			put_fifo(&uart0_rxbuffer,c);
-			sys_sem_up(&uart0_rxempty_sem);
-			U0THR = 'B';
-			break;
-		case 2: // THRE Interrupt
-			U0THR = 'C';
-// 			if (U0LSR&0x20) { // Transmit FIFO empty
-// 				int fifoready = 16;
-// 				while (fifoready-- && get_fifo(&uart0_txbuffer,&c))
-// 					U0THR = c;
-// 			}
-			break;
-		case 0:
-			tmp = U1MSR;
-			U0THR = 'D';
-			break;
-		default:
-			U0THR = 'X';
-			
-// 			for (;;);
-	}
-	
-	
-	if (iir) goto retry;
+
+// 	while ((iir = U0IIR) & BIT0) {
+// 		switch (iir&0x0E) {
+// 			case 6: // RLS Receive Line Status
+// 				tmp = U0LSR;
+// 				tmp = U0RBR;
+// 				U0THR = 'A';
+// 				break;
+// 			case 12: // CTI Character Timerout interrupt
+// 			case 4: // RDA Receive data interrupt
+				c = U0RBR;
+				if (state)
+					FIO2SET = BIT2;
+				else
+					FIO2CLR = BIT2;
+				state ^= 1;
+				put_fifo(&uart0_rxbuffer,c);
+				sys_sem_up(&uart0_rxempty_sem);
+// 				U0THR = 'B';
+// 				break;
+// 			case 2: // THRE Interrupt
+// 				U0THR = 'C';
+// 				if (U0LSR&0x20) { // Transmit FIFO empty
+// 					int fifoready = 16;
+// 					while (fifoready-- && get_fifo(&uart0_txbuffer,&c))
+// 						U0THR = c;
+// 				}
+// 				break;
+// 		}
+// 	}
+
 }
 
 #define UART0_IRQ     0x06        // UART_0 IRQ-vector
@@ -204,6 +195,7 @@ retry:
 void AOS_TASK task3(void) {
 	char state;
 	char c;
+	int i;
 	char buf[1024];
 	buf [0] = 5;
 	uint32_t baud_rate = 19200;
@@ -263,7 +255,8 @@ void AOS_TASK task3(void) {
 		
 		sem_down(&uart0_rxempty_sem);
 		get_fifo(&uart0_rxbuffer, &c);
-// 		U0THR = c;
+// 		for (i=0; i<10; i++)
+		put_fifo(&uart0_txbuffer, c);
 	}
 }
 
