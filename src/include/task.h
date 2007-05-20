@@ -41,7 +41,7 @@ struct task_t {
 	/**
 	 * \brief The name of the task.
 	 */
-	char* name;
+	const char* name;
 
 	/**
 	 * \brief The priority of the process. Lower is better. This
@@ -53,6 +53,11 @@ struct task_t {
 	 * \brief Node in process-queue.
 	 */
 	struct list_head q;	
+
+	/**
+   * \brief Node in global process-list
+   */
+	struct list_head glist;
 	
 	enum task_state {RUNNING, READY, SLEEPING, BLOCKED, CRASHED} state;
 	
@@ -78,6 +83,8 @@ struct task_t {
 	uint16_t stack_size;
 
 	uint32_t ticks;
+
+	uint32_t subticks;
 
 	uint32_t time_left;
 

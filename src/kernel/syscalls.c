@@ -65,7 +65,7 @@ _syscall1(void, block, struct list_head*, q);
 _syscall0(void, yield);
 _syscall0(void, disable_cs);
 _syscall0(void, enable_cs);
-_syscall3(struct task_t*, create_task, funcPtr, entrypoint, void*, arg, int8_t, priority);
+_syscall4(struct task_t*, create_task, funcPtr, entrypoint, const char*, name, void*, arg, int8_t, priority);
 // _syscall0(void, enable_irqs);
 // _syscall0(void, disable_irqs);
 // _syscall0(void, aos_basic_init);
