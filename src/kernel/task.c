@@ -35,7 +35,7 @@
  * processes with different data.
  * @param priority The priority. Less is more :)
  */
-static void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priority) {
+void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priority) {
 	REGISTER_TYPE cpsr = 0x00000010; // User-mode
 // 	REGISTER_TYPE cpsr = 0x0000001F; // System-mode
 	if (((uint32_t)entrypoint & 1) == 1) // If address is thumb
@@ -67,12 +67,5 @@ static void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t 
 	task->context[16] = 0x12; // r12
 	task->prio = priority;
 	task->sleep_timer.type = TMR_STOP;
-	list_push_back(&readyQ, &task->q);
 }
 
-struct task_t* sys_create_task(funcPtr entrypoint, void* arg, int8_t priority) {
-	struct task_t* t;
-	t = sys_malloc(sizeof(struct task_t));
-	init_task(t, entrypoint, arg, priority);
-	return t;
-}

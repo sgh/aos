@@ -63,6 +63,10 @@ void disable_clock(void) {
 	interrupt_mask(TIMER0_IRQ);
 }
 
+uint32_t get_clock(void) {
+	return T0_TC;
+}
+
 
 // uint32_t get_timer_match(void) {
 // 	return T0_MR0;

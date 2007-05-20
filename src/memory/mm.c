@@ -139,7 +139,7 @@ void* sys_malloc(size_t size)
 // 	printf("Not enough memory\n");
 // 	mm_status();
 	
-	AOS_HOOK(oom_error, current); // Call hook-function
+	AOS_WARNING("Out-Of-Memory"); // Call hook-function
 	
 	return NULL; // Out-Of-Memory
 }

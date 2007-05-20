@@ -25,6 +25,7 @@
 #include <types.h>
 #include <task.h>
 #include <list.h>
+#include <runtime_check.h>
 
 #include <aos.h> /** @todo make this go away */
 
@@ -34,9 +35,12 @@
 extern uint32_t num_context_switch;
 
 /**
- * \brief linker-provided placement of the userspace stack
+ * \brief linker-provided placement of stacks
  */
 extern uint32_t __stack_usr_top__;
+extern uint32_t __stack_usr_bottom__;
+extern uint32_t __stack_svc_bottom__;
+extern uint32_t __stack_irq_bottom__;
 
 /**
  * \brief Internal function to get the current usermode stackpointer.
@@ -77,6 +81,13 @@ extern uint8_t do_context_switch;
  */
 extern struct list_head usleepQ;
 
+/**
+ * \brief This list contains all processes
+ */
+extern struct list_head process_list;
+
+void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priority);
+
 
 /**
  * \brief Wakeup the process and insert it in the readyQ.
@@ -91,5 +102,6 @@ void sched_clock(void);
  * @return 1 if the current process is the background-process
  */
 uint8_t is_background(void);
+
 
 #endif // _KERNEL_H_

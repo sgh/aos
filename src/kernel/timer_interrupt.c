@@ -51,6 +51,8 @@ void sched_clock(void) {
 
 
 void sched(void) {
+	static uint32_t ticks;
+	static uint32_t last_task_switch = 0;
 	struct task_t* next = NULL;
 	
 #ifdef SHARED_STACK
@@ -72,12 +74,12 @@ void sched(void) {
 		// Fragmem
 // 		interrupt_enable();
 		if (sp > top_stack)
-			AOS_HOOK(crash_event,current);
+			AOS_FATAL("SP > TS");
 		current->fragment = store_fragment(src,len);
 // 		interrupt_disable();
 		if ((current->fragment == NULL) && (len > 0)) { // This indicates Stack-Alloc-Error
 			current->state = CRASHED;
-			AOS_HOOK(stack_alloc_fatal, current);
+			AOS_FATAL("Stack allocation error");
 		}
 		
 		current->stack_size = len;
@@ -87,6 +89,18 @@ void sched(void) {
 			if (!is_background())
 				list_push_back(&readyQ,&current->q);
 		}
+
+		if (ticks == current->ticks)
+			current->subticks += get_clock() - last_task_switch; /** @todo This might underflow if get_clock() gets 0 */
+
+		last_task_switch = get_clock();
+
+		if (current->subticks >= 1000) {
+			current->subticks -= 1000;
+			current->ticks++;
+		}
+
+		check_stack();
 	}
 #endif
 
@@ -130,9 +144,11 @@ void sched(void) {
 
 
 	if (current == next)
-		for (;;);
+		AOS_FATAL("current == next");
 	
 	current = next;
+
+	ticks = current->ticks;
 
 	current->time_left = ms2ticks(TIME_SLICE_MS);
 

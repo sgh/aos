@@ -40,7 +40,7 @@ struct aos_hooks {
 	 *
 	 * @param task The struct task_t that that was doing the memory allocation.
 	 */
-	void (*oom_error)(struct task_t* task);
+// 	void (*oom_error)(struct task_t* task);
 
   /**
 	 * \brief Stack-Alloc-Error. Called when a context-switch could not allocate
@@ -63,9 +63,12 @@ struct aos_hooks {
 	 */
 	void (*timer_event)(uint32_t time);
 
-	void (*crash_event)(struct task_t* task);
+	void (*fatal_event)(const char* str);
+
+	void (*warning_event)(const char* str);
 
 	uint32_t (*user_syscall)(uint32_t syscallnr, void* data);
+
 };
 
 /**
@@ -77,6 +80,10 @@ void aos_hooks(struct aos_hooks* hooks);
 #ifdef AOS_KERNEL_MODULE
 
 #define AOS_HOOK(hook,args) if (_aos_hooks && _aos_hooks->hook) { _aos_hooks->hook(args); }
+
+#define AOS_FATAL(str) if (_aos_hooks && _aos_hooks->fatal_event) { _aos_hooks->fatal_event(str); }
+
+#define AOS_WARNING(str) if (_aos_hooks && _aos_hooks->warning_event) { _aos_hooks->warning_event(str); }
 
 #endif
 

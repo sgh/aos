@@ -41,6 +41,8 @@ void enable_clock(void);
  */
 void disable_clock(void);
 
+uint32_t get_clock(void);
+
 /**
  * \brief Clear the interrupt. Only used at the end of the interrupt-handler
  */

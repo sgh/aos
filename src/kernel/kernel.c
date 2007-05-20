@@ -30,6 +30,7 @@
 
 LIST_HEAD(readyQ);
 LIST_HEAD(usleepQ);
+LIST_HEAD(process_list);
 
 
 uint8_t do_context_switch = 0;
@@ -93,6 +94,7 @@ static void do_initcalls(void) {
 void aos_basic_init() {
 	interrupt_init();
 	do_initcalls();
+	init_runtime_check();
 	current = NULL;
 }
 
@@ -100,8 +102,7 @@ void aos_basic_init() {
 void aos_context_init(uint32_t timer_refclk) {
 // 	int i;
 	/** @todo this should problably be a syscall too */
-	idle_task = create_task(NULL, NULL, 0);
-	list_erase(&idle_task->q);
+	idle_task = create_task(NULL, "Idle", NULL, 0);
 	current = idle_task;
 	init_clock(timer_refclk);
 	enable_clock();
@@ -185,6 +186,17 @@ void sys_disable_cs() {
 
 void sys_enable_cs() {
 	allow_context_switch = 1;
+}
+
+
+struct task_t* sys_create_task(funcPtr entrypoint, const char* name, void* arg, int8_t priority) {
+  struct task_t* t;
+  t = sys_malloc(sizeof(struct task_t));
+  init_task(t, entrypoint, arg, priority);
+	t->name = name;
+  list_push_back(&readyQ, &t->q);
+	list_push_back(&process_list, &t->glist);
+  return t;
 }
 
 
