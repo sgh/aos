@@ -52,6 +52,7 @@ void* sys_call_table[] =
 	[_NR_sem_up] sys_sem_up,
 	[_NR_sem_down] sys_sem_down,
 	[_NR_user_syscall] sys_user_syscall,
+	[_NR_get_process_list] sys_get_process_list,
 };
 
 /* Syscall definitions */
@@ -65,6 +66,7 @@ _syscall1(void, block, struct list_head*, q);
 _syscall0(void, yield);
 _syscall0(void, disable_cs);
 _syscall0(void, enable_cs);
+_syscall0(struct list_head*, get_process_list);
 _syscall4(struct task_t*, create_task, funcPtr, entrypoint, const char*, name, void*, arg, int8_t, priority);
 // _syscall0(void, enable_irqs);
 // _syscall0(void, disable_irqs);
