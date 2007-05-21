@@ -1,6 +1,6 @@
 /*
 	AOS - ARM Operating System
-	Copyright (C) 2007  Søren Holm (sgh@sgh.dk)
+	Copyright (C) 2007  Sï¿½ren Holm (sgh@sgh.dk)
 
 	This library is free software; you can redistribute it and/or
 	modify it under the terms of the GNU Lesser General Public
@@ -52,6 +52,7 @@ struct aos_hooks* _aos_hooks = NULL;
 struct aos_status _aos_status;
 
 struct task_t* idle_task;
+
 
 /**
  * \brief Offset of struct task_t::contex
@@ -164,6 +165,10 @@ void sys_msleep(uint16_t ms) {
 	do_context_switch = 1;
 }
 
+struct list_head* sys_get_process_list( void )
+{
+  return ( &process_list ); 
+}
 
 void sys_block(struct list_head* q) {
 	list_push_back(q,&current->q);

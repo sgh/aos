@@ -1,6 +1,6 @@
 /*
 		AOS - ARM Operating System
-		Copyright (C) 2007  Søren Holm (sgh@sgh.dk)
+		Copyright (C) 2007  Sï¿½ren Holm (sgh@sgh.dk)
 
 		This library is free software; you can redistribute it and/or
 		modify it under the terms of the GNU Lesser General Public
@@ -58,8 +58,10 @@
 #define _NR_sem_up         24
 #define _NR_sem_down       25
 #define _NR_user_syscall   26
+#define _NR_get_process_list 27
 
 /* Syscall declarations */
+struct list_head* sys_get_process_list( void ); // for getting process list to display cpu% of each process on display.
 uint32_t sys_user_syscall(uint32_t syscallnr, void* data);
 void sys_unblock(struct task_t* task);
 void sys_block(struct list_head* q);
