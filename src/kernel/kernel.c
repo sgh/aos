@@ -111,7 +111,10 @@ void aos_context_init(uint32_t timer_refclk) {
 
 
 void sys_yield(void) {
-	do_context_switch = 1;
+
+	// Only do context-switch if some else want CPU-time
+	if (!list_isempty(&readyQ))
+		do_context_switch = 1;
 }
 
 
