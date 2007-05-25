@@ -69,6 +69,14 @@ aos_swi_entry:
 	/* Save registers on SWI-mode stack */
 	STMFD SP!,{r6-r12, LR}
 
+	/*
+		Now - to make sure that interrupt-latency is as minimal
+		as possible we enable interrupts here.
+	*/
+	MRS r6, SPSR
+	BIC r6, r6, #0xC0  @ enable IRQ and FIQ interrupts
+	MSR SPSR, r6
+
 	/* Read LR to see if the SWI-instruction was in ARM-, or THUMB-mode */
 	MRS r7, SPSR
 	AND r6, r7, #0x20
