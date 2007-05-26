@@ -234,7 +234,7 @@ _reset_handler:
 
 /*         User mode, use user stack                            */
               LDR    R0,=__stack_usr_top__
-              MSR    CPSR_c, #Mode_USR|I_Bit|F_Bit
+              MSR    CPSR_c, #Mode_USR
               MOV    SP,R0
 
 /*         We keep running in user mode                               */
