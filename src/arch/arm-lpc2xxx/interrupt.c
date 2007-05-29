@@ -29,6 +29,8 @@
 #define VICIntEnable   (*(volatile uint32_t *)0xFFFFF010)
 #define VICIRQStatus   (*(volatile uint32_t *)0xFFFFF000)
 #define VICDefVectAddr (*(volatile uint32_t *)0xFFFFF034)
+#define VICIntEnClr    (*(volatile uint32_t *)0xFFFFF014)
+
 
 // LPC21xx/LPC22xx registers only
 #define VICVectCntl0_LPC21xx   (*(volatile uint32_t *)0xFFFFF200) // LPC21xx/LPC22xx
@@ -80,29 +82,22 @@ void interrupt_unmask(uint8_t irqnum) {
 		*vector_addr = (uint32_t)aos_irq_entry;
 	}
 
-	VICIntEnable |= BIT0<<irqnum; /* Enable Interrrupt */
+	VICIntEnable = (BIT0<<irqnum); /* Enable Interrrupt */
 	
 }
 
 
 void interrupt_mask(uint8_t irqnum) {
-	uint32_t* vector_addr = &VICVectAddr0;
 
-	
 	if (irqnum>31)
 		return;
 
-	VICIntEnable &= ~(BIT0<<irqnum); /* Disable Interrrupt */
-	
-	if (lpc_family != 2324)
-		return;
-	
-	vector_addr += irqnum;
-	*vector_addr = (uint32_t)aos_irq_entry;
+	VICIntEnClr = (BIT0<<irqnum); /* Disable Interrrupt */
 }
 
 void interrupt_init(void) {
 	detect_lpc_family();
+	VICIntEnClr = 0xFFFFFFFF;
 	if (lpc_family == 2122)
 		VICDefVectAddr = (uint32_t)aos_irq_entry;
 }
