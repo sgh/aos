@@ -22,6 +22,7 @@
 #include <types.h>
 #include <list.h>
 #include <timer.h>
+#include <arch/cpu.h>
 
 /**
  * \brief This is defined if the system should be using a shared stack.
@@ -58,7 +59,10 @@ struct task_t {
    * \brief Node in global process-list
    */
 	struct list_head glist;
-	
+
+	/**
+	 * \brief Task state
+	 */
 	enum task_state {RUNNING, READY, SLEEPING, BLOCKED, CRASHED} state;
 	
 	/**
@@ -67,14 +71,9 @@ struct task_t {
 	struct timer sleep_timer;
 
 	/**
-	 * \brief Average sleep-time. Used for dynamic prioritize
-	 */
-	//uint32_t avr_sleep_time;
-
-	/**
 	 * \brief Pointer to the process's saved CPU-state (the registers, not the stack).
 	 */
-	REGISTER_TYPE *context;
+	struct cpu_context* context;
 
 	/**
 	 * \brief Size of the space pointed to by ::fragment
@@ -82,10 +81,24 @@ struct task_t {
 	 */
 	uint16_t stack_size;
 
+	/**
+	 * \brief The maximum registered stack usage
+	 */
+	uint16_t max_stack_size;
+
+	/**
+	 * \brief Ticks used by process
+	 */
 	uint32_t ticks;
 
-	uint32_t subticks;
+	/**
+	 * \brief Subticks used by process
+	 */
+	int32_t subticks;
 
+	/**
+	 * \brief Tick left in current timeslice
+	 */
 	uint32_t time_left;
 
 	/**
