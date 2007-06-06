@@ -1,3 +1,5 @@
+.SILENT: symlink_setup
+.PHONY: all symlink_setup clean application
 
 APP = libaos
 
@@ -60,11 +62,16 @@ OBJS := $(patsubst %.c,%.o,$(SOURCES))
 OBJS := $(patsubst %.s,%.o,$(OBJS))
 DEPS := $(patsubst %.o,%.d,$(OBJS))
 
-
-all: application
+all: symlink_setup application
 	@echo "Creating $(APP).a ..."
 	@$(AR) rcs ../$(APP).a $(OBJS)
 	@$(SIZE) -t $(OBJS)
+
+symlink_setup:
+	ln -sfn ../arch/$(MARCH) include/arch
+
+lint:
+	$(MAKE) GCC=splint CFLAGS=$(INCLUDE)
 
 %.o: %.c
 	@echo "Compiling $< ..."
@@ -81,8 +88,6 @@ kernel/timer_interrupt.o:  kernel/timer_interrupt.c
 application: $(OBJS)
 
 clean:
-	rm -f $(OBJS)
-	rm -f $(DEPS)
-	rm -f ../$(APP).a
+	rm -f include/arch $(OBJS) $(DEPS) ../$(APP).a
 
 -include $(DEPS)
