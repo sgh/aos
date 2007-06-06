@@ -23,9 +23,9 @@
 #include <config.h>
 
 // Macros for number-manipulation
-#define ciel(val,max)  (val>max ? max : val)
-#define floor(val,min) (val<min ? min : val)
-#define max(a,b) (a>b ? a : b)
+#define ciel(val,max)  ((val)>(max) ? (max) : (val))
+#define floor(val,min) ((val)<(min) ? (min) : (val))
+#define max(a,b) ((a)>(b) ? (a) : (b))
 
 // Macros for initcall-sections
 #define CLASS_MODULE_INIT(function) void* __attribute__((section(".class_initcalls"))) class_initcall_##function = function;
