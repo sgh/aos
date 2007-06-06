@@ -15,6 +15,8 @@ void init_runtime_check(void) {
 
 void check_stack(void) {
 	unsigned int overflows = 0;
+
+	// Check magic string at bottom of each stack
 	if (memcmp(&__stack_usr_bottom__, magic_string, sizeof(magic_string))!=0)
 		overflows |= STACK_USR;
 
@@ -23,6 +25,12 @@ void check_stack(void) {
 
 	if (memcmp(&__stack_irq_bottom__, magic_string, sizeof(magic_string))!=0)
 		overflows |= STACK_IRQ;
+
+	// Next - check user stack-pointer for stack-button override
+	/** @todo This will only catch user-mode stack overflow */
+	if ((uint32_t)&__stack_usr_bottom__ > get_usermode_sp())
+		overflows |= STACK_USR;
+
 
 	if (overflows) {
 		int idx = 0;
