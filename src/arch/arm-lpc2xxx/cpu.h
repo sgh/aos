@@ -19,51 +19,24 @@
 #ifndef CPU_H
 #define CPU_H
 
-static inline void interrupt_enable(void) {
-#ifndef __lint__
-	uint32_t val;
+struct cpu_context {
+	uint32_t pc;
+	uint32_t sp;
+	uint32_t lr;
+	uint32_t cpsr;
+	uint32_t r0;
+	uint32_t r1;
+	uint32_t r2;
+	uint32_t r3;
+	uint32_t r4;
+	uint32_t r5;
+	uint32_t r6;
+	uint32_t r7;
+	uint32_t r8;
+	uint32_t r9;
+	uint32_t r10;
+	uint32_t r11;
+	uint32_t r12;
+};
 
-	__asm__ __volatile__ (
-												"mrs %0, cpsr\n\t"
-			"bic %0, %0, #0xc0\n\t"		/* Enable IRQ & FIQ */
-			"msr cpsr_c, %0\n\t"
-	:"=&r" (val)
-	:
-	: "memory");
 #endif
-}
-
-static inline void interrupt_disable(void) {
-#ifndef __lint__
-	uint32_t val;
-
-	__asm__ __volatile__ (
-												"mrs %0, cpsr\n\t"
-			"orr %0, %0, #0xc0\n\t"		/* Disable IRQ & FIQ */
-			"msr cpsr_c, %0\n\t"
-	:"=&r" (val)
-	:
-	: "memory");
-#endif
-}
-
-static inline void interrupt_save(uint32_t *sts) {
-	uint32_t val;
-
-	__asm__ __volatile__ (
-												"mrs %0, cpsr\n\t"
-	:"=&r" (val)
-	:
-	:"memory");
-
-	*sts = (uint32_t)val;
-}
-
-static inline void interrupt_restore(uint32_t sts) {
-	__asm__ __volatile__ (
-												"msr cpsr_c, %0\n\t"
-	:
-	:"r" (sts)
-	:"memory");
-
-}
