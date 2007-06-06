@@ -66,13 +66,14 @@ get_usermode_sp:
 		and r0 the return value
 */
 aos_swi_entry:
+
 	/* Save registers on SWI-mode stack */
-	STMFD SP!,{r6-r12, LR}
+	STMFD SP!,{r6-r7, LR}
 
 	/* Read LR to see if the SWI-instruction was in ARM-, or THUMB-mode */
 	MRS r7, SPSR
-	AND r6, r7, #0x20
-	CMP r6, #0
+	AND r7, r7, #0x20
+	CMP r7, #0
 	BEQ _get_swinum_arm
 
 	/* Get number embedded in SWI-instruction, either THUMB or ARM */
@@ -91,15 +92,15 @@ _after_get_swinum:
 
 	/* Calculate offset */
 	LDR r7, =sys_call_table
-	ADD r7, r7, r6
-	LDR r7, [r7]
+@ 	ADD r7, r7, r6
+	LDR r7, [r7, r6]
 	
 	/* Set LR and call routine */
 	MOV LR, PC
 	BX r7
 	
 	/* Restore registers from SWI-mode stack */
-	LDMFD SP!,{r6-r12, LR}
+	LDMFD SP!,{r6-r7, LR}
 	
 	/* Call common interrupt escape code */
 	B return_from_interrupt
@@ -117,8 +118,8 @@ _get_current_context_store:
 	LDR r0, [r0]
 	LDR r1, =current
 	LDR r1, [r1]	
-	ADD r0, r0, r1
-	LDR r0, [r0]
+@ 	ADD r0, r0, r1
+	LDR r0, [r0, r1]
 	MOV PC, LR
 
 
@@ -137,7 +138,7 @@ aos_irq_entry:
 		Does context-switching if do_context_switch != 0
 */
 return_from_interrupt:
-	/* Save r0 on stack - we restore it later */
+	/* Save r0 on stack - we restore it later in context save and during no_task_switch */
 	STMFD SP!,{r0}
 
 	/* Are we going to switch tasks */
@@ -167,16 +168,16 @@ return_from_interrupt:
 	CMP r0, #0
 	BEQ _after_task_save
 	
-	/* Save r1,LR on stack since the next routine-call will destroy it */
+	/* Save r1,LR on stack since the next routine-call will destroy them */
 	STMFD SP!,{r1,LR}
 	
 	/*
 		Call routine to calculate location of context-store.
 		We MUST save LR here. It is the return-address in User-mode
 	*/
-	STMFD SP!,{LR}
+@ 	STMFD SP!,{LR}
 	BL _get_current_context_store
-	LDMFD SP!,{LR}
+@ 	LDMFD SP!,{LR}
 	
 	/* Restore r1,LR again */
 	LDMFD SP!,{r1,LR}
@@ -184,9 +185,9 @@ return_from_interrupt:
 
 /*
 	In the following we do the actual context-save and -restore.
-	The memory in which the 17 registers are saved looks like this.
+	The memory in which the 17 registers are saved looks like this (from cpu.h)
 
-	Entrypoiny,SP,LR,r0,SPSR,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12
+	PC, SP, LR, r0, SPSR, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12
 */
 	
 	/*
@@ -194,7 +195,7 @@ return_from_interrupt:
 		to when this process is to run again.
 	*/
 	STR LR, [r0]
-		
+
 	/* Store r1-r12 @ r0 + 20 */
 	ADD r0, r0, #20
 	STMIA r0,{r1-r12}
@@ -202,20 +203,19 @@ return_from_interrupt:
 
 	/* Store SPSR process-cpu-flags @ r0 + 16 */
 	MRS r1, SPSR
-	STR r1, [r0, #16]
-	
+	STR r1, [r0, #3*4]
+
 	/*
 		Load the value of r0, which we previously saved on stack.
 		SP is not affected during this
 	*/
 	LDR r1, [SP]
-		
-	/* Save r1 @ r0+12 */
-	STR r1, [r0, #12]
-		 
+
+	STR r1, [r0, #4*4] @ Save r0-value
+
 	/* Save current mode in r10 */
 	MRS r10, CPSR
-	
+
 	/* Switch to system-mode */
 	MOV r9, r10
 	BIC r9,r9, #0xFF
@@ -224,21 +224,19 @@ return_from_interrupt:
 
 	/* Move SP to r2 - so we can access it from interrupt-mode */
 	MOV r2, SP
-	
+
 	/* Move LR to r3- so we can access it from interrupt-mode */
 	MOV r3, LR
-		
+
 	/* Switch to previously saved mode */
-@ 	MOV r9, r10
-@ 	MSR CPSR, r9
 	MSR CPSR, r10
-	
+
 	/* Save r2-r3 (SP, LR) at [r0 + 4] */
 	ADD r0, r0, #4
-	STMIA r0,{r2-r3}
+	STMIA r0, {r2-r3}
 
 _after_task_save:
-	/* From this point on we have all registers to our self */
+	/* From this point on we have all registers to our selves */
 
 	/** @todo Make sched() interruptible */
 	BL sched
@@ -246,12 +244,14 @@ _after_task_save:
 	/* Here the process restore starts. WATCH THE REGISTERS */
 	BL _get_current_context_store
 
-	LDMIA r0!,{LR}
-	LDMIA r0!,{r1-r2}
-		
-	/* Save current mode in r10 */
+	LDR LR, [r0]       @ Load PC
+
+	LDR r1, [r0, #1*4] @ Load SP
+	LDR r2, [r0, #2*4] @ Load LR
+
+	/* Save current mode in r9 */
 	MRS r10, CPSR
-	
+
 	/* Switch to system-mode */
 	MOV r9, r10
 	BIC r9,r9, #PSR_MODE
@@ -261,54 +261,26 @@ _after_task_save:
 	/* Set SP and LR */
 	MOV SP, r1
 	MOV LR, r2
-	
+
 	/* Switch to previously saved mode */
-@ 	MOV r9, r10
-@ 	MSR CPSR, r9
 	MSR CPSR, r10
 	
-	/* Load value of r0 */
-	LDR r1, [r0]
-	
-	/* Save value on stack, which will be loaded later */
+	LDR r1, [r0, #4*4]  @ Load r0-value
+
+	/* Save value on stack, which will be loaded later. This was stored earlier also */
 	STR r1, [SP]
 
-	/* Load r1-r12 @ [r0+8] */
-	ADD r0, r0, #8
-	LDMIA r0,{r1-r12}
-
 	/* Restore SPSR process-cpu-flags @ r0 - 4 */
-	STMFD SP!,{r1} @ Store r1
-	LDR r1, [r0, #-4]
+	LDR r1, [r0, #3*4]
 	MSR SPSR, r1
 
-	LDMFD SP!,{r1} @ Restore r1
+	ADD r0, r0, #5*4
+	LDMIA r0,{r1-r12}   @ Load r1-r12 @ [r0 + 5*4]
 
 @======================================================================================
 _no_task_switch:
 
-@ 	STMFD SP!,{r1} @ Store r1
-
-@ 	@ Check if interrupts should be disabled
-@ 	LDR r1, =interrupts_disabled
-@ 	LDRB r1, [r1]
-@ 	CMP r1, #0
-@ 	BEQ interrupts_are_enabled
-@ 
-@ 	MRS r1, SPSR
-@ 	ORR r1, r1, #0xC0  @ disable IRQ and FIQ interrupts
-@ 	MSR SPSR, r1
-@ 	B after_interrupt_endisable
-@ 
-@ interrupts_are_enabled:
-@ 	MRS r1, SPSR
-@ 	BIC r1, r1, #0xC0  @ enable IRQ and FIQ interrupts
-@ 	MSR SPSR, r1
-
-@ after_interrupt_endisable:
-@ 	LDMFD SP!,{r1} @ Restore r1
-	
 return_from_irq:
-	LDMFD SP!,{r0}
+	LDMFD SP!,{r0} @ Load r0 from stack
 	MOVS PC, LR
 
