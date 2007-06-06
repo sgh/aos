@@ -50,9 +50,9 @@ static uint_fast8_t lpc_family = 0;
 #define IAP_LOCATION 0x7ffffff1
 		
 static void detect_lpc_family(void) {
-	typedef void (*IAP)(unsigned int [],unsigned int[]);
-	unsigned long command[5];
-	unsigned long result[2];
+	typedef void (*IAP)(uint32_t [], uint32_t[]);
+	uint32_t command[5];
+	uint32_t result[2];
 	IAP iap_entry;
 	iap_entry=(IAP) IAP_LOCATION;
 
@@ -72,7 +72,7 @@ static void detect_lpc_family(void) {
 }
 
 void interrupt_unmask(uint8_t irqnum) {
-	uint32_t* vector_addr = &VICVectAddr0;
+	volatile uint32_t* vector_addr = &VICVectAddr0;
 
 	if (irqnum>31)
 		return;
