@@ -103,8 +103,12 @@ void aos_basic_init() {
 void aos_context_init(uint32_t timer_refclk) {
 // 	int i;
 	/** @todo this should problably be a syscall too */
+
+	// Create to idle task
 	idle_task = create_task(NULL, "Idle", NULL, 0);
+	list_erase(&idle_task->q);	// We ARE the idle task -> it is not in any queue.
 	current = idle_task;
+
 	init_clock(timer_refclk);
 	enable_clock();
 }
