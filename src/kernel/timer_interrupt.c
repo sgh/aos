@@ -81,17 +81,21 @@ void sched(void) {
 			current->state = CRASHED;
 			AOS_FATAL("Stack allocation error");
 		}
-		
+
 		current->stack_size = len;
-		
+
+		if (current->stack_size > current->max_stack_size)
+			current->max_stack_size = current->stack_size;
+
 		if (current->state == RUNNING) {
 			current->state = READY;
 			if (!is_background())
 				list_push_back(&readyQ,&current->q);
 		}
 
-		if (ticks == current->ticks)
-			current->subticks += get_clock() - last_task_switch; /** @todo This might underflow if get_clock() gets 0 */
+		// Compensate for context-switches between timer ticks. Without this
+		// many tasks will use little or no time at all.
+		current->subticks += (1000 - last_task_switch + get_clock()) % 1000;
 
 		last_task_switch = get_clock();
 
