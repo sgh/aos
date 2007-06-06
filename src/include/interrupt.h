@@ -24,11 +24,11 @@ void aos_irq_entry(void);
 static inline void interrupt_enable(void) {
 #ifndef __lint__
 	uint32_t val;
-
+	
 	__asm__ __volatile__ (
-												"mrs %0, cpsr\n\t"
-			"bic %0, %0, #0xc0\n\t"		/* Enable IRQ & FIQ */
-			"msr cpsr_c, %0\n\t"
+		"mrs %0, cpsr\n\t"
+		"bic %0, %0, #0xc0\n\t"		/* Enable IRQ & FIQ */
+		"msr cpsr_c, %0\n\t"
 	:"=&r" (val)
 	:
 	: "memory");
@@ -40,9 +40,9 @@ static inline void interrupt_disable(void) {
 	uint32_t val;
 
 	__asm__ __volatile__ (
-												"mrs %0, cpsr\n\t"
-			"orr %0, %0, #0xc0\n\t"		/* Disable IRQ & FIQ */
-			"msr cpsr_c, %0\n\t"
+		"mrs %0, cpsr\n\t"
+		"orr %0, %0, #0xC0\n\t"		/* Disable IRQ & FIQ */
+		"msr cpsr_c, %0\n\t"
 	:"=&r" (val)
 	:
 	: "memory");
@@ -53,7 +53,7 @@ static inline void interrupt_save(uint32_t *sts) {
 	uint32_t val;
 
 	__asm__ __volatile__ (
-												"mrs %0, cpsr\n\t"
+		"mrs %0, cpsr\n\t"
 	:"=&r" (val)
 	:
 	:"memory");
@@ -63,7 +63,7 @@ static inline void interrupt_save(uint32_t *sts) {
 
 static inline void interrupt_restore(uint32_t sts) {
 	__asm__ __volatile__ (
-												"msr cpsr_c, %0\n\t"
+		"msr cpsr_c, %0\n\t"
 	:
 	:"r" (sts)
 	:"memory");
