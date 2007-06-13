@@ -50,7 +50,8 @@ void timer_stop(struct timer* tmr) {
 // 		printf("_expire @ tick %d\n", next_expire);
 }
 
-static void timer_setup(struct timer* tmr, uint32_t ticks) {
+/** @todo FIX THIS. For some reason static must not be used here. Kernel timer stops working. */
+/*static*/ void timer_setup(struct timer* tmr, uint32_t ticks) {
 	struct list_head* it;
 	uint32_t expire = ticks + system_ticks;
 	struct timer* t;
