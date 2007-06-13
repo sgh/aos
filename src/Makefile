@@ -20,6 +20,8 @@ SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES)) $(addprefix memory/,$(MM_SOURCE
 
 ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
 
+ASMLIST = -Wa,-alhmsd
+
 CFLAGS = -mcpu=arm7tdmi -O2 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -mthumb-interwork 
 #-mapcs
 #-ffreestanding
@@ -75,11 +77,11 @@ lint:
 
 %.o: %.c
 	@echo "Compiling $< ..."
-	@$(GCC) -MD $(THUMB) $(CFLAGS) -c $(INCLUDE) -o $@ $<
+	@$(GCC) -MD $(THUMB) $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
 
 kernel/timer_interrupt.o:  kernel/timer_interrupt.c
 	@echo "Compiling (ARM) $<  ..."
-	@$(GCC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
+	@$(GCC) -MD $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
 
 %.o: %.s
 	@echo "Assembling (ARM) $< ..."
