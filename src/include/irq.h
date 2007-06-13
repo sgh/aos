@@ -19,8 +19,6 @@
 #ifndef IRQ_H
 #define IRQ_H
 
-#include <aos_module.h>
-
 #include <types.h>
 
 int irq_attach(int irqnum, void (*isr)(void));
