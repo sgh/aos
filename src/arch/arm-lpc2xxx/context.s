@@ -20,11 +20,6 @@
 /* public symbols */
 .global aos_swi_entry
 .global aos_irq_entry
-.global get_usermode_sp
-.global get_sp
-.global get_usermode_sp
-.global disable_irqs
-.global enable_irqs
 
 
 /* Public interrupt-handler symbols */
@@ -32,30 +27,6 @@
 ;.global uart0_interrupt
 
 .include "arch/arm-lpc2xxx/macros.s"
-
-get_sp:
-	MOV r0, SP
-	MOV PC, LR
-
-get_usermode_sp:
-	/* Save current mode in r10 */
-	STMFD SP!, {r9-r10}
-	MRS r10, CPSR
-	
-	/* Switch to system-mode */
-	MOV r9, r10
-	BIC r9,r9,#0xFF
-	ORR r9, r9, #PSR_MODE_SYS|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destroy operation */
-	MSR CPSR, r9
-	
-	MOV r0, SP /* Save stackpointer */
-	
-	/* Switch to previously saved mode */
-	MOV r9, r10
-	MSR CPSR, r9
-	
-	LDMFD SP!, {r9-r10}
-	BX LR
 
 /*
 	Software-interrupt handler:
@@ -92,7 +63,6 @@ _after_get_swinum:
 
 	/* Calculate offset */
 	LDR r7, =sys_call_table
-@ 	ADD r7, r7, r6
 	LDR r7, [r7, r6]
 	
 	/* Set LR and call routine */
@@ -118,7 +88,6 @@ _get_current_context_store:
 	LDR r0, [r0]
 	LDR r1, =current
 	LDR r1, [r1]	
-@ 	ADD r0, r0, r1
 	LDR r0, [r0, r1]
 	MOV PC, LR
 
@@ -175,9 +144,7 @@ return_from_interrupt:
 		Call routine to calculate location of context-store.
 		We MUST save LR here. It is the return-address in User-mode
 	*/
-@ 	STMFD SP!,{LR}
 	BL _get_current_context_store
-@ 	LDMFD SP!,{LR}
 	
 	/* Restore r1,LR again */
 	LDMFD SP!,{r1,LR}
@@ -187,7 +154,7 @@ return_from_interrupt:
 	In the following we do the actual context-save and -restore.
 	The memory in which the 17 registers are saved looks like this (from cpu.h)
 
-	PC, SP, LR, r0, SPSR, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12
+	PC, SP, LR, SPSR, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12
 */
 	
 	/*

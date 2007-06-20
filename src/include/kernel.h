@@ -43,19 +43,6 @@ extern uint32_t __stack_svc_bottom__;
 extern uint32_t __stack_irq_bottom__;
 
 /**
- * \brief Internal function to get the current usermode stackpointer.
- * @return The stackpointer from usermode
- */
-__inline__ uint32_t get_usermode_sp(void);
-
-
-/**
- * \brief Internal function used to get the current stack-pointer.
- * @return The current stackpointer
- */
-__inline__ uint32_t get_sp(void);
-
-/**
  * \brief The idle task
  */
 extern struct task_t* idle_task;
