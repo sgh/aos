@@ -59,7 +59,7 @@ void sched(void) {
 	/* Copy stack away from shared system stack */
 	if (current) {
 		uint32_t top_stack = (REGISTER_TYPE)&__stack_usr_top__;
-		uint32_t sp = get_usermode_sp();
+		uint32_t sp = /*get_usermode_sp()*/current->context->sp;
 		uint32_t len = top_stack - sp;
 // 		void* dst = current->stack;
 		void* src = (void*)&__stack_usr_top__ - len;

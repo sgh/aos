@@ -28,7 +28,7 @@ void check_stack(void) {
 
 	// Next - check user stack-pointer for stack-button override
 	/** @todo This will only catch user-mode stack overflow */
-	if ((uint32_t)&__stack_usr_bottom__ > get_usermode_sp())
+	if ((uint32_t)&__stack_usr_bottom__ > current->context->sp)
 		overflows |= STACK_USR;
 
 
