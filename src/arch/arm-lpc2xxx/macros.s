@@ -18,15 +18,11 @@
 */
 .extern return_from_interrupt
 
-/* extern symbols */
+/* external symbols */
 .extern sched
 .extern current
 .extern do_task_switch
 .extern irq_nest_count
-
-
-.equ SYSTEM_MODE_NOIRQ, 0xDF @ System-mode with IRQ an FIRQ disabled
-.equ SYSTEM_MODE_IRQ, 0xDC @ System-mode with IRQ an FIRQ enabled
 
 .equ PSR_MODE,     0x1F
 .equ PSR_MODE_USR, 0x10
