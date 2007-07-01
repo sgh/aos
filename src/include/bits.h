@@ -41,4 +41,8 @@
 #define TOINT8(addr) (*((int8_t*)addr))
 #define TOINT16(addr) (*((int16_t*)addr))
 
+// Commonly used defines
+#define FALSE 0
+#define TRUE  1
+
 #endif
