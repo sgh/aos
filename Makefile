@@ -1,4 +1,4 @@
-
+.PHONY:  aos
 APP = testapp
 
 #SOURCES = testgpio.c handlers.c init_cpu.c startarm.s
@@ -44,13 +44,19 @@ OBJS := $(patsubst %.s,%.o,$(OBJS))
 DEPS := $(patsubst %.o,%.d,$(OBJS))
 
 
-all: ${OBJS}
-	$(MAKE) -C src 
+
+all: aos ${OBJS}
 	$(GCC) $(CFLAGS) ${LDFLAGS} -Wl,-Map=$(APP).map  -T $(LINKERSCRIPT) $(INCLUDE) -o $(APP).elf ${LIBDIRS} ${OBJS} ${LIBS} 
 	$(OBJCOPY) -O ihex $(APP).elf $(APP).hex
 	$(OBJCOPY) -O binary $(APP).elf $(APP).bin
 	$(SIZE) -t $(OBJS)
 	$(SIZE) $(APP).elf
+	cp ../Mikrofyn/Embedded/arm/xc2-bootcode/cb14_cradle-bootloader.bin . 
+	dd if=testapp.bin bs=8k seek=1 skip=1 oflag=append of=cb14_cradle-bootloader.bin
+
+aos:
+	$(MAKE) -C src 
+
 
 %.o: %.c
 	$(GCC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<

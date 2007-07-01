@@ -134,6 +134,8 @@
 .arm
 .align 0
 
+.org 0x2000
+
 _vectors:
               B     _reset_handler
               LDR   PC,Undef_Addr
@@ -165,10 +167,10 @@ FIQ_Addr:     .word   FIQ_Handler
  *
  ****************************************************************************/
 
-.org 0x01FC, 0xFF
+@.org 0x01FC, 0xFF
 
-PROTECTION_CODE:
-              .word   0xFFFFFFFF
+@PROTECTION_CODE:
+@              .word   0xFFFFFFFF
 
 .size _vectors, . - vectors
 
@@ -178,7 +180,6 @@ PROTECTION_CODE:
  *
  ****************************************************************************/
 
-.org 0x0200
 .arm
 .global _reset_handler
 
