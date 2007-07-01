@@ -95,15 +95,15 @@ int read_pipe(struct pipe* pipe, char* dst, int len) {
 		// Get char from buffer
 // 		got_char = fifo_read();
 		got_char = get_fifo(&pipe->fifo, dst);
-			
+
+		if (!got_char)
+			break;
+
 		// sem_post never blocks
 		if (pipe->mode & PIPE_RD_ISR)
 			sys_sem_up(&pipe->full);
 		else
 			sem_up(&pipe->full);
-
-		if (!got_char)
-			break;
 
 		retval++;
 		dst++;
@@ -127,14 +127,14 @@ int write_pipe(struct pipe* pipe, char* src, int len) {
 		// Write char to buffer
 		wrote_char = put_fifo(&pipe->fifo, *src);
 
+		if (!wrote_char)
+			break;
+		
 		// sem_post never blocks
 		if (pipe->mode & PIPE_WR_ISR)
 			sys_sem_up(&pipe->empty);
 		else
 			sem_up(&pipe->empty);
-
-		if (!wrote_char)
-			break;
 		
 		retval++;
 		src++;
@@ -162,13 +162,13 @@ void pipe_init(struct pipe* pipe, char* buf, int size, void (*rd_hook)(struct pi
 #define CTI 6
 
 void uart0_wr_hook(struct pipe* pipe) {
-	VICSoftInt = UART0_IRQ;
+	if (U0LSR & BIT5)
+		VICSoftInt = UART0_IRQ;
 }
 
 void uart0_fill_fifo(struct pipe* pipe) {
 	char c;
 	uint8_t uart0_thr_slots = 16;
-	/** @todo read_pipe apparently fail during calls from isr's */
 	while (uart0_thr_slots && read_pipe(pipe, &c, 1)) {
 		U0THR = c;
 		uart0_thr_slots--;
@@ -187,8 +187,6 @@ void uart0_isr(void) {
 	
 	switch (iir) {
 		case THRE:
-// 			if (uart0_tx_pipe.wr_hook)
-// 				uart0_tx_pipe.wr_hook(&uart0_tx_pipe);
 				uart0_fill_fifo(&uart0_tx_pipe);
 			break;
 		case RLS:
@@ -203,6 +201,9 @@ void uart0_isr(void) {
 			}
 			break;
 	}
+
+	if (U0LSR & BIT5)
+		uart0_fill_fifo(&uart0_tx_pipe);
 	
 }
 
@@ -284,7 +285,7 @@ void main(void) {
 	U0IER   |= ( BIT0 | BIT1 );  // Enable Receive data available interrupt - set in irq.c,
 
 	pipe_init(&uart0_rx_pipe, uart0_rxbuffer, sizeof(uart0_rxbuffer), NULL, NULL, PIPE_WR_ISR);
-	pipe_init(&uart0_tx_pipe, uart0_txbuffer, sizeof(uart0_txbuffer), NULL, NULL, PIPE_RD_ISR);
+	pipe_init(&uart0_tx_pipe, uart0_txbuffer, sizeof(uart0_txbuffer), NULL, uart0_wr_hook, PIPE_RD_ISR);
 
 	irq_attach(UART0_IRQ, uart0_isr);
 	interrupt_unmask(UART0_IRQ);
