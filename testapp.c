@@ -16,41 +16,143 @@
 #include <interrupt.h>
 #define UART0 0
 
+// pipe is written from ISR
+#define PIPE_WR_ISR 1
+
+// pipe is read from ISR
+#define PIPE_RD_ISR 2
+
+#define UART0_IRQ     0x06        // UART_0 IRQ-vector
+
 struct fifo_buffer {
-	uint8_t buf[128];
-	uint8_t pidx;
-	uint8_t gidx;
-	uint8_t num;
+	char* buf;
+	uint16_t pidx;
+	uint16_t gidx;
+	uint16_t num;
+	uint16_t size;
 };
 
-semaphore_t uart0_rxempty_sem;
-semaphore_t uart0_txfull_sem;
+struct pipe {
+	
+	semaphore_t empty;
+	
+	semaphore_t full;
 
-struct fifo_buffer uart0_rxbuffer;
-struct fifo_buffer uart0_txbuffer;
+	void (*wr_hook)(struct pipe*);
 
-static char put_fifo(struct fifo_buffer* fifo, unsigned char c) {
-	if (fifo->num == sizeof(fifo->buf))
+	void (*rd_hook)(struct pipe*);
+	
+	struct fifo_buffer fifo;
+	
+	uint8_t mode;
+};
+
+
+
+char uart0_rxbuffer[32];
+char uart0_txbuffer[32];
+
+struct pipe uart0_rx_pipe;
+struct pipe uart0_tx_pipe;
+
+static char put_fifo(struct fifo_buffer* fifo, char c) {
+	if (fifo->num == fifo->size)
 		return 0;
 	fifo->buf[fifo->pidx] = c;
 	fifo->pidx++;
-	fifo->pidx %= sizeof(fifo->buf);
+	fifo->pidx %= fifo->size;
 	fifo->num++;
 	return 1;
 }
 
-static char get_fifo(struct fifo_buffer* fifo, unsigned char* c) {
+static char get_fifo(struct fifo_buffer* fifo, char* c) {
 	if (fifo->num == 0)
 		return 0;
+
+// 	printf("num: %d\n", fifo->num);
+// 	fflush(0);
 	*c = fifo->buf[fifo->gidx];
 	fifo->gidx++;
-	fifo->gidx %= sizeof(fifo->buf);
+	fifo->gidx %= fifo->size;
 	fifo->num--;
 	return 1;
 }
 
-static void init_fifo(struct fifo_buffer* fifo) {
+static void init_fifo(struct fifo_buffer* fifo, char* buf,  uint16_t size) {
 	memset(fifo,0,sizeof(struct fifo_buffer));
+	fifo->buf = buf;
+	fifo->size = size;
+}
+
+
+int read_pipe(struct pipe* pipe, char* dst, int len) {
+	unsigned int retval = 0;
+	unsigned char got_char;
+	while (len--) {
+		if (! (pipe->mode & PIPE_RD_ISR))
+			sem_down(&pipe->empty);
+	
+		// Get char from buffer
+// 		got_char = fifo_read();
+		got_char = get_fifo(&pipe->fifo, dst);
+			
+		// sem_post never blocks
+		if (pipe->mode & PIPE_RD_ISR)
+			sys_sem_up(&pipe->full);
+		else
+			sem_up(&pipe->full);
+
+		if (!got_char)
+			break;
+
+		retval++;
+		dst++;
+	}
+
+	if (pipe->rd_hook)
+		pipe->rd_hook(pipe);
+	
+	return retval;
+}
+
+
+int write_pipe(struct pipe* pipe, char* src, int len) {
+	unsigned int retval = 0;
+	unsigned char wrote_char;
+	
+	while (len--) {
+		if (! (pipe->mode & PIPE_WR_ISR))
+			sem_down(&pipe->full);
+	
+		// Write char to buffer
+		wrote_char = put_fifo(&pipe->fifo, *src);
+
+		// sem_post never blocks
+		if (pipe->mode & PIPE_WR_ISR)
+			sys_sem_up(&pipe->empty);
+		else
+			sem_up(&pipe->empty);
+
+		if (!wrote_char)
+			break;
+		
+		retval++;
+		src++;
+	}
+
+	if (pipe->wr_hook)
+		pipe->wr_hook(pipe);
+	
+	return retval;
+}
+
+void pipe_init(struct pipe* pipe, char* buf, int size, void (*rd_hook)(struct pipe*), void (*wr_hook)(struct pipe*), uint8_t mode) {
+	sem_init(&pipe->empty, 0);
+	sem_init(&pipe->full, size);
+	pipe->mode = mode;
+	pipe->rd_hook = rd_hook;
+	pipe->wr_hook = wr_hook;
+	init_fifo(&pipe->fifo, buf, size);
 }
 
 
@@ -59,89 +161,70 @@ static void init_fifo(struct fifo_buffer* fifo) {
 #define RLS 3
 #define CTI 6
 
-void fill_uart0_fifo(void) {
-	uint8_t c;
+void uart0_wr_hook(struct pipe* pipe) {
+	VICSoftInt = UART0_IRQ;
+}
+
+void uart0_fill_fifo(struct pipe* pipe) {
+	char c;
 	uint8_t uart0_thr_slots = 16;
-	while (uart0_thr_slots && get_fifo(&uart0_txbuffer, &c)) {
+	/** @todo read_pipe apparently fail during calls from isr's */
+	while (uart0_thr_slots && read_pipe(pipe, &c, 1)) {
 		U0THR = c;
-		sys_sem_up(&uart0_txfull_sem);
+		uart0_thr_slots--;
 	}
+
 }
 
 void uart0_isr(void) {
 	uint32_t iir;
-	unsigned char c;
-	uint32_t tmp;
-	char unlock = 0;
-	static char state = 1;
+	char c;
+// 	uint32_t tmp;
+// 	char unlock = 0;
+// 	static char state = 1;
 
 	iir = (U0IIR >> 1) & 0x07;
 	
 	switch (iir) {
 		case THRE:
-			fill_uart0_fifo();
+// 			if (uart0_tx_pipe.wr_hook)
+// 				uart0_tx_pipe.wr_hook(&uart0_tx_pipe);
+				uart0_fill_fifo(&uart0_tx_pipe);
 			break;
 		case RLS:
 		case CTI:
 		case RDA:
 			while (U0LSR & BIT0) {
 				c = U0RBR;
-				put_fifo(&uart0_rxbuffer, c);
-				sys_sem_up(&uart0_rxempty_sem);
+// 				U0THR = c;
+				write_pipe(&uart0_rx_pipe, &c, 1);
+// 				put_fifo(&uart0_rxbuffer, c);
+// 				sys_sem_up(&uart0_rxempty_sem);
 			}
 			break;
 	}
 	
 }
 
-#define UART0_IRQ     0x06        // UART_0 IRQ-vector
-
-uint8_t uart0_getchar(void) {
-	uint8_t c;
-	sem_down(&uart0_rxempty_sem);
-	interrupt_mask(UART0_IRQ);
-	get_fifo(&uart0_rxbuffer, &c);
-	interrupt_unmask(UART0_IRQ);
-	return c;
-}
-
-void uart0_write(uint8_t* src, uint32_t len) {
-	while (len--) {
-		sem_down(&uart0_txfull_sem);
-		put_fifo(&uart0_txbuffer, *src);
-		if ((U0LSR & BIT5)) {
-			uint8_t c;
-			uint8_t uart0_thr_slots = 16;
-			while (uart0_thr_slots && get_fifo(&uart0_txbuffer, &c)) {
-				U0THR = c;
-				sem_up(&uart0_txfull_sem);
-			}
-		}
-		src++;
-	}
-}
-
 
 void AOS_TASK uart0_task(void) {
 	unsigned int errors;
 	unsigned char state;
-	unsigned char c = 'A';
-	unsigned char last_c = 0xFF;
+	char c = 'A';
 	char buf[] = "abcdefghijklmnopqrstuvxyz";
 // 	buf [0] = 5;
 	
 	
 	for (;;) {
-// 		c = uart0_getchar();
+		read_pipe(&uart0_rx_pipe, &c, 1);
+		write_pipe(&uart0_tx_pipe, &c, 1);
 
-		uart0_write(buf, 25);
-
-// 		state ^= 1;
+ 		state ^= 1;
 // 		if (c != ((last_c+1)&0xFF))
 // 			errors++;
 // 
-// 		FIO2CLR = 0xFE;
-// 		FIO2SET = ((errors<<1) & 0x7E) | state*BIT7;
+ 		FIO2CLR = 0xFE;
+ 		FIO2SET = ((errors<<1) & 0x7E) | state*BIT7;
 // 		
 // 		last_c = c;
 // 		msleep(100);
@@ -154,19 +237,30 @@ char __attribute__((aligned(4))) dmem[3*1024];
 
 void main(void) {
 	volatile int i;
-	uint8_t c = 'A';
-	uint32_t baud_rate = 230400;
+// 	uint8_t c = 'A';
+//	uint32_t baud_rate = 230400;
 // 	uint32_t baud_rate = 460800;
-// 	uint32_t baud_rate = 115200;
+ 	uint32_t baud_rate = 115200;
 	uint32_t pclock = 72000000;
 	
-	aos_basic_init();
-	aos_mm_init(dmem, dmem+sizeof(dmem));
 	
 	PINSEL10 = 0;           /* Disable ETM interface, enable LEDs */
 	FIO2DIR  = 0x000000FF;  /* P2.0..7 defined as Outputs         */
 	FIO2MASK = 0x00000000;
-	FIO2CLR  = 0xFF;
+	FIO2SET  = BIT0;
+
+/*	for (;;) {
+		FIO2SET = BIT5;
+		for (i=0; i<200000; i++);
+		FIO2CLR = BIT5;
+		for (i=0; i<200000; i++);
+
+	}*/
+
+	aos_basic_init();
+	FIO2SET  = BIT1;
+	aos_mm_init(dmem, dmem+sizeof(dmem));
+	FIO2SET  = BIT2;
 	
 	PCLKSEL0 &= ~( BIT7 | BIT9 );  // just to make sure they are cleared
 	PCLKSEL0 |=  ( BIT6 | BIT8 );
@@ -189,22 +283,27 @@ void main(void) {
 	
 	U0IER   |= ( BIT0 | BIT1 );  // Enable Receive data available interrupt - set in irq.c,
 
+	pipe_init(&uart0_rx_pipe, uart0_rxbuffer, sizeof(uart0_rxbuffer), NULL, NULL, PIPE_WR_ISR);
+	pipe_init(&uart0_tx_pipe, uart0_txbuffer, sizeof(uart0_txbuffer), NULL, NULL, PIPE_RD_ISR);
+
 	irq_attach(UART0_IRQ, uart0_isr);
 	interrupt_unmask(UART0_IRQ);
 
-	init_fifo(&uart0_txbuffer);
-	init_fifo(&uart0_rxbuffer);
+	FIO2SET  = BIT3;
 	
-	sem_init(&uart0_rxempty_sem, 0);
-	sem_init(&uart0_txfull_sem, 128);
+// 	sem_init(&uart0_rxempty_sem, 0);
+// 	sem_init(&uart0_txfull_sem, 128);
 	
 	create_task(uart0_task, "uart0", NULL, 0);
+	FIO2SET  = BIT4;
 
 	aos_context_init(15000000);
+	FIO2SET  = BIT5;
+	for (;;);
 	for (;;) {
-		FIO2CLR = BIT0;
+		FIO2SET = BIT7;
 		for (i=0; i<200000; i++);
-		FIO2SET = BIT0;
+		FIO2CLR = BIT7;
 		for (i=0; i<200000; i++);
 
 	}
