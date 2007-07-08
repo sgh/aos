@@ -1,6 +1,6 @@
 /*
 	AOS - ARM Operating System
-	Copyright (C) 2007  SÃ¸ren Holm (sgh@sgh.dk)
+	Copyright (C) 2007  S�ren Holm (sgh@sgh.dk)
 
 	This library is free software; you can redistribute it and/or
 	modify it under the terms of the GNU Lesser General Public
@@ -37,7 +37,10 @@
 		and r0 the return value
 */
 aos_swi_entry:
-
+	STMFD SP!,{r0-r4,LR}
+	BL irqs_are_disabled
+	LDMFD SP!,{r0-r4,LR}
+	
 	/* Save registers on SWI-mode stack */
 	STMFD SP!,{r6-r7, LR}
 
@@ -96,9 +99,87 @@ _get_current_context_store:
 	Common-interrupt entry
 */
 aos_irq_entry:
-	IRQ_prologue
+
+	@ First store the registers that we destroy on the IRQ stack without SP writeback
+	STMFD SP, {r0-r4}
+	SUB r4, SP, #(5*4) @ Save address of start of r0-r4 in r4
+	
+	@ To do nested interrupts we need to first get the irq_LR and irq_SPSR into some general registers
+	SUB r2, LR, #4
+	MRS r3, SPSR
+
+	@ Next Change to SVC-mode using r0 as CPSR storage
+	MRS r0, CPSR
+	BIC r0, r0, #PSR_MODE
+	ORR r0, r0, #PSR_MODE_SVC
+	MSR CPSR_c, r0
+
+	@ Now copy svc_LR and svc_SP to two other general registers
+	MOV r0, LR
+	MOV r1, SP
+
+	@ Push the four register on stack with writeback
+	STMFD SP!, {r0-r3} @ LR_svc, SP_svc, PC_app, CPSR_app
+
+	@ And restore the work registers we saved a little while ago
+	LDMFD r4, {r0-r4}
+
+	/*
+		We should now have tranfered to svc and the stacks look like this
+		
+		IRQ-stack is empty.
+	
+		SVC-stack contains this.
+
+		+----------------------------+
+		| CPSR from interrupted mode |
+	  +----------------------------+
+		| PC from interrupted mode   |
+	  +----------------------------+
+	  | SVC Stack pointer          |
+	  +----------------------------+
+	  | SV Link Register           |
+	  +----------------------------+
+	*/
+
+	STMFD SP!,{r0-r12} @ Store all 13 general registers
+
+	LDR r5, =irq_nest_count @ r5: &nesting count
+	LDR r6, [r5] @ r6: nesting count
+	ADD r0, r6, #1
+	STR r0, [r5]
+
 	BL interrupt_handler
-	IRQ_epilogue
+
+	STR r6, [r5] @ Store old nesting count
+
+	MOV r0, SP @ Save SP in r0 to enable restore in IRQ-mode
+
+	ADD SP, SP, #(17*4) @ Move over the 13 general registers and the 4 registers
+
+	@ Restore LR registers
+	LDR LR, [r0, #(13*4)] @ LR
+	LDR SP, [r0, #(14*4)] @ SP
+
+	/* Switch to IRQ-mode using r0 */
+	MRS r1, CPSR
+	BIC r1,r1, #PSR_MODE
+	ORR r1, r1, #PSR_MODE_IRQ|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
+	MSR CPSR_c, r1
+
+	@ Reload IRQ specific registers
+	LDR LR, [r0, #(15*4)] @ LR
+	LDR r1, [r0, #(16*4)] @ SPSR
+	MSR SPSR, r1
+
+	LDR r1, =irq_nest_count
+	LDR r1, [r1]
+	CMP r1, #0
+
+	LDMFD r0, {r0-r12}
+	
+	BEQ return_from_interrupt @ Return via. common returncode if on top-level irq
+	MOVS PC, LR @ Else just return to previous mode
 
 
 /*
@@ -249,5 +330,10 @@ _no_task_switch:
 
 return_from_irq:
 	LDMFD SP!,{r0} @ Load r0 from stack
+
+	STMFD SP!,{r0-r4,LR}
+	BL irqs_are_enabled
+	LDMFD SP!,{r0-r4,LR}
+	
 	MOVS PC, LR
 
