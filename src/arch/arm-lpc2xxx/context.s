@@ -37,9 +37,9 @@
 		and r0 the return value
 */
 aos_swi_entry:
-	STMFD SP!,{r0-r4,LR}
-	BL irqs_are_disabled
-	LDMFD SP!,{r0-r4,LR}
+@	STMFD SP!,{r0-r4,LR}
+@	BL irqs_are_disabled
+@	LDMFD SP!,{r0-r4,LR}
 	
 	/* Save registers on SWI-mode stack */
 	STMFD SP!,{r6-r7, LR}
@@ -62,7 +62,7 @@ _get_swinum_arm:
 _after_get_swinum:
 
 	/* syscall offset */
-	MOV r6, r6, LSL #2
+	MOV r6, r6, LSL #2 @ TODO Boundcheck this value
 
 	/* Calculate offset */
 	LDR r7, =sys_call_table
@@ -331,9 +331,9 @@ _no_task_switch:
 return_from_irq:
 	LDMFD SP!,{r0} @ Load r0 from stack
 
-	STMFD SP!,{r0-r4,LR}
-	BL irqs_are_enabled
-	LDMFD SP!,{r0-r4,LR}
+@	STMFD SP!,{r0-r4,LR}
+@	BL irqs_are_enabled
+@	LDMFD SP!,{r0-r4,LR}
 	
 	MOVS PC, LR
 
