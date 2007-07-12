@@ -19,6 +19,9 @@
 #ifndef INTERRUPT_H
 #define INTERRUPT_H
 
+void irqs_are_disabled(void);
+void irqs_are_enabled(void);
+
 void aos_irq_entry(void);
 
 static inline void interrupt_enable(void) {
@@ -33,12 +36,14 @@ static inline void interrupt_enable(void) {
 	:
 	: "memory");
 #endif
+	irqs_are_enabled();
 }
+
 
 static inline void interrupt_disable(void) {
 #ifndef __lint__
 	uint32_t val;
-
+	
 	__asm__ __volatile__ (
 		"mrs %0, cpsr\n\t"
 		"orr %0, %0, #0xC0\n\t"		/* Disable IRQ & FIQ */
@@ -47,6 +52,7 @@ static inline void interrupt_disable(void) {
 	:
 	: "memory");
 #endif
+	irqs_are_disabled();
 }
 
 static inline void interrupt_save(uint32_t *sts) {
