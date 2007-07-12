@@ -20,11 +20,13 @@
 /* public symbols */
 .global aos_swi_entry
 .global aos_irq_entry
+.global sched_unlock
+.global sched_lock
 
 
 /* Public interrupt-handler symbols */
 .global timer_interrupt
-;.global uart0_interrupt
+.global validate_execution_address
 
 .include "arch/arm-lpc2xxx/macros.s"
 
@@ -37,9 +39,9 @@
 		and r0 the return value
 */
 aos_swi_entry:
-@	STMFD SP!,{r0-r4,LR}
-@	BL irqs_are_disabled
-@	LDMFD SP!,{r0-r4,LR}
+	STMFD SP!,{r0-r4,LR}
+	BL irqs_are_disabled
+	LDMFD SP!,{r0-r4,LR}
 	
 	/* Save registers on SWI-mode stack */
 	STMFD SP!,{r6-r7, LR}
@@ -108,10 +110,10 @@ aos_irq_entry:
 	SUB r2, LR, #4
 	MRS r3, SPSR
 
-	@ Next Change to SVC-mode using r0 as CPSR storage
+	@ Next Change to System-mode using r0 as CPSR storage
 	MRS r0, CPSR
 	BIC r0, r0, #PSR_MODE
-	ORR r0, r0, #PSR_MODE_SVC
+	ORR r0, r0, #PSR_MODE_SYS|PSR_NOIRQ
 	MSR CPSR_c, r0
 
 	@ Now copy svc_LR and svc_SP to two other general registers
@@ -125,11 +127,11 @@ aos_irq_entry:
 	LDMFD r4, {r0-r4}
 
 	/*
-		We should now have tranfered to svc and the stacks look like this
+		We should now have tranfered to System-mode and the stacks look like this
 		
 		IRQ-stack is empty.
 	
-		SVC-stack contains this.
+		System-mode-stack contains this.
 
 		+----------------------------+
 		| CPSR from interrupted mode |
@@ -149,11 +151,23 @@ aos_irq_entry:
 	ADD r0, r6, #1
 	STR r0, [r5]
 
+	CMP r6, #0
+	BLEQ sched_lock
+
 	BL interrupt_handler
 
 	STR r6, [r5] @ Store old nesting count
 
 	MOV r0, SP @ Save SP in r0 to enable restore in IRQ-mode
+
+	@ Check if nesting level is 0
+	CMP r6, #0
+
+	BNE nested_irq
+	STMFD SP!, {r0}
+	BL sched_unlock
+	LDMFD SP!, {r0}
+nested_irq:
 
 	ADD SP, SP, #(17*4) @ Move over the 13 general registers and the 4 registers
 
@@ -164,7 +178,7 @@ aos_irq_entry:
 	/* Switch to IRQ-mode using r0 */
 	MRS r1, CPSR
 	BIC r1,r1, #PSR_MODE
-	ORR r1, r1, #PSR_MODE_IRQ|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
+	ORR r1, r1, #PSR_MODE_IRQ/*|PSR_NOIRQ*/ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
 	MSR CPSR_c, r1
 
 	@ Reload IRQ specific registers
@@ -172,13 +186,15 @@ aos_irq_entry:
 	LDR r1, [r0, #(16*4)] @ SPSR
 	MSR SPSR, r1
 
-	LDR r1, =irq_nest_count
-	LDR r1, [r1]
-	CMP r1, #0
-
 	LDMFD r0, {r0-r12}
 	
 	BEQ return_from_interrupt @ Return via. common returncode if on top-level irq
+
+	STMFD SP!, {r0-r3,LR}
+	MOV r0, LR
+	BL validate_execution_address
+	LDMFD SP!, {r0-r3,LR}
+	
 	MOVS PC, LR @ Else just return to previous mode
 
 
@@ -304,7 +320,7 @@ _after_task_save:
 	MOV r9, r10
 	BIC r9,r9, #PSR_MODE
 	ORR r9, r9, #PSR_MODE_SYS|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
-	MSR CPSR, r9
+	MSR CPSR_c, r9
 
 	/* Set SP and LR */
 	MOV SP, r1
@@ -331,9 +347,11 @@ _no_task_switch:
 return_from_irq:
 	LDMFD SP!,{r0} @ Load r0 from stack
 
-@	STMFD SP!,{r0-r4,LR}
-@	BL irqs_are_enabled
-@	LDMFD SP!,{r0-r4,LR}
+	STMFD SP!,{r0-r4,LR}
+	BL irqs_are_enabled
+	MOV r0, LR
+	BL validate_execution_address
+	LDMFD SP!,{r0-r4,LR}
 	
 	MOVS PC, LR
 
