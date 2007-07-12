@@ -2,6 +2,7 @@
 #include <types.h>
 #include <list.h>
 #include <macros.h>
+#include <irq.h>
 
 /**
  * Timer types
@@ -77,7 +78,9 @@ static  __attribute__((noinline)) void timer_setup(struct timer* tmr, uint32_t t
 }
 
 static void handle_timer_event(void) {
+	irq_lock();
 	struct timer* tmr = get_struct_timer(list_get_front(&timer_list));
+	irq_unlock();
 // 	printf("EXPIRE\n");
 
 	switch (tmr->type) {
