@@ -27,6 +27,7 @@
 #include <clock.h>
 #include <bits.h>
 #include <irq.h>
+#include <aos_hooks.h>
 
 LIST_HEAD(readyQ);
 LIST_HEAD(usleepQ);
@@ -68,6 +69,8 @@ struct task_t* current = NULL;
 // Linker provides theese
 extern funcPtr __initcalls_start__[];
 extern funcPtr __initcalls_end__[];
+extern funcPtr __aos_sot__; // AOS Start-Of-Text
+extern funcPtr __aos_eot__; // AOS End-Of-Text
 
 // uint32_t get_interrupt_elapsed() {
 // 	register uint32_t now = read_timer32();
@@ -209,6 +212,15 @@ struct task_t* sys_create_task(funcPtr entrypoint, const char* name, void* arg, 
   list_push_back(&readyQ, &t->q);
 	list_push_back(&process_list, &t->glist);
   return t;
+}
+
+
+void validate_execution_address(uint32_t address) {
+	if (address < (uint32_t)&__aos_sot__)
+		AOS_FATAL("xaddr > sot");
+	
+	if (address > (uint32_t)&__aos_eot__)
+		AOS_FATAL("xaddr > eot");
 }
 
 
