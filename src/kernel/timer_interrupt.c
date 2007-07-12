@@ -27,7 +27,7 @@
 #include <list.h>
 #include <fragment.h>
 #include <macros.h>
-#include <interrupt.h>
+#include <irq.h>
 
 void sched(void);
 
@@ -42,11 +42,19 @@ void sched_clock(void) {
 	*/
 	if (!current->time_left) {
 
+		irq_lock();
 		if (!list_isempty(&readyQ))
 			do_context_switch = 1;
+		irq_unlock();
 
 	} else // Very important to avoid underflow of time_left member
 		current->time_left--;
+}
+
+void sched_lock(void) {
+}
+
+void sched_unlock(void) {
 }
 
 
