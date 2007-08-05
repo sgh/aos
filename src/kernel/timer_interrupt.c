@@ -28,6 +28,7 @@
 #include <fragment.h>
 #include <macros.h>
 #include <irq.h>
+#include <assert.h>
 
 void sched(void);
 
@@ -81,14 +82,13 @@ void sched(void) {
 		
 		// Fragmem
 // 		interrupt_enable();
-		if (sp > top_stack)
-			AOS_FATAL("SP > TS");
+		assert(sp <= top_stack);
 		current->fragment = store_fragment(src,len);
 // 		interrupt_disable();
-		if ((current->fragment == NULL) && (len > 0)) { // This indicates Stack-Alloc-Error
-			current->state = CRASHED;
-			AOS_FATAL("Stack allocation error");
-		}
+		assert(len == 0 || (current->fragment != NULL));  // This indicates Stack-Alloc-Error
+// 			current->state = CRASHED;
+// 			AOS_FATAL("Stack allocation error");
+// 		}
 
 		current->stack_size = len;
 
@@ -155,8 +155,7 @@ void sched(void) {
 	next->state = RUNNING;
 
 
-	if (current == next)
-		AOS_FATAL("current == next");
+	assert(current != next);
 	
 	current = next;
 

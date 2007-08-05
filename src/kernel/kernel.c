@@ -28,6 +28,7 @@
 #include <bits.h>
 #include <irq.h>
 #include <aos_hooks.h>
+#include <assert.h>
 
 LIST_HEAD(readyQ);
 LIST_HEAD(usleepQ);
@@ -216,11 +217,8 @@ struct task_t* sys_create_task(funcPtr entrypoint, const char* name, void* arg, 
 
 
 void validate_execution_address(uint32_t address) {
-	if (address < (uint32_t)&__aos_sot__)
-		AOS_FATAL("xaddr > sot");
-	
-	if (address > (uint32_t)&__aos_eot__)
-		AOS_FATAL("xaddr > eot");
+//	ASSERT(address >= (uint32_t)&__aos_sot__);
+//	ASSERT(address <= (uint32_t)&__aos_eot__);
 }
 
 

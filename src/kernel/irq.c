@@ -42,7 +42,7 @@ void irqs_are_enabled(void) {
 }
 
 void irq_handler(int vector) {
-	ASSERT(irq_table[vector].isr && (vector < 32));
+	assert(irq_table[vector].isr && (vector < 32));
 	
 	irq_table[vector].num_irqs++;
 // 	interrupt_enable();

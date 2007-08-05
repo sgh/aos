@@ -4,6 +4,7 @@
 #include <string.h>
 #include <aos_hooks.h>
 #include <stdio.h>
+#include <assert.h>
 
 static const char const magic_string[3] = "AOS";
 
@@ -46,6 +47,7 @@ void check_stack(void) {
 		if (overflows & STACK_IRQ)
 			idx += sprintf(buf+idx, " IRQ");
 
-		AOS_FATAL(buf);
+// 		AOS_FATAL(buf);
+		assert(FALSE);
 	}
 }

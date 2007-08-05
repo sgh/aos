@@ -17,10 +17,10 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #include <list.h>
-#include <macros.h>
-#include <task.h>
+//#include <macros.h>
+//#include <task.h>
 #include <stdio.h>
-#include <types.h>
+//#include <types.h>
 
 
 void list_push_front(struct list_head *list, struct list_head* node) {
