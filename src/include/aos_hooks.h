@@ -19,6 +19,8 @@
 #ifndef AOS_HOOKS_H
 #define AOS_HOOKS_H
 
+#include <task.h>
+
 /**
  * \brief This struct contains hook-functions to call at different conditions.
  *
@@ -65,7 +67,7 @@ struct aos_hooks {
 
 	void (*fatal_event)(const char* str);
 
-	void (*warning_event)(const char* str);
+	void (*assert_failed)(const char * const exp, const char* const file, int line);
 
 	uint32_t (*user_syscall)(uint32_t syscallnr, void* data);
 
@@ -79,11 +81,13 @@ void aos_hooks(struct aos_hooks* hooks);
 // Only provide this macro for the operating system
 #ifdef AOS_KERNEL_MODULE
 
+extern struct aos_hooks* _aos_hooks;
+
 #define AOS_HOOK(hook,args) if (_aos_hooks && _aos_hooks->hook) { _aos_hooks->hook(args); }
 
-#define AOS_FATAL(str) if (_aos_hooks && _aos_hooks->fatal_event) { _aos_hooks->fatal_event(str); }
+// #define AOS_FATAL(str) if (_aos_hooks && _aos_hooks->fatal_event) { _aos_hooks->fatal_event(str); }
 
-#define AOS_WARNING(str) if (_aos_hooks && _aos_hooks->warning_event) { _aos_hooks->warning_event(str); }
+// #define AOS_WARNING(str) if (_aos_hooks && _aos_hooks->warning_event) { _aos_hooks->warning_event(str); }
 
 #endif
 

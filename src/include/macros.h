@@ -27,6 +27,9 @@
 #define floor(val,min) ((val)<(min) ? (min) : (val))
 #define max(a,b) ((a)>(b) ? (a) : (b))
 
+// String manipulation
+#define __STRING(x) #x
+
 // Macros for initcall-sections
 #define CLASS_MODULE_INIT(function) void* __attribute__((section(".class_initcalls"))) class_initcall_##function = function;
 #define BUS_MODULE_INIT(function) void* __attribute__((section(".bus_initcalls"))) bus_initcall_##function = function;

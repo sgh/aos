@@ -28,6 +28,7 @@
 #include <list.h>
 #include <mm.h>
 #include <aos_hooks.h>
+#include <macros.h>
 
 
 /* Syscall numbers */
@@ -59,6 +60,7 @@
 #define _NR_sem_down       25
 #define _NR_user_syscall   26
 #define _NR_get_process_list 27
+#define _NR_assert_failed  28
 
 /* Syscall declarations */
 struct list_head* sys_get_process_list( void ); // for getting process list to display cpu% of each process on display.
@@ -90,9 +92,11 @@ void sys_sem_init(semaphore_t* s, int16_t count);
 void sys_sem_down(semaphore_t* s);
 void sys_sem_up(semaphore_t* s);
 
+void sys_assert_failed(const char * const exp, const char* const file, unsigned int line);
 
-#define str(s) #s
-#define xstr(s) str(s)
+
+// #define str(s) #s
+#define xstr(s) __STRING(s)
 
 #define __syscallnr(def) xstr(_NR_##def)
 

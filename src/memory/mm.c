@@ -22,6 +22,7 @@
 #include <string.h>
 #include <driver_core.h>
 #include <bits.h>
+#include <assert.h>
 
 
 /* MM defines */
@@ -139,7 +140,8 @@ void* sys_malloc(size_t size)
 // 	printf("Not enough memory\n");
 // 	mm_status();
 	
-	AOS_WARNING("Out-Of-Memory"); // Call hook-function
+// 	AOS_WARNING("Out-Of-Memory"); // Call hook-function
+	assert(FALSE);
 	
 	return NULL; // Out-Of-Memory
 }
