@@ -67,6 +67,8 @@ DEPS := $(patsubst %.o,%.d,$(OBJS))
 all: symlink_setup application
 	@echo "Creating $(APP).a ..."
 	@$(AR) rcs ../$(APP).a $(OBJS)
+
+size:
 	@$(SIZE) -t $(OBJS)
 
 symlink_setup:
