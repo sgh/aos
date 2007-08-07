@@ -4,6 +4,7 @@
 #include <irq.h>
 #include <interrupt.h>
 #include <assert.h>
+#include <string.h>
 
 #define FIO_BASE_ADDR		0x3FFFC000
 #define FIO2SET        (*(volatile unsigned int *)(FIO_BASE_ADDR + 0x58))
@@ -30,6 +31,7 @@ int irq_attach(int irqnum, void (*isr)(void)) {
 int irq_detach(int irqnum) {
 	interrupt_mask(irqnum);
 	irq_table[irqnum].isr = NULL;
+	irq_table[irqnum].num_irqs;
 	return 0;
 }
 
@@ -41,13 +43,15 @@ void irqs_are_enabled(void) {
 // 	FIO2CLR = (1<<3);
 }
 
-void irq_handler(int vector) {
-	assert(irq_table[vector].isr && (vector < 32));
-	
+uint8_t irq_handler(int vector) {
+	assert(vector < 32);
+
 	irq_table[vector].num_irqs++;
-// 	interrupt_enable();
+	if (!irq_table[vector].isr)
+		return 0;
+
 	irq_table[vector].isr();
-// 	interrupt_disable();
+	return 1;
 }
 
 void irq_lock(void) {
@@ -66,3 +70,8 @@ void irq_unlock(void) {
 	}
 }
 
+static void irq_init(void) {
+	memset(irq_table, 0, sizeof(irq_table));
+}
+
+AOS_MODULE_INIT(irq_init);

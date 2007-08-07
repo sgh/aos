@@ -23,7 +23,7 @@
 
 int irq_attach(int irqnum, void (*isr)(void));
 
-void irq_handler(int vector);
+uint8_t irq_handler(int vector);
 
 /**
  * \brief Unmask an irq

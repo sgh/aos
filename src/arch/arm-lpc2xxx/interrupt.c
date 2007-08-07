@@ -48,6 +48,14 @@ static uint_fast8_t lpc_family = 0;
 #define LPC2368_ID 100924197
 
 #define IAP_LOCATION 0x7ffffff1
+#define REG32 (volatile unsigned int*)
+
+#define T0_IR           (*(REG32 (0xE0004000)))
+#define UART0_RBR       (*(REG32 (0xE000C000)))
+#define UART0_IIR          (*((volatile unsigned char *) 0xE000C008))
+#define UART0_LSR          (*((volatile unsigned char *) 0xE000C014))
+
+
 		
 static void detect_lpc_family(void) {
 	typedef void (*IAP)(uint32_t [], uint32_t[]);
@@ -103,9 +111,43 @@ void interrupt_init(void) {
 }
 
 static void interrupt_dispatch(int vector) {
-	irq_handler(vector);
-	
+
+	if (vector == 32)
+		return;
+
+	if (!irq_handler(vector))
+		return;
+
 	// Update priority hardware
+// 	switch (lpc_family) {
+// 		case 2122: VICVectAddr_LPC21xx = 0; break;
+// 		case 2324: VICVectAddr_LPC23xx = 0; break;
+// 	}
+}
+
+volatile int i;
+
+void interrupt_handler(void) {
+	uint32_t vector;
+	uint32_t bits;
+// 	uint32_t oldbits;
+
+	bits = VICIRQStatus;
+
+// retry:
+	for (vector = 0; vector<32; vector++) {
+		if (bits & (1<<vector))
+			break;
+	}
+
+	interrupt_dispatch(vector);
+
+// 	oldbits = bits;
+// 	bits = VICIRQStatus;
+
+// 	if (bits != oldbits)
+// 		goto retry;
+
 	switch (lpc_family) {
 		case 2122: VICVectAddr_LPC21xx = 0; break;
 		case 2324: VICVectAddr_LPC23xx = 0; break;
@@ -113,22 +155,12 @@ static void interrupt_dispatch(int vector) {
 }
 
 
-void interrupt_handler(void) {
-	int vector;
-	int bits;
-
-	bits = VICIRQStatus;
-
-retry:
-		for (vector = 0; vector<32; vector++) {
-	if (bits & (1<<vector))
-		break;
-		}
-
-		interrupt_dispatch(vector);
-
-		bits = VICIRQStatus;
-
-		if (bits)
-			goto retry;
-}
+		// Update priority hardware
+//  		T0_IR = BIT0;    // Clear interrupt
+// 		if (vector == 6) {
+// 			i = UART0_IIR;
+// 			i = UART0_LSR;
+// 			i = UART0_RBR;
+// 			VICVectAddr_LPC21xx = 0;
+// 		}
+// 		VICVectAddr_LPC21xx = 0;

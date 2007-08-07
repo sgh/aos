@@ -15,6 +15,8 @@
 #define time_after_eq(a,b) ((long)(a) - (long)(b) >= 0)
 #define time_before(a,b) ((long)(a) - (long)(b) < 0)
 
+#define static
+
 
 struct event {
 	char* name;
