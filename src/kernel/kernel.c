@@ -82,6 +82,7 @@ extern funcPtr __aos_eot__; // AOS End-Of-Text
 uint32_t sys_user_syscall(uint32_t syscallnr, void* data) {
 	if (_aos_hooks && _aos_hooks->user_syscall )
 	return _aos_hooks->user_syscall(syscallnr, data);
+	return 0;
 }
 
 static void do_initcalls(void) {

@@ -97,10 +97,24 @@ _get_current_context_store:
 	MOV PC, LR
 
 
+.equ    I_Bit,          0x80    /* when I bit is set, IRQ is disabled */
+.equ    F_Bit,          0x40    /* when F bit is set, FIQ is disabled */
+
+
 /*
 	Common-interrupt entry
 */
 aos_irq_entry:
+@ 	SUB LR, LR, #4
+@ 	STMFD SP!, {r0,LR}
+@ 
+@ 	MRS r0, SPSR   @ See if we got an interrupt while
+@ 	TST r0, #I_Bit @ interrupts were disabled.
+@ 	LDMNEFD SP!, {r0,PC}^
+@ 	NOP
+@ 	NOP
+@ 	LDMFD SP!, {r0,LR}
+@ 	ADD LR, LR, #4
 
 	@ First store the registers that we destroy on the IRQ stack without SP writeback
 	STMFD SP, {r0-r4}
