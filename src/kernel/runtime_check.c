@@ -48,6 +48,6 @@ void check_stack(void) {
 			idx += sprintf(buf+idx, " IRQ");
 
 // 		AOS_FATAL(buf);
-		assert(FALSE);
+		sys_assert(FALSE);
 	}
 }

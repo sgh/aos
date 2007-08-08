@@ -23,6 +23,7 @@
 #include <driver_core.h>
 #include <mm.h>
 #include <syscalls.h>
+#include <assert.h>
 
 struct fragment_store* store_fragment(const unsigned char* data, unsigned int size) {
 	struct fragment_store* fragment;
@@ -70,6 +71,7 @@ void load_fragment(unsigned char* data, struct fragment_store* fragment) {
 // 	printf("loading: ");
 	while (fragment) {
 		uint16_t fragment_size = ciel(fragment->size, FRAGMENT_SIZE);
+		sys_assert(fragment_size <= FRAGMENT_SIZE);
 // 		printf(" %d",fragment->size);
 		memcpy(data,fragment->data, fragment_size);
 		data += fragment_size;

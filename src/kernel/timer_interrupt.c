@@ -82,10 +82,10 @@ void sched(void) {
 		
 		// Fragmem
 // 		interrupt_enable();
-		assert(sp <= top_stack);
+		sys_assert(sp <= top_stack);
 		current->fragment = store_fragment(src,len);
 // 		interrupt_disable();
-		assert(len == 0 || (current->fragment != NULL));  // This indicates Stack-Alloc-Error
+		sys_assert(len == 0 || (current->fragment != NULL));  // This indicates Stack-Alloc-Error
 // 			current->state = CRASHED;
 // 			AOS_FATAL("Stack allocation error");
 // 		}
@@ -155,7 +155,7 @@ void sched(void) {
 	next->state = RUNNING;
 
 
-	assert(current != next);
+	sys_assert(current != next);
 	
 	current = next;
 

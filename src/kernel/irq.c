@@ -5,6 +5,7 @@
 #include <interrupt.h>
 #include <assert.h>
 #include <string.h>
+#include <syscalls.h>
 
 #define FIO_BASE_ADDR		0x3FFFC000
 #define FIO2SET        (*(volatile unsigned int *)(FIO_BASE_ADDR + 0x58))
@@ -44,7 +45,7 @@ void irqs_are_enabled(void) {
 }
 
 uint8_t irq_handler(int vector) {
-	assert(vector < 32);
+	sys_assert(vector < 32);
 
 	irq_table[vector].num_irqs++;
 	if (!irq_table[vector].isr)
