@@ -25,7 +25,37 @@
 #include <syscalls.h>
 #include <assert.h>
 
-struct fragment_store* store_fragment(const unsigned char* data, unsigned int size) {
+struct fragment_store* create_fragment(unsigned int size) {
+	struct fragment_store* fragment;
+	struct fragment_store* retval;
+	struct fragment_store* prev_fragment = NULL;
+	unsigned int chunksize;
+
+	sys_assert(size < 1024);
+	
+	do {
+		chunksize = ciel(size, FRAGMENT_SIZE);
+		fragment = (struct fragment_store*)sys_malloc(sizeof(struct fragment_store));
+
+		if (prev_fragment)
+			prev_fragment->next = fragment;
+		else
+			retval = fragment;
+
+		prev_fragment = fragment;
+		
+		fragment->size = 0;
+
+		size -= chunksize;
+		
+		if (size == 0)
+			fragment->next = NULL;
+	} while (size);
+
+	return retval;
+}
+
+struct fragment_store* _____create_fragment(const unsigned char* data, unsigned int size) {
 	struct fragment_store* fragment;
 	struct fragment_store* retval = NULL;
 	struct fragment_store* prevfrag = NULL;
@@ -66,8 +96,12 @@ struct fragment_store* store_fragment(const unsigned char* data, unsigned int si
 }
 
 void load_fragment(unsigned char* data, struct fragment_store* fragment) {
-	struct fragment_store* prevfrag;
+// 	struct fragment_store* prevfrag;
 
+	// If there are nothing to copy
+	if (fragment->size == 0)
+		return;
+	
 // 	printf("loading: ");
 	while (fragment) {
 		uint16_t fragment_size = ciel(fragment->size, FRAGMENT_SIZE);
@@ -75,14 +109,32 @@ void load_fragment(unsigned char* data, struct fragment_store* fragment) {
 // 		printf(" %d",fragment->size);
 		memcpy(data,fragment->data, fragment_size);
 		data += fragment_size;
-		prevfrag = fragment;
+// 		prevfrag = fragment;
 		fragment = fragment->next;
 		
 		/* Free prevfragment */
-		sys_free(prevfrag);
-		prevfrag = NULL;
+// 		sys_free(prevfrag);
+// 		prevfrag = NULL;
 	}
 // 	printf("\n");
+}
+
+void store_fragment(struct fragment_store* fragment, const unsigned char* data, unsigned int size) {
+	unsigned int chunksize;
+
+	while (size) {
+		sys_assert(fragment);
+
+		chunksize = ciel(size, FRAGMENT_SIZE );
+
+		fragment->size = chunksize;
+		memcpy(fragment->data, data, chunksize);
+		
+		data += chunksize;
+		size -= chunksize;
+
+		fragment = fragment->next;
+	}
 }
 
 void free_fragment(struct fragment_store* fragment) {
@@ -91,7 +143,7 @@ void free_fragment(struct fragment_store* fragment) {
 	while (fragment) {
 		prevfrag = fragment;
 		fragment = fragment->next;
-		free(prevfrag);
+		sys_free(prevfrag);
 	}
 }
 

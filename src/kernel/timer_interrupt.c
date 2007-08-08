@@ -70,27 +70,28 @@ void sched(void) {
 		uint32_t top_stack = (REGISTER_TYPE)&__stack_usr_top__;
 		uint32_t sp = /*get_usermode_sp()*/current->context->sp;
 		uint32_t len = top_stack - sp;
-// 		void* dst = current->stack;
 		void* src = (void*)&__stack_usr_top__ - len;
 		
-		// DMEM
-// 		current->malloc_stack = malloc(len);
-// 		memcpy( current->malloc_stack, src, len);
-		
-		// Static mem
-//  		memcpy( dst, src, len);
-		
-		// Fragmem
-// 		interrupt_enable();
 		sys_assert(sp <= top_stack);
-		current->fragment = store_fragment(src,len);
-// 		interrupt_disable();
-		sys_assert(len == 0 || (current->fragment != NULL));  // This indicates Stack-Alloc-Error
-// 			current->state = CRASHED;
-// 			AOS_FATAL("Stack allocation error");
-// 		}
+
+		// If stack-size has increased, or no stack is pressent, (re)allocate the stack-fragment
+// 		if (len > current->stack_size)
+			if (current->fragment) {
+				free_fragment(current->fragment);
+				current->fragment = NULL;
+			}
+
+			if (!current->fragment)
+				current->fragment = create_fragment(len);
+
+
+		sys_assert(current->fragment);
+		
+		store_fragment(current->fragment, src, len);
 
 		current->stack_size = len;
+
+		sys_assert(len == 0 || (current->fragment != NULL));  // This indicates Stack-Alloc-Error
 
 		if (current->stack_size > current->max_stack_size)
 			current->max_stack_size = current->stack_size;
@@ -129,31 +130,15 @@ void sched(void) {
 	if (next) {
 		uint32_t len = next->stack_size;
 		void* dst = (void*)&__stack_usr_top__ - len;
-// 		void* src = current->stack;
-		
-		// DMEM
-// 		if (current->malloc_stack) {
-// 			memcpy( dst, current->malloc_stack, len);
-// 			free(current->malloc_stack);
-// 			current->malloc_stack = 0;
-// 		}
-		
-		// Static mem
-// 		memcpy( dst, src, len);
-		
+
 		// Fragmem
-		if (next->fragment) {
-// 			interrupt_enable();
+		if (next->fragment)
 			load_fragment(dst,next->fragment);
-// 			interrupt_disable();
-			next->fragment = 0;
-		}
 		
 	}
 #endif
 	
 	next->state = RUNNING;
-
 
 	sys_assert(current != next);
 	
