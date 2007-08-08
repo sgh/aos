@@ -51,10 +51,10 @@ struct fragment_store {
  * @param size 
  * @return 
  */
-struct fragment_store* store_fragment(const unsigned char* data, unsigned int size);
+struct fragment_store* create_fragment(unsigned int size);
 
 /**
- * \brief Restore fragment to memory. The fragment is freed in this process
+ * \brief Restore fragment to memory. NOTE: The fragment is NOT freed in this process
  * @param data Pointer to where the fragment should be written
  * @param fragment The fragment to restore
  */
@@ -65,5 +65,7 @@ void load_fragment(unsigned char* data, struct fragment_store* fragment);
  * @param fragment The fragment to free
  */
 void free_fragment(struct fragment_store* fragment);
+
+void store_fragment(struct fragment_store* fragment, const unsigned char* data, unsigned int size);
 
 #endif

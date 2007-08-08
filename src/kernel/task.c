@@ -45,7 +45,7 @@ void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priorit
 
 	memset(task, 0, sizeof(struct task_t));
 	task->context = sys_malloc(sizeof(struct cpu_context));
-// 	task->fragment = NULL;
+	task->fragment = NULL;
 	task->context->pc = (uint32_t)(entrypoint);                                  // Entrypoint
 #ifdef SHARED_STACK
 	task->context->sp = (uint32_t)&__stack_usr_top__;  // Shared stack SP
