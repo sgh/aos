@@ -141,7 +141,7 @@ void* sys_malloc(size_t size)
 // 	mm_status();
 	
 // 	AOS_WARNING("Out-Of-Memory"); // Call hook-function
-	assert(FALSE);
+	sys_assert(FALSE);
 	
 	return NULL; // Out-Of-Memory
 }
