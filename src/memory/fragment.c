@@ -45,13 +45,13 @@ struct fragment_store* create_fragment(unsigned int size) {
 		prev_fragment = fragment;
 		
 		fragment->size = 0;
+		fragment->next = NULL;
 
 		size -= chunksize;
 		
-		if (size == 0)
-			fragment->next = NULL;
 	} while (size);
 
+	sys_assert(retval);
 	return retval;
 }
 
@@ -106,6 +106,10 @@ void load_fragment(unsigned char* data, struct fragment_store* fragment) {
 	while (fragment) {
 		uint16_t fragment_size = ciel(fragment->size, FRAGMENT_SIZE);
 		sys_assert(fragment_size <= FRAGMENT_SIZE);
+
+		// No more data in fragmented space
+		if (fragment_size == 0)
+			break;
 // 		printf(" %d",fragment->size);
 		memcpy(data,fragment->data, fragment_size);
 		data += fragment_size;
@@ -135,6 +139,10 @@ void store_fragment(struct fragment_store* fragment, const unsigned char* data, 
 
 		fragment = fragment->next;
 	}
+
+	// Mark no more data in fragmented space
+	if (fragment)
+		fragment->size = 0;
 }
 
 void free_fragment(struct fragment_store* fragment) {

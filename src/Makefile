@@ -22,7 +22,8 @@ ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
 
 ASMLIST = -Wa,-alhmsd
 
-CFLAGS = -mcpu=arm7tdmi -O2 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -mthumb-interwork 
+CFLAGS = -mcpu=arm7tdmi -O2 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -mthumb-interwork
+#-fomit-frame-pointer
 #-mapcs
 #-ffreestanding
 #-ffunction-sections -fdata-sections

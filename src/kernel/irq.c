@@ -59,6 +59,13 @@ void irq_lock(void) {
 	uint32_t stat;
 	interrupt_save(&stat);
 	interrupt_disable();
+
+// @fixme DEBUG
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
+
 	irqs_are_disabled();
 	if ((++nr_irq_lock) == 1)
 		saved_irq_state = stat;

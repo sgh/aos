@@ -25,6 +25,7 @@
 #include <kernel.h>
 #include <task.h>
 #include <types.h>
+#include <fragment.h>
 
 /** @todo This function is architechture specific and should be moved away */
 /**

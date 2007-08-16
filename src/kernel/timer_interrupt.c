@@ -75,19 +75,21 @@ void sched(void) {
 		sys_assert(sp <= top_stack);
 
 		// If stack-size has increased, or no stack is pressent, (re)allocate the stack-fragment
-// 		if (len > current->stack_size)
+ 		if (len > current->stack_size) {
 			if (current->fragment) {
 				free_fragment(current->fragment);
 				current->fragment = NULL;
 			}
 
-			if (!current->fragment)
+			//if (!current->fragment)
 				current->fragment = create_fragment(len);
+		}
 
-
-		sys_assert(current->fragment);
+		if (len > 0) {
+			sys_assert(current->fragment);
 		
-		store_fragment(current->fragment, src, len);
+			store_fragment(current->fragment, src, len);
+		}
 
 		current->stack_size = len;
 
