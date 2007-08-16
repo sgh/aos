@@ -22,6 +22,7 @@
 #include <kernel.h>
 #include <semaphore.h>
 #include <syscalls.h>
+#include <assert.h>
 
 /**
  * \brief Semaphore syscall definitions
@@ -47,8 +48,9 @@ void sys_sem_down(semaphore_t* s) {
 void sys_sem_up(semaphore_t* s) {
 	s->count++;
 
-	if (s->count <= 0 && !list_isempty(&s->waiting)) {
+	if (s->count <= 0) {
 		struct task_t* task;
+		sys_assert(!list_isempty(&s->waiting));
 		task = get_struct_task(list_get_front(&s->waiting));
 		sys_unblock(task);
 	}
