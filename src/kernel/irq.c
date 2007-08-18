@@ -32,7 +32,7 @@ int irq_attach(int irqnum, void (*isr)(void)) {
 int irq_detach(int irqnum) {
 	interrupt_mask(irqnum);
 	irq_table[irqnum].isr = NULL;
-	irq_table[irqnum].num_irqs;
+	irq_table[irqnum].num_irqs = 0;
 	return 0;
 }
 
