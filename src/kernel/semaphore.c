@@ -39,15 +39,23 @@ void sys_sem_init(semaphore_t* s, int16_t count) {
 void sys_sem_down(semaphore_t* s) {
 	s->count--;
 
+	// Assert on underflows
+	sys_assert(s->count != INT16_MAX);
+
 	if (s->count < 0) {
 		sys_block(&s->waiting);
+		assert(list_get_back(&s->waiting) == &current->q);
 	}
 }
 
 
 void sys_sem_up(semaphore_t* s) {
+
 	s->count++;
 
+	// Assert on overflows
+	sys_assert(s->count != INT16_MIN);
+	
 	if (s->count <= 0) {
 		struct task_t* task;
 		sys_assert(!list_isempty(&s->waiting));
@@ -55,4 +63,3 @@ void sys_sem_up(semaphore_t* s) {
 		sys_unblock(task);
 	}
 }
-	
