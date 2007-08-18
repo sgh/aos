@@ -186,14 +186,14 @@ struct list_head* sys_get_process_list( void )
 void sys_block(struct list_head* q) {
 	list_push_back(q,&current->q);
 	current->state = BLOCKED;
-	sys_assert(&current->q == list_get_back(q));
 	do_context_switch = 1;
-	/** @todo maybe the decition of weither to do context-switch should be done somewhere central */
+	/** @todo maybe the decission of weither to do context-switch should be done somewhere central */
 }
 
 
-void sys_unblock(struct task_t* task) {	
+void sys_unblock(struct task_t* task) {
 	sys_assert(task->state == BLOCKED);
+	list_erase(&task->q);
 	process_wakeup(task);
 }
 
