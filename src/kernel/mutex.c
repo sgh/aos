@@ -59,7 +59,6 @@ void sys_mutex_unlock(mutex_t* m) {
 	}
 
 	next = get_struct_task(list_get_front(&m->waiting));
-	list_erase(&next->q);
 
 	sys_unblock(next);
 }
