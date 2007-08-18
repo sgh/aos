@@ -55,45 +55,6 @@ struct fragment_store* create_fragment(unsigned int size) {
 	return retval;
 }
 
-struct fragment_store* _____create_fragment(const unsigned char* data, unsigned int size) {
-	struct fragment_store* fragment;
-	struct fragment_store* retval = NULL;
-	struct fragment_store* prevfrag = NULL;
-	
-	if (size == 0)
-		return NULL;
-	
-//  	printf("storing: ");
-	while (size>0) {
-		uint16_t fragment_size = ciel(size,FRAGMENT_SIZE);
-		
-		fragment = (struct fragment_store*)sys_malloc(sizeof(struct fragment_store));
-		if (!fragment) // If malloc did not succeded
-			break;
-		
-		if (retval == NULL) { // First time
-			retval = fragment;
-			fragment->size = size;
-		} else {
-			prevfrag->next = fragment;
-			fragment->size = fragment_size;
-		}
-
-		size -= fragment_size;
-		memcpy(fragment->data, data, fragment_size);
-		data += fragment_size;
-		prevfrag = fragment;
-	}
-	
-	if (size > 0) { // This only happenes if we run out of memory
-		free_fragment(retval);
-		return NULL;
-	}
-
-//  	printf("\n");
-	if (retval && prevfrag) prevfrag->next = NULL;
-	return retval;
-}
 
 void load_fragment(unsigned char* data, struct fragment_store* fragment) {
 // 	struct fragment_store* prevfrag;
