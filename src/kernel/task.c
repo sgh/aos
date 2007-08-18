@@ -71,5 +71,6 @@ void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priorit
 	task->context->r12 = 0x12;
 	task->prio = priority;
 	task->sleep_timer.type = TMR_STOP;
+	task->state = READY;
 }
 
