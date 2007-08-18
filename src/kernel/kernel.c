@@ -113,6 +113,7 @@ void aos_context_init(uint32_t timer_refclk) {
 	idle_task = create_task(NULL, "Idle", NULL, 0);
 	list_erase(&idle_task->q);	// We ARE the idle task -> it is not in any queue.
 	current = idle_task;
+	current->state = RUNNING;
 
 	init_clock(timer_refclk);
 	enable_clock();
@@ -193,8 +194,7 @@ void sys_block(struct list_head* q) {
 
 void sys_unblock(struct task_t* task) {	
 	sys_assert(task->state == BLOCKED);
-	if (task->state == BLOCKED)
-		process_wakeup(task);
+	process_wakeup(task);
 }
 
 
