@@ -64,9 +64,10 @@ void sched(void) {
 	static uint32_t last_task_switch = 0;
 	struct task_t* next = NULL;
 	
-#ifdef SHARED_STACK
+
 	/* Copy stack away from shared system stack */
 	if (current) {
+#ifdef SHARED_STACK
 		uint32_t top_stack = (REGISTER_TYPE)&__stack_usr_top__;
 		uint32_t sp = /*get_usermode_sp()*/current->context->sp;
 		uint32_t len = top_stack - sp;
@@ -97,6 +98,7 @@ void sched(void) {
 
 		if (current->stack_size > current->max_stack_size)
 			current->max_stack_size = current->stack_size;
+#endif
 
 		if (current->state == RUNNING) {
 			current->state = READY;
@@ -117,7 +119,6 @@ void sched(void) {
 
 		check_stack();
 	}
-#endif
 
 	if (list_isempty(&readyQ)) {
 		next = idle_task; // Idle
