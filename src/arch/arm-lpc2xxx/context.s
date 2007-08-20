@@ -39,10 +39,6 @@
 		and r0 the return value
 */
 aos_swi_entry:
-	STMFD SP!,{r0-r4,LR}
-	BL irqs_are_disabled
-	LDMFD SP!,{r0-r4,LR}
-	
 	/* Save registers on SWI-mode stack */
 	STMFD SP!,{r6-r7, LR}
 
@@ -79,6 +75,16 @@ _after_get_swinum:
 	
 	/* Call common interrupt escape code */
 	B return_from_interrupt
+
+
+/*
+	Switches context from one process to another
+*/
+switch_context:
+	STMIA r0, {r0-r12,LR}^
+	LDMIA r1, {r0-r12,PC}^
+	NOP
+
 
 /*
 	Calculation of context store:
@@ -360,12 +366,6 @@ _no_task_switch:
 
 return_from_irq:
 	LDMFD SP!,{r0} @ Load r0 from stack
-
-	STMFD SP!,{r0-r4,LR}
-	BL irqs_are_enabled
-	MOV r0, LR
-	BL validate_execution_address
-	LDMFD SP!,{r0-r4,LR}
 	
 	MOVS PC, LR
 
