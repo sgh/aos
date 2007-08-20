@@ -21,7 +21,7 @@
 
 #include <types.h>
 
-int irq_attach(int irqnum, void (*isr)(void));
+int irq_attach(int irqnum, void (*isr)(void*), void* arg);
 
 uint8_t irq_handler(int vector);
 
