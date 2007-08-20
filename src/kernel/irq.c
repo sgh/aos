@@ -12,8 +12,9 @@
 #define FIO2CLR        (*(volatile unsigned int *)(FIO_BASE_ADDR + 0x5C))
 
 struct irq {
-	void (*isr)(void);
+	void (*isr)(void* arg);
 	uint32_t num_irqs;
+	void* arg;
 };
 
 
@@ -24,14 +25,16 @@ uint32_t volatile irq_nest_count = 0;
 struct irq irq_table[32];
 
 
-int irq_attach(int irqnum, void (*isr)(void)) {
+int irq_attach(int irqnum, void (*isr)(void* arg), void* arg) {
 	irq_table[irqnum].isr = isr;
+	irq_table[irqnum].arg = arg;
 	return 0;
 }
 
 int irq_detach(int irqnum) {
 	interrupt_mask(irqnum);
 	irq_table[irqnum].isr = NULL;
+	irq_table[irqnum].arg = NULL;
 	irq_table[irqnum].num_irqs = 0;
 	return 0;
 }
@@ -51,7 +54,7 @@ uint8_t irq_handler(int vector) {
 	if (!irq_table[vector].isr)
 		return 0;
 
-	irq_table[vector].isr();
+	irq_table[vector].isr(irq_table[vector].arg);
 	return 1;
 }
 

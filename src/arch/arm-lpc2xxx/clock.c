@@ -35,7 +35,7 @@
 
 // static uint32_t timer_overflows = 0;
 
-static void clock_isr(void) {
+static void clock_isr(void* UNUSED arg) {
 	timer_clock();
 	sched_clock();
 	system_ticks++;
@@ -48,7 +48,7 @@ void init_clock(uint32_t timer_refclk) {
 	T0_TC = 0x00000000;									/* Counter-value */
 	T0_MR0 = T0_TC + (1000000/HZ);	/* Match-Register0 */
 
-	irq_attach(TIMER0_IRQ, clock_isr);
+	irq_attach(TIMER0_IRQ, clock_isr, NULL);
 	
 	T0_MCR = BIT0|BIT1; /* Interrupt on Math-Register0 */
 	T0_TCR = BIT0;	/* Enable timer0 */
