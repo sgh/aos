@@ -54,7 +54,9 @@ uint8_t irq_handler(int vector) {
 	if (!irq_table[vector].isr)
 		return 0;
 
+	interrupt_enable();
 	irq_table[vector].isr(irq_table[vector].arg);
+	interrupt_disable();
 	return 1;
 }
 
