@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <runtime_check.h>
+#include <task.h>
 
 static const char const magic_string[3] = "AOS";
 
@@ -36,9 +37,11 @@ void check_stack(void) {
 	if ((uint32_t)&__stack_usr_bottom__ > current->context->sp)
 		overflows |= STACK_USR;
 
-	sys_assert(!(overflows & STACK_USR));
-
 	sys_assert(!(overflows & STACK_SVC));
+
+#ifdef SHARED_STACK
+	sys_assert(!(overflows & STACK_USR));
+#endif
 
 	sys_assert(!(overflows & STACK_IRQ));
 }

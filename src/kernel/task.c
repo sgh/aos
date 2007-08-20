@@ -51,8 +51,9 @@ void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priorit
 #ifdef SHARED_STACK
 	task->context->sp = (uint32_t)&__stack_usr_top__;  // Shared stack SP
 #else
-	#error Seperate stacks does not work
-	task->context->sp = (uint32_t)task->context + (1024 * sizeof(REGISTER_TYPE));  // Seperate stack SP
+// 	#error Seperate stacks does not work
+	/** @todo idle loop gets a stack too. It should not have taht because is uses the machine-stack */
+	task->context->sp = (uint32_t)sys_malloc(1024) + 1024 - 4;  // Seperate stack SP
 #endif
 	task->context->lr = 0x12345678;
 	task->context->r0 = (uint32_t)arg;
