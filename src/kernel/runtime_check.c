@@ -32,16 +32,16 @@ void check_stack(void) {
 	if (memcmp((char*)&__stack_irq_bottom__ + OFFSET, magic_string, sizeof(magic_string))!=0)
 		overflows |= STACK_IRQ;
 
+#ifdef SHARED_STACK
 	// Next - check user stack-pointer for stack-button override
 	/** @todo This will only catch user-mode stack overflow */
 	if ((uint32_t)&__stack_usr_bottom__ > current->context->sp)
 		overflows |= STACK_USR;
+#endif
 
 	sys_assert(!(overflows & STACK_SVC));
 
-#ifdef SHARED_STACK
 	sys_assert(!(overflows & STACK_USR));
-#endif
 
 	sys_assert(!(overflows & STACK_IRQ));
 }
