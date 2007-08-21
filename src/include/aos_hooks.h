@@ -54,7 +54,7 @@ struct aos_hooks {
 	 *
 	 * @param task The task that failed to be task-switched.
 	 */
-	void (*stack_alloc_fatal)(struct task_t* task);
+	//void (*stack_alloc_fatal)(struct task_t* task);
 	
 	/**
 	 * \brief This hook is called at every timer-interrupt. Which means every 1 ms.
@@ -65,7 +65,7 @@ struct aos_hooks {
 	 */
 	void (*timer_event)(uint32_t time);
 
-	void (*fatal_event)(const char* str);
+	//void (*fatal_event)(const char* str);
 
 	void (*assert_failed)(const char * const exp, const char* const file, int line);
 
