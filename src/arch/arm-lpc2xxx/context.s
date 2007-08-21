@@ -26,7 +26,6 @@
 
 /* Public interrupt-handler symbols */
 .global timer_interrupt
-.global validate_execution_address
 
 .include "arch/arm-lpc2xxx/macros.s"
 
@@ -209,11 +208,6 @@ nested_irq:
 	LDMFD r0, {r0-r12}
 	
 	BEQ return_from_interrupt @ Return via. common returncode if on top-level irq
-
-	STMFD SP!, {r0-r3,LR}
-	MOV r0, LR
-	BL validate_execution_address
-	LDMFD SP!, {r0-r3,LR}
 	
 	MOVS PC, LR @ Else just return to previous mode
 

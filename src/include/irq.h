@@ -21,6 +21,13 @@
 
 #include <types.h>
 
+extern volatile int irq_nesting;
+
+#define IRQ_ASSERT() do { if (irq_nesting > 0) \
+	assert(__FILE__, __LINE__, __FUNCTION__, \
+	"bad irq level"); } while (0)
+
+
 int irq_attach(int irqnum, void (*isr)(void*), void* arg);
 
 uint8_t irq_handler(int vector);
@@ -42,5 +49,7 @@ void interrupt_init(void);
 void irq_lock(void);
 
 void irq_unlock(void);
+
+
 
 #endif
