@@ -39,7 +39,7 @@
 */
 aos_swi_entry:
 	/* Save registers on SWI-mode stack */
-	STMFD SP!,{r6-r7, LR}
+	STMFD SP!,{r6-r8,LR}
 
 	/* Read LR to see if the SWI-instruction was in ARM-, or THUMB-mode */
 	MRS r7, SPSR
@@ -58,19 +58,35 @@ _get_swinum_arm:
 	BIC r6, r6 ,#0xFF000000
 _after_get_swinum:
 
+	@ Next Change to System-mode using r0 as CPSR storage
+	MRS r8, CPSR
+	BIC r8, r8, #PSR_MODE
+	ORR r8, r8, #PSR_MODE_SYS|PSR_NOIRQ
+	MSR CPSR_c, r8
+
+	STMFD SP!, {LR}
+		
 	/* syscall offset */
 	MOV r6, r6, LSL #2 @ TODO Boundcheck this value
 
 	/* Calculate offset */
 	LDR r7, =sys_call_table
 	LDR r7, [r7, r6]
-	
+
 	/* Set LR and call routine */
 	MOV LR, PC
 	BX r7
+
+	LDMFD SP!, {LR}
+
+/* Switch to IRQ-mode using r0 */
+	MRS r8, CPSR
+	BIC r8,r8, #PSR_MODE
+	ORR r8, r8, #PSR_MODE_SVC|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
+	MSR CPSR_c, r8
 	
 	/* Restore registers from SWI-mode stack */
-	LDMFD SP!,{r6-r7, LR}
+	LDMFD SP!,{r6-r8, LR}
 	
 	/* Call common interrupt escape code */
 	B return_from_interrupt
