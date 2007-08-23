@@ -23,6 +23,7 @@
 .global sched_unlock
 .global sched_lock
 
+.equ THR, 0xE000C000
 
 /* Public interrupt-handler symbols */
 .global timer_interrupt
@@ -38,6 +39,9 @@
 		and r0 the return value
 */
 aos_swi_entry:
+
+
+os_swi_entry:
 	/* Save registers on SWI-mode stack */
 	STMFD SP!,{r6-r8,LR}
 
@@ -53,44 +57,43 @@ _get_swinum_thumb:
 	LDRB r6, [LR, #-2]
 	BIC r6, r6 ,#0xFFFFFF00
 	B _after_get_swinum
-_get_swinum_arm:	
+
+_get_swinum_arm:
 	LDR r6, [LR, #-4]
 	BIC r6, r6 ,#0xFF000000
+
 _after_get_swinum:
+		@ Next Change to System-mode using r0 as CPSR storage
+		MRS r8, CPSR
+		BIC r8, r8, #PSR_MODE
+		ORR r8, r8, #PSR_MODE_SYS|PSR_NOIRQ
+		MSR CPSR_c, r8
 
-	@ Next Change to System-mode using r0 as CPSR storage
-	MRS r8, CPSR
-	BIC r8, r8, #PSR_MODE
-	ORR r8, r8, #PSR_MODE_SYS|PSR_NOIRQ
-	MSR CPSR_c, r8
+		STMFD SP!, {LR}
 
-	STMFD SP!, {LR}
-		
-	/* syscall offset */
-	MOV r6, r6, LSL #2 @ TODO Boundcheck this value
+		/* syscall offset */
+		MOV r6, r6, LSL #2 @ TODO Boundcheck this value
 
-	/* Calculate offset */
-	LDR r7, =sys_call_table
-	LDR r7, [r7, r6]
+		/* Calculate offset */
+		LDR r7, =sys_call_table
+		LDR r7, [r7, r6]
 
-	/* Set LR and call routine */
-	MOV LR, PC
-	BX r7
+		/* Set LR and call routine */
+		MOV LR, PC
+		BX r7
 
-	LDMFD SP!, {LR}
-
-/* Switch to IRQ-mode using r0 */
+		LDMFD SP!, {LR}
+	/* Switch to IRQ-mode using r0 */
 	MRS r8, CPSR
 	BIC r8,r8, #PSR_MODE
 	ORR r8, r8, #PSR_MODE_SVC|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
 	MSR CPSR_c, r8
-	
+
 	/* Restore registers from SWI-mode stack */
 	LDMFD SP!,{r6-r8, LR}
-	
+
 	/* Call common interrupt escape code */
 	B return_from_interrupt
-
 
 /*
 	Switches context from one process to another
@@ -137,47 +140,7 @@ aos_irq_entry:
 @ 	LDMFD SP!, {r0,LR}
 @ 	ADD LR, LR, #4
 
-	@ First store the registers that we destroy on the IRQ stack without SP writeback
-	STMFD SP, {r0-r4}
-	SUB r4, SP, #(5*4) @ Save address of start of r0-r4 in r4
-	
-	@ To do nested interrupts we need to first get the irq_LR and irq_SPSR into some general registers
-	SUB r2, LR, #4
-	MRS r3, SPSR
-
-	@ Next Change to System-mode using r0 as CPSR storage
-	MRS r0, CPSR
-	BIC r0, r0, #PSR_MODE
-	ORR r0, r0, #PSR_MODE_SYS|PSR_NOIRQ
-	MSR CPSR_c, r0
-
-	@ Now copy svc_LR and svc_SP to two other general registers
-	MOV r0, LR
-	MOV r1, SP
-
-	@ Push the four register on stack with writeback
-	STMFD SP!, {r0-r3} @ LR_svc, SP_svc, PC_app, CPSR_app
-
-	@ And restore the work registers we saved a little while ago
-	LDMFD r4, {r0-r4}
-
-	/*
-		We should now have tranfered to System-mode and the stacks look like this
-		
-		IRQ-stack is empty.
-	
-		System-mode-stack contains this.
-
-		+----------------------------+
-		| CPSR from interrupted mode |
-	  +----------------------------+
-		| PC from interrupted mode   |
-	  +----------------------------+
-	  | SVC Stack pointer          |
-	  +----------------------------+
-	  | SV Link Register           |
-	  +----------------------------+
-	*/
+	IRQ_START
 
 	STMFD SP!,{r0-r12} @ Store all 13 general registers
 
@@ -193,7 +156,7 @@ aos_irq_entry:
 
 	STR r6, [r5] @ Store old nesting count
 
-	MOV r0, SP @ Save SP in r0 to enable restore in IRQ-mode
+	
 
 	@ Check if nesting level is 0
 	CMP r6, #0
@@ -205,22 +168,11 @@ aos_irq_entry:
 nested_irq:
 
 	ADD SP, SP, #(17*4) @ Move over the 13 general registers and the 4 registers
+	MOV r0, SP @ Save SP in r0 to enable restore in IRQ-mode
 
-	@ Restore LR registers
-	LDR LR, [r0, #(13*4)] @ LR
-	LDR SP, [r0, #(14*4)] @ SP
+	IRQ_END
 
-	/* Switch to IRQ-mode using r0 */
-	MRS r1, CPSR
-	BIC r1,r1, #PSR_MODE
-	ORR r1, r1, #PSR_MODE_IRQ/*|PSR_NOIRQ*/ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
-	MSR CPSR_c, r1
-
-	@ Reload IRQ specific registers
-	LDR LR, [r0, #(15*4)] @ LR
-	LDR r1, [r0, #(16*4)] @ SPSR
-	MSR SPSR, r1
-
+	SUB r0, r0, #(17*4)
 	LDMFD r0, {r0-r12}
 	
 	BEQ return_from_interrupt @ Return via. common returncode if on top-level irq
