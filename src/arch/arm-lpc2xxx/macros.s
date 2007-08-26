@@ -80,8 +80,8 @@
 
 .macro IRQ_END
 	@ Restore System-mode registers
-	LDR LR, [r0, #(4*-4)] @ LR
-	LDR SP, [r0, #(3*-4)] @ SP
+	LDR LR, [r0, #(-4*4)] @ LR
+	LDR SP, [r0, #(-3*4)] @ SP
 
 	/* Switch to IRQ-mode using r0 */
 	MRS r1, CPSR
@@ -90,18 +90,18 @@
 	MSR CPSR_c, r1
 
 	@ Reload IRQ specific registers
-	LDR LR, [r0, #(2*-4)] @ LR
-	LDR r1, [r0, #(1*-4)] @ SPSR
+	LDR LR, [r0, #(-2*4)] @ LR
+	LDR r1, [r0, #(-1*4)] @ SPSR
 	MSR SPSR, r1
 .endm
 
 
 .macro SWI_START
-	@ First store the registers that we destroy on the IRQ stack without SP writeback
+	@ First store the registers that we destroy on the SVC stack without SP writeback
 	STMFD SP, {r0-r4}
 	SUB r4, SP, #(5*4) @ Save address of start of r0-r4 in r4
 	
-	@ To do nested interrupts we need to first get the irq_LR and irq_SPSR into some general registers
+	@ To do nested interrupts we need to first get the svc_LR and svc_SPSR into some general registers
 	SUB r2, LR, #4
 	MRS r3, SPSR
 
@@ -111,7 +111,7 @@
 	ORR r0, r0, #PSR_MODE_SYS|PSR_NOIRQ
 	MSR CPSR_c, r0
 
-	@ Now copy svc_LR and svc_SP to two other general registers
+	@ Now copy sts_LR and sys_SP to two other general registers
 	MOV r0, LR
 	MOV r1, SP
 
@@ -124,7 +124,7 @@
 	/*
 		We should now have tranfered to System-mode and the stacks look like this
 		
-		DVC-stack is empty.
+		SVC-stack is empty.
 	
 		System-mode-stack contains this.
 
@@ -146,7 +146,7 @@
 	LDR LR, [r0, #(4*-4)] @ LR
 	LDR SP, [r0, #(3*-4)] @ SP
 
-	/* Switch to IRQ-mode using r0 */
+	/* Switch to SVC-mode using r0 */
 	MRS r1, CPSR
 	BIC r1,r1, #PSR_MODE
 	ORR r1, r1, #PSR_MODE_SVC|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
@@ -157,4 +157,3 @@
 	LDR r1, [r0, #(1*-4)] @ SPSR
 	MSR SPSR, r1
 .endm
-		
