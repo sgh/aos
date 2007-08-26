@@ -39,55 +39,44 @@
 		and r0 the return value
 */
 aos_swi_entry:
-
-
-os_swi_entry:
 	/* Save registers on SWI-mode stack */
 	STMFD SP!,{r6-r8,LR}
 
-	/* Read LR to see if the SWI-instruction was in ARM-, or THUMB-mode */
+	/* Fetch SPRS application CPSR */
 	MRS r7, SPSR
+
+	/* Read LR to see if the SWI-instruction was in ARM-, or THUMB-mode */
 	AND r7, r7, #0x20
 	CMP r7, #0
+
+	/* Fetch application PC */
+	MOV r7, LR
+	
 	BEQ _get_swinum_arm
 
 	/* Get number embedded in SWI-instruction, either THUMB or ARM */
 _get_swinum_thumb:
 	/* Load SWI-number from THUMB SWI-instruction */
-	LDRB r6, [LR, #-2]
+	LDRB r6, [r7, #-2]
 	BIC r6, r6 ,#0xFFFFFF00
 	B _after_get_swinum
 
 _get_swinum_arm:
-	LDR r6, [LR, #-4]
+	LDR r6, [r7, #-4]
 	BIC r6, r6 ,#0xFF000000
 
 _after_get_swinum:
-		@ Next Change to System-mode using r0 as CPSR storage
-		MRS r8, CPSR
-		BIC r8, r8, #PSR_MODE
-		ORR r8, r8, #PSR_MODE_SYS|PSR_NOIRQ
-		MSR CPSR_c, r8
 
-		STMFD SP!, {LR}
+	/* syscall offset */
+	MOV r6, r6, LSL #2 @ TODO Boundcheck this value
 
-		/* syscall offset */
-		MOV r6, r6, LSL #2 @ TODO Boundcheck this value
+	/* Calculate offset */
+	LDR r7, =sys_call_table
+	LDR r7, [r7, r6]
 
-		/* Calculate offset */
-		LDR r7, =sys_call_table
-		LDR r7, [r7, r6]
-
-		/* Set LR and call routine */
-		MOV LR, PC
-		BX r7
-
-		LDMFD SP!, {LR}
-	/* Switch to IRQ-mode using r0 */
-	MRS r8, CPSR
-	BIC r8,r8, #PSR_MODE
-	ORR r8, r8, #PSR_MODE_SVC|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
-	MSR CPSR_c, r8
+	/* Set LR and call routine */
+	MOV LR, PC
+	BX r7
 
 	/* Restore registers from SWI-mode stack */
 	LDMFD SP!,{r6-r8, LR}
