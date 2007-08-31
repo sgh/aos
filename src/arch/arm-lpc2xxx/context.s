@@ -42,16 +42,18 @@ aos_swi_entry:
 .ifdef NEW_SWI
 		SWI_START
 .endif
+
 	/* Save registers on SWI-mode stack */
-	
+.ifdef NEW_SWI
+	STMFD SP!,{r6-r8}
+.else
+	STMFD SP!,{r6-r8,LR}
+.endif
 
 	/* Fetch SPRS application CPSR */
 .ifdef NEW_SWI
-	STMFD SP!,{r6-r8}
-	LDR r7, [SP, #(5*4)]
-	ADD r7, r7, #4
+	LDR r7, [SP, #(8*4)]
 .else
-	STMFD SP!,{r6-r8,LR}
 	MRS r7, SPSR
 .endif
 
@@ -60,7 +62,12 @@ aos_swi_entry:
 	CMP r7, #0
 
 	/* Fetch application PC */
+.ifdef NEW_SWI
+	LDR r7, [SP, #(6*4)]
+	ADD r7, r7, #4
+.else
 	MOV r7, LR
+.endif
 	
 	BEQ _get_swinum_arm
 
@@ -96,6 +103,7 @@ _after_get_swinum:
 
 	SUB r5, r5, #(7*4)
 	LDMFD r5,{r6-r8}
+	ADD LR, LR, #4
 .else
 	/* Restore registers from SWI-mode stack */
 	LDMFD SP!,{r6-r8, LR}
