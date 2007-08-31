@@ -43,10 +43,8 @@ void sched_clock(void) {
 	*/
 	if (!current->time_left) {
 
-		irq_lock();
 		if (!list_isempty(&readyQ))
 			do_context_switch = 1;
-		irq_unlock();
 
 	} else // Very important to avoid underflow of time_left member
 		current->time_left--;
