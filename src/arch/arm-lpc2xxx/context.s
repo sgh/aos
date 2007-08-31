@@ -39,11 +39,21 @@
 		and r0 the return value
 */
 aos_swi_entry:
+.ifdef NEW_SWI
+		SWI_START
+.endif
 	/* Save registers on SWI-mode stack */
-	STMFD SP!,{r6-r8,LR}
+	
 
 	/* Fetch SPRS application CPSR */
+.ifdef NEW_SWI
+	STMFD SP!,{r6-r8}
+	LDR r7, [SP, #(5*4)]
+	ADD r7, r7, #4
+.else
+	STMFD SP!,{r6-r8,LR}
 	MRS r7, SPSR
+.endif
 
 	/* Read LR to see if the SWI-instruction was in ARM-, or THUMB-mode */
 	AND r7, r7, #0x20
@@ -78,8 +88,18 @@ _after_get_swinum:
 	MOV LR, PC
 	BX r7
 
+.ifdef NEW_SWI
+	ADD SP, SP, #(7*4) @ Move over the 4 general registers and the 4 registers
+	MOV r5, SP @ Save SP in r5 to enable restore in IRQ-mode
+
+	SWI_END
+
+	SUB r5, r5, #(7*4)
+	LDMFD r5,{r6-r8}
+.else
 	/* Restore registers from SWI-mode stack */
 	LDMFD SP!,{r6-r8, LR}
+.endif
 
 	/* Call common interrupt escape code */
 	B return_from_interrupt
