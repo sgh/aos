@@ -40,7 +40,7 @@
 */
 aos_swi_entry:
 .ifdef NEW_SWI
-		SWI_START
+	SWI_START
 .endif
 
 	/* Save registers on SWI-mode stack */
@@ -50,24 +50,28 @@ aos_swi_entry:
 	STMFD SP!,{r6-r8,LR}
 .endif
 
+
 	/* Fetch SPRS application CPSR */
 .ifdef NEW_SWI
-	LDR r7, [SP, #(8*4)]
+	LDR r7, [SP, #(6*4)]
 .else
 	MRS r7, SPSR
 .endif
+
 
 	/* Read LR to see if the SWI-instruction was in ARM-, or THUMB-mode */
 	AND r7, r7, #0x20
 	CMP r7, #0
 
+
 	/* Fetch application PC */
 .ifdef NEW_SWI
-	LDR r7, [SP, #(6*4)]
+	LDR r7, [SP, #(5*4)]
 	ADD r7, r7, #4
 .else
 	MOV r7, LR
 .endif
+
 	
 	BEQ _get_swinum_arm
 
@@ -78,6 +82,7 @@ _get_swinum_thumb:
 	BIC r6, r6 ,#0xFFFFFF00
 	B _after_get_swinum
 
+					
 _get_swinum_arm:
 	LDR r6, [r7, #-4]
 	BIC r6, r6 ,#0xFF000000
@@ -87,6 +92,8 @@ _after_get_swinum:
 	/* syscall offset */
 	MOV r6, r6, LSL #2 @ TODO Boundcheck this value
 
+@ 		.ifdef ASDASDASDASDASD
+		
 	/* Calculate offset */
 	LDR r7, =sys_call_table
 	LDR r7, [r7, r6]
@@ -94,6 +101,8 @@ _after_get_swinum:
 	/* Set LR and call routine */
 	MOV LR, PC
 	BX r7
+
+@ 																																		.endif
 
 .ifdef NEW_SWI
 	ADD SP, SP, #(7*4) @ Move over the 4 general registers and the 4 registers

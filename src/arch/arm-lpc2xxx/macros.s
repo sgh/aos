@@ -105,7 +105,7 @@
 	SUB r7, LR, #4
 	MRS r8, SPSR
 
-	@ Next Change to System-mode using r0 as CPSR storage
+	@ Next Change to System-mode using r5 as CPSR storage
 	MRS r5, CPSR
 	BIC r5, r5, #PSR_MODE
 	ORR r5, r5, #PSR_MODE_SYS|PSR_NOIRQ
