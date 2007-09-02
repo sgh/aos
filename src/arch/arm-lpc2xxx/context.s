@@ -45,7 +45,7 @@ aos_swi_entry:
 
 	/* Save registers on SWI-mode stack */
 .ifdef NEW_SWI
-	STMFD SP!,{r6-r8}
+	STMFD SP!,{r5-r8}
 .else
 	STMFD SP!,{r6-r8,LR}
 .endif
@@ -53,7 +53,7 @@ aos_swi_entry:
 
 	/* Fetch SPRS application CPSR */
 .ifdef NEW_SWI
-	LDR r7, [SP, #(6*4)]
+	LDR r7, [SP, #(7*4)]
 .else
 	MRS r7, SPSR
 .endif
@@ -66,7 +66,7 @@ aos_swi_entry:
 
 	/* Fetch application PC */
 .ifdef NEW_SWI
-	LDR r7, [SP, #(5*4)]
+	LDR r7, [SP, #(6*4)]
 	ADD r7, r7, #4
 .else
 	MOV r7, LR
@@ -92,8 +92,7 @@ _after_get_swinum:
 	/* syscall offset */
 	MOV r6, r6, LSL #2 @ TODO Boundcheck this value
 
-@ 		.ifdef ASDASDASDASDASD
-		
+
 	/* Calculate offset */
 	LDR r7, =sys_call_table
 	LDR r7, [r7, r6]
@@ -102,16 +101,14 @@ _after_get_swinum:
 	MOV LR, PC
 	BX r7
 
-@ 																																		.endif
-
 .ifdef NEW_SWI
-	ADD SP, SP, #(7*4) @ Move over the 4 general registers and the 4 registers
+	ADD SP, SP, #(8*4) @ Move over the 5 general registers and the 4 registers
 	MOV r5, SP @ Save SP in r5 to enable restore in IRQ-mode
 
 	SWI_END
 
-	SUB r5, r5, #(7*4)
-	LDMFD r5,{r6-r8}
+	SUB r5, r5, #(8*4)
+	LDMFD r5,{r5-r8}
 	ADD LR, LR, #4
 .else
 	/* Restore registers from SWI-mode stack */
