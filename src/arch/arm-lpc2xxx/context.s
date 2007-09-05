@@ -265,14 +265,14 @@ return_from_interrupt:
 	*/
 	STR LR, [r0]
 
-	/* Store r1-r12 @ r0 + 20 */
-	ADD r0, r0, #20
+	/* Store r1-r12 @ r0 + 12 */
+	ADD r0, r0, #(3*4)
 	STMIA r0,{r1-r12}
-	SUB r0, r0, #20
+	SUB r0, r0, #(3*4)
 
 	/* Store SPSR process-cpu-flags @ r0 + 16 */
 	MRS r1, SPSR
-	STR r1, [r0, #3*4]
+	STR r1, [r0, #(1*4)]
 
 	/*
 		Load the value of r0, which we previously saved on stack.
@@ -280,7 +280,7 @@ return_from_interrupt:
 	*/
 	LDR r1, [SP]
 
-	STR r1, [r0, #4*4] @ Save r0-value
+	STR r1, [r0, #(2*4)] @ Save r0-value
 
 	/* Save current mode in r10 */
 	MRS r10, CPSR
@@ -301,7 +301,7 @@ return_from_interrupt:
 	MSR CPSR, r10
 
 	/* Save r2-r3 (SP, LR) at [r0 + 4] */
-	ADD r0, r0, #4
+	ADD r0, r0, #(15*4)
 	STMIA r0, {r2-r3}
 
 _after_task_save:
@@ -315,8 +315,8 @@ _after_task_save:
 
 	LDR LR, [r0]       @ Load PC
 
-	LDR r1, [r0, #1*4] @ Load SP
-	LDR r2, [r0, #2*4] @ Load LR
+	LDR r1, [r0, #(15*4)] @ Load SP
+	LDR r2, [r0, #(16*4)] @ Load LR
 
 	/* Save current mode in r9 */
 	MRS r10, CPSR
@@ -334,16 +334,16 @@ _after_task_save:
 	/* Switch to previously saved mode */
 	MSR CPSR, r10
 	
-	LDR r1, [r0, #4*4]  @ Load r0-value
+	LDR r1, [r0, #(2*4)]  @ Load r0-value
 
 	/* Save value on stack, which will be loaded later. This was stored earlier also */
 	STR r1, [SP]
 
 	/* Restore SPSR process-cpu-flags @ r0 - 4 */
-	LDR r1, [r0, #3*4]
+	LDR r1, [r0, #(1*4)]
 	MSR SPSR, r1
 
-	ADD r0, r0, #5*4
+	ADD r0, r0, #(3*4)
 	LDMIA r0,{r1-r12}   @ Load r1-r12 @ [r0 + 5*4]
 
 @======================================================================================
