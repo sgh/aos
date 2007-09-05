@@ -20,8 +20,6 @@
 #define CPU_H
 
 struct cpu_context {
-	uint32_t pc;	/** @todo Make pc,sp,lr, and cpsr follow natura register order */
-	uint32_t cpsr;
 	uint32_t r0;
 	uint32_t r1;
 	uint32_t r2;
@@ -37,8 +35,8 @@ struct cpu_context {
 	uint32_t r12;
 	uint32_t sp;
 	uint32_t lr;
-// 	uint32_t pc;
-// 	uint32_t cpsr;
+	uint32_t pc;
+	uint32_t cpsr;
 };
 
 #endif

@@ -256,23 +256,23 @@ return_from_interrupt:
 	In the following we do the actual context-save and -restore.
 	The memory in which the 17 registers are saved looks like this (from cpu.h)
 
-	PC, SP, LR, SPSR, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12
+	r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, SP, LR, PC,  SPSR,
 */
 	
 	/*
 		Store LR - the addres at which we must return
 		to when this process is to run again.
 	*/
-	STR LR, [r0]
+	STR LR, [r0, #(15*4)]
 
 	/* Store r1-r12 @ r0 + 12 */
-	ADD r0, r0, #(3*4)
+	ADD r0, r0, #(1*4)
 	STMIA r0,{r1-r12}
-	SUB r0, r0, #(3*4)
+	SUB r0, r0, #(1*4)
 
-	/* Store SPSR process-cpu-flags @ r0 + 16 */
+	/* Store SPSR process-cpu-flags @ r0 + 16*4 */
 	MRS r1, SPSR
-	STR r1, [r0, #(1*4)]
+	STR r1, [r0, #(16*4)]
 
 	/*
 		Load the value of r0, which we previously saved on stack.
@@ -280,7 +280,7 @@ return_from_interrupt:
 	*/
 	LDR r1, [SP]
 
-	STR r1, [r0, #(2*4)] @ Save r0-value
+	STR r1, [r0] @ Save r0-value
 
 	/* Save current mode in r10 */
 	MRS r10, CPSR
@@ -300,8 +300,8 @@ return_from_interrupt:
 	/* Switch to previously saved mode */
 	MSR CPSR, r10
 
-	/* Save r2-r3 (SP, LR) at [r0 + 4] */
-	ADD r0, r0, #(15*4)
+	/* Save r2-r3 (SP, LR) at [r0 + 13*4] */
+	ADD r0, r0, #(13*4)
 	STMIA r0, {r2-r3}
 
 _after_task_save:
@@ -313,10 +313,9 @@ _after_task_save:
 	/* Here the process restore starts. WATCH THE REGISTERS */
 	BL _get_current_context_store
 
-	LDR LR, [r0]       @ Load PC
-
-	LDR r1, [r0, #(15*4)] @ Load SP
-	LDR r2, [r0, #(16*4)] @ Load LR
+	LDR r1, [r0, #(13*4)] @ Load SP
+	LDR r2, [r0, #(14*4)] @ Load LR
+	LDR LR, [r0, #(15*4)] @ Load PC
 
 	/* Save current mode in r9 */
 	MRS r10, CPSR
@@ -334,16 +333,16 @@ _after_task_save:
 	/* Switch to previously saved mode */
 	MSR CPSR, r10
 	
-	LDR r1, [r0, #(2*4)]  @ Load r0-value
+	LDR r1, [r0]  @ Load r0-value
 
 	/* Save value on stack, which will be loaded later. This was stored earlier also */
 	STR r1, [SP]
 
 	/* Restore SPSR process-cpu-flags @ r0 - 4 */
-	LDR r1, [r0, #(1*4)]
+	LDR r1, [r0, #(16*4)]
 	MSR SPSR, r1
 
-	ADD r0, r0, #(3*4)
+	ADD r0, r0, #(1*4)
 	LDMIA r0,{r1-r12}   @ Load r1-r12 @ [r0 + 5*4]
 
 @======================================================================================
