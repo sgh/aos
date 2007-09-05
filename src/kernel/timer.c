@@ -15,9 +15,6 @@
 #define time_after_eq(a,b) ((long)(a) - (long)(b) >= 0)
 #define time_before(a,b) ((long)(a) - (long)(b) < 0)
 
-#define static
-
-
 struct event {
 	char* name;
 	struct list_head waitq;	
@@ -53,8 +50,8 @@ void timer_stop(struct timer* tmr) {
 // 		printf("_expire @ tick %d\n", next_expire);
 }
 
-/** @todo FIX THIS. For some reason static must not be used here. Kernel timer stops working. */
-static  __attribute__((noinline)) void timer_setup(struct timer* tmr, uint32_t ticks) {
+
+static void timer_setup(struct timer* tmr, uint32_t ticks) {
 	struct list_head* it;
 	uint32_t expire = ticks + system_ticks;
 	struct timer* t;
