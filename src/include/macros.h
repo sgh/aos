@@ -29,6 +29,7 @@
 
 // String manipulation
 #define __STRING(x) #x
+#define xstr(s) __STRING(s)
 
 // Macros for initcall-sections
 #define CLASS_MODULE_INIT(function) void* __attribute__((section(".class_initcalls"))) class_initcall_##function = function;
