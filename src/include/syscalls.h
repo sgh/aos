@@ -94,10 +94,6 @@ void sys_sem_up(semaphore_t* s);
 
 void sys_assert_failed(const char * const exp, const char* const file, unsigned int line);
 
-
-// #define str(s) #s
-#define xstr(s) __STRING(s)
-
 #define __syscallnr(def) xstr(_NR_##def)
 
 /* Syscall-macros */
