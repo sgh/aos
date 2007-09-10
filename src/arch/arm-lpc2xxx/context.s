@@ -37,24 +37,46 @@
 		and r0 the return value
 */
 aos_swi_entry:
-.ifdef NEW_SWI
-	SWI_START
-.endif
+	STMFD SP, {r5-r9} @ First store the registers that we destroy on the SVC stack without SP writeback
+	SUB r9, SP, #(5*4) @ Save address of start of r0-r4 in r4
+	
+	SUB r7, LR, #4 @ To do nested interrupts we need to first get the svc_LR and svc_SPSR into some general registers
+	MRS r8, SPSR
+
+	MRS r5, CPSR @ Next Change to System-mode using r5 as CPSR storage
+	BIC r5, r5, #PSR_MODE
+	ORR r5, r5, #PSR_MODE_SYS|PSR_NOIRQ
+	MSR CPSR_c, r5
+
+	MOV r5, LR @ Now copy sts_LR and sys_SP to two other general registers
+	MOV r6, SP
+
+	STMFD SP!, {r5-r8} @ LR_svc, SP_svc, PC_app, CPSR_app
+
+	LDMFD r9, {r5-r9} @ And restore the work registers we saved a little while ago
+
+	/*
+		We should now have tranfered to System-mode and the stacks look like this
+		SVC-stack is empty.
+		System-mode-stack contains this.
+		+----------------------------+
+		| CPSR from interrupted mode |
+	  +----------------------------+
+		| PC from interrupted mode   |
+	  +----------------------------+
+	  | SVC Stack pointer          |
+	  +----------------------------+
+	  | SVC Link Register          |
+	  +----------------------------+
+	*/
 
 	/* Save registers on SWI-mode stack */
-.ifdef NEW_SWI
+
 	STMFD SP!,{r5-r8}
-.else
-	STMFD SP!,{r6-r8,LR}
-.endif
 
 
 	/* Fetch SPRS application CPSR */
-.ifdef NEW_SWI
 	LDR r7, [SP, #(7*4)]
-.else
-	MRS r7, SPSR
-.endif
 
 
 	/* Read LR to see if the SWI-instruction was in ARM-, or THUMB-mode */
@@ -63,12 +85,9 @@ aos_swi_entry:
 
 
 	/* Fetch application PC */
-.ifdef NEW_SWI
+
 	LDR r7, [SP, #(6*4)]
 	ADD r7, r7, #4
-.else
-	MOV r7, LR
-.endif
 
 	
 	BEQ _get_swinum_arm
@@ -99,19 +118,28 @@ _after_get_swinum:
 	MOV LR, PC
 	BX r7
 
-.ifdef NEW_SWI
+
 	ADD SP, SP, #(8*4) @ Move over the 5 general registers and the 4 registers
 	MOV r5, SP @ Save SP in r5 to enable restore in IRQ-mode
 
-	SWI_END
+		@ Restore System-mode registers
+	LDR LR, [r5, #(4*-4)] @ LR
+	LDR SP, [r5, #(3*-4)] @ SP
+
+	/* Switch to SVC-mode using r0 */
+	MRS r6, CPSR
+	BIC r6,r6, #PSR_MODE
+	ORR r6, r6, #PSR_MODE_SVC|PSR_NOIRQ /* System-mode and IRQ-disable - since pending interrupts would destry operation */
+	MSR CPSR_c, r6
+
+	@ Reload IRQ specific registers
+	LDR LR, [r5, #(2*-4)] @ LR
+	LDR r6, [r5, #(1*-4)] @ SPSR
+	MSR SPSR, r6
 
 	SUB r5, r5, #(8*4)
 	LDMFD r5,{r5-r8}
 	ADD LR, LR, #4
-.else
-	/* Restore registers from SWI-mode stack */
-	LDMFD SP!,{r6-r8, LR}
-.endif
 
 	/* Call common interrupt escape code */
 	B return_from_interrupt
