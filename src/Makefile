@@ -33,7 +33,7 @@ THUMB =
 
 LDFLAGS = -mthumb-interwork
 
-ASFLAGS = -mthumb-interwork -gdwarf2 --defsym NEW_SWI=1
+ASFLAGS = -mthumb-interwork -gdwarf2
 #--gc-sections
 	
 LINKERSCRIPT = kernel/linkerscript.ld
