@@ -23,8 +23,6 @@
 .global sched_unlock
 .global sched_lock
 
-.equ THR, 0xE000C000
-
 /* Public interrupt-handler symbols */
 .global timer_interrupt
 
@@ -118,14 +116,6 @@ _after_get_swinum:
 	/* Call common interrupt escape code */
 	B return_from_interrupt
 
-/*
-	Switches context from one process to another
-*/
-switch_context:
-	STMIA r0, {r0-r12,LR}^
-	LDMIA r1, {r0-r12,PC}^
-	NOP
-
 
 /*
 	Calculation of context store:
@@ -148,21 +138,18 @@ _get_current_context_store:
 .equ    F_Bit,          0x40    /* when F bit is set, FIQ is disabled */
 
 
+/**
+ * Swtiches context r0:old r1:new
+ */
+switch_context:
+	stmia	r0, {r4-r11, sp, lr}	/* Save previous register context */
+	ldmia	r1, {r4-r11, sp, pc}	/* Restore next register context */
+	
+
 /*
 	Common-interrupt entry
 */
 aos_irq_entry:
-@ 	SUB LR, LR, #4
-@ 	STMFD SP!, {r0,LR}
-@ 
-@ 	MRS r0, SPSR   @ See if we got an interrupt while
-@ 	TST r0, #I_Bit @ interrupts were disabled.
-@ 	LDMNEFD SP!, {r0,PC}^
-@ 	NOP
-@ 	NOP
-@ 	LDMFD SP!, {r0,LR}
-@ 	ADD LR, LR, #4
-
 	IRQ_START
 
 	STMFD SP!,{r0-r12} @ Store all 13 general registers
@@ -179,8 +166,6 @@ aos_irq_entry:
 
 	STR r6, [r5] @ Store old nesting count
 
-	
-
 	@ Check if nesting level is 0
 	CMP r6, #0
 
@@ -188,8 +173,8 @@ aos_irq_entry:
 	STMFD SP!, {r0}
 	BL sched_unlock
 	LDMFD SP!, {r0}
-nested_irq:
 
+nested_irq:
 	ADD SP, SP, #(17*4) @ Move over the 13 general registers and the 4 registers
 	MOV r0, SP @ Save SP in r0 to enable restore in IRQ-mode
 
@@ -352,4 +337,3 @@ return_from_irq:
 	LDMFD SP!,{r0} @ Load r0 from stack
 	
 	MOVS PC, LR
-
