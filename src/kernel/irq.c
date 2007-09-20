@@ -39,22 +39,16 @@ int irq_detach(int irqnum) {
 	return 0;
 }
 
-void irqs_are_disabled(void) {
-// 	FIO2SET = (1<<3);
-}
-
-void irqs_are_enabled(void) {
-// 	FIO2CLR = (1<<3);
-}
 
 uint8_t irq_handler(int vector) {
 	sys_assert(vector < 32);
 
-	irq_table[vector].num_irqs++;
+	
 	if (!irq_table[vector].isr)
 		return 0;
 
 	interrupt_enable();
+	irq_table[vector].num_irqs++;
 	irq_table[vector].isr(irq_table[vector].arg);
 	interrupt_disable();
 	return 1;
@@ -65,22 +59,13 @@ void irq_lock(void) {
 	interrupt_save(&stat);
 	interrupt_disable();
 
-// @fixme DEBUG
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");
-
-	irqs_are_disabled();
 	if ((++nr_irq_lock) == 1)
 		saved_irq_state = stat;
 }
 
 void irq_unlock(void) {
-	if ((--nr_irq_lock) == 0) {
+	if ((--nr_irq_lock) == 0)
 		interrupt_restore(saved_irq_state);
-		irqs_are_enabled();
-	}
 }
 
 static void irq_init(void) {

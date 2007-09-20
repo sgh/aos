@@ -29,11 +29,11 @@
 #include <macros.h>
 #include <irq.h>
 #include <assert.h>
+#include <interrupt.h>
 
-void sched(void);
+static void sched_switch(void);
 
 void sched_clock(void) {
-	AOS_HOOK(timer_event,ticks2ms(system_ticks));
 
 	current->ticks++;
 
@@ -44,159 +44,78 @@ void sched_clock(void) {
 	if (!current->time_left) {
 
 		if (!list_isempty(&readyQ))
-			do_context_switch = 1;
+			current->resched = 1;
 
 	} else // Very important to avoid underflow of time_left member
 		current->time_left--;
 }
 
 void sched_lock(void) {
+	current->lock_count++;
 }
 
 void sched_unlock(void) {
+	uint32_t stat;
+	interrupt_save(&stat);
+	interrupt_disable();
+
+	assert(current->lock_count > 0);
+
+	if (current->lock_count == 1) {
+		if (current->resched) {
+			sched_switch();
+			current->resched = 0;
+		}
+	}
+	current->lock_count--;
+
+	interrupt_restore(stat);
 }
 
+void switch_context(struct context* old, struct context* new);
 
-void sched(void) {
-	static uint32_t ticks;
-	static uint32_t last_task_switch = 0;
+static void sched_switch(void) {
+	struct task_t* prev = current;
 	struct task_t* next = NULL;
 	
 
-	/* Copy stack away from shared system stack */
-	if (current) {
 #ifdef SHARED_STACK
-		uint32_t top_stack = (REGISTER_TYPE)&__stack_usr_top__;
-		uint32_t sp = /*get_usermode_sp()*/current->context->sp;
-		uint32_t len = top_stack - sp;
-		void* src = (void*)&__stack_usr_top__ - len;
-		
-		sys_assert(sp <= top_stack);
-
-		// If stack-size has increased, or no stack is pressent, (re)allocate the stack-fragment
- 		if (len > current->stack_size) {
-			if (current->fragment) {
-				free_fragment(current->fragment);
-				current->fragment = NULL;
-			}
-
-			//if (!current->fragment)
-				current->fragment = create_fragment(len);
-		}
-
-		if (len > 0) {
-			sys_assert(current->fragment);
-		
-			store_fragment(current->fragment, src, len);
-		}
-
-		current->stack_size = len;
-
-		sys_assert(len == 0 || (current->fragment != NULL));  // This indicates Stack-Alloc-Error
-
-		if (current->stack_size > current->max_stack_size)
-			current->max_stack_size = current->stack_size;
+	#error SHARED_STACK not supported in new schedueler
 #endif
+	
+	sys_assert(current);
 
-		if (current->state == RUNNING) {
-			current->state = READY;
-			if (!is_background())
-				list_push_back(&readyQ,&current->q);
-		}
-
-		// Compensate for context-switches between timer ticks. Without this
-		// many tasks will use little or no time at all.
-		current->subticks += (1000 - last_task_switch + get_clock()) % 1000;
-
-		last_task_switch = get_clock();
-
-		if (current->subticks >= 1000) {
-			current->subticks -= 1000;
-			current->ticks++;
-		}
-
-		check_stack();
+	// If processes is preempted
+	if (current->state == RUNNING) {
+		current->state = READY;
+		if (!is_background())
+			list_push_back(&readyQ, &current->q);
 	}
 
 	if (list_isempty(&readyQ)) {
-		next = idle_task; // Idle
+		next = &idle_task; // Idle
 	} else {
 		next = get_struct_task(list_get_front(&readyQ));
 		list_erase(&next->q);
 	}
 
-	
-#ifdef SHARED_STACK
-	/* Copy stack to shared stack */
-	if (next) {
-		uint32_t len = next->stack_size;
-		void* dst = (void*)&__stack_usr_top__ - len;
+	if (prev == next)
+		return;
 
-		// Fragmem
-		if (next->fragment)
-			load_fragment(dst,next->fragment);
-		
-	}
-#endif
-	
+// 	assert(prev != next);
+
 	next->state = RUNNING;
 
-	sys_assert(current != next);
-	
 	current = next;
 
-	ticks = current->ticks;
+	switch_context(&prev->ctx, &next->ctx); // Zzz
 
-	current->time_left = ms2ticks(TIME_SLICE_MS);
-
-	// Clear context-switch-flag
-	do_context_switch = 0;
-
-	// Maintain statistics
-	num_context_switch++;
 }
 
+
 void process_wakeup(struct task_t* task) {
-	struct list_head* insertion_point = NULL;
-	struct list_head* e;
-
-	if (task->state == SLEEPING)
-		insertion_point = &readyQ;
-		
 	task->state = READY;
-	/*
-		Run through the list to insert the task after higher priority-tasks.
-		The process is inserted before the first process with a lower priority.
-	*/
-	if (!insertion_point) {
-		list_for_each(e,&readyQ) {
-			struct task_t* ready_task;
-			ready_task = get_struct_task(e);
-	
-			// Process may not step in front of equal-priority tasks
-			if (ready_task->prio > task->prio) {
-				insertion_point = e;
-				break;
-			}
-		}
-	}
 
-	/*
-		If insertionpoint is found 1 or more processe exist in the readyQ
-	*/
-	if (insertion_point) {
-		/* Now, if process is inserted as the first in the readyQ, do context-switch */
-		list_push_front(insertion_point , &task->q);
-		if (insertion_point == &readyQ)
-			do_context_switch = 1; // Signal context-switch
-	} else { 
-		/*	
-			insertion_point==NULL => No processes in the readyQ
-			Put in readyQ and do context-switch immediately
-		*/
-		list_push_front(&readyQ , &task->q);
-		do_context_switch = 1; // Signal context-switch
-	}
-
-
+	list_push_back(&readyQ , &task->q);
+	current->resched = 1;
 }

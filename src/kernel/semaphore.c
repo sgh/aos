@@ -23,38 +23,44 @@
 #include <semaphore.h>
 #include <syscalls.h>
 #include <assert.h>
+#include <irq.h>
+#include <interrupt.h>
 
 /**
  * \brief Semaphore syscall definitions
  */
 _syscall1(void, sem_down, semaphore_t*, s);
 _syscall1(void, sem_up, semaphore_t*, s);
-_syscall2(void, sem_init, semaphore_t*, s, int16_t, count);
+_syscall2(void, sem_init, semaphore_t*, s, int32_t, count);
 
-void sys_sem_init(semaphore_t* s, int16_t count) {
+void sys_sem_init(semaphore_t* s, int32_t count) {
 	s->count = count;
 	INIT_LIST_HEAD(&s->waiting);
 }
 
 void sys_sem_down(semaphore_t* s) {
+	sched_lock();
+
 	s->count--;
 
 	// Assert on underflows
-	sys_assert(s->count != INT16_MAX);
+	sys_assert(s->count != INT32_MAX);
 
-	if (s->count < 0) {
+	if (s->count < 0)
 		sys_block(&s->waiting);
-		assert(list_get_back(&s->waiting) == &current->q);
-	}
+
+	sched_unlock();
 }
 
 
 void sys_sem_up(semaphore_t* s) {
+	sched_lock();
+// 	assert(current->lock_count == 1);
 
 	s->count++;
 
 	// Assert on overflows
-	sys_assert(s->count != INT16_MIN);
+	sys_assert(s->count != INT32_MIN);
 	
 	if (s->count <= 0) {
 		struct task_t* task;
@@ -62,4 +68,6 @@ void sys_sem_up(semaphore_t* s) {
 		task = get_struct_task(list_get_front(&s->waiting));
 		sys_unblock(task);
 	}
+
+	sched_unlock();
 }

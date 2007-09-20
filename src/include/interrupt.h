@@ -19,9 +19,6 @@
 #ifndef INTERRUPT_H
 #define INTERRUPT_H
 
-void irqs_are_disabled(void);
-void irqs_are_enabled(void);
-
 void aos_irq_entry(void);
 
 static inline void interrupt_enable(void) {
@@ -36,7 +33,6 @@ static inline void interrupt_enable(void) {
 	:
 	: "memory");
 #endif
-	irqs_are_enabled();
 }
 
 
@@ -52,7 +48,6 @@ static inline void interrupt_disable(void) {
 	:
 	: "memory");
 #endif
-	irqs_are_disabled();
 }
 
 static inline void interrupt_save(uint32_t *sts) {

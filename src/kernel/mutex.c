@@ -29,20 +29,26 @@ _syscall1(uint8_t, mutex_trylock, mutex_t*, m);
 _syscall1(void, mutex_unlock, mutex_t*, m);
 
 void sys_mutex_lock(mutex_t* m) {
+	sched_lock();
+	
 	if (!m->lock) { // Mutex is not locked - lock it
 		m->lock = 1;
+		sched_unlock();
 		return;
 	}
 	sys_block(&m->waiting);
+	sched_unlock();
 }
 
 uint8_t sys_mutex_trylock(mutex_t* m) {
-	
+	sched_lock();
 	if (!m->lock) { // Mutex is not locked - lock it
 		m->lock = 1;
+		sched_unlock();
 		return 1;
 	}
-	
+
+	sched_unlock();
 	return 0;
 }
 
@@ -53,13 +59,16 @@ void sys_mutex_init(mutex_t* m) {
 void sys_mutex_unlock(mutex_t* m) {
 	struct task_t* next;
 
+	sched_lock();
 	if (list_isempty(&m->waiting)) { // If none is waiting
 		m->lock = 0;
+		sched_unlock();
 		return;
 	}
 
 	next = get_struct_task(list_get_front(&m->waiting));
 
 	sys_unblock(next);
+	sched_unlock();
 }
 

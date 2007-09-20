@@ -36,11 +36,17 @@
 // static uint32_t timer_overflows = 0;
 
 static void clock_isr(void* UNUSED arg) {
+	system_ticks++;
+
 	timer_clock();
 	sched_clock();
-	system_ticks++;
+
+	AOS_HOOK(timer_event,ticks2ms(system_ticks));
+	
 	T0_IR = BIT0;    // Clear interrupt
 }
+
+mutex_t clocklock;
 
 void init_clock(uint32_t timer_refclk) {
 	T0_PR = timer_refclk/1000000 - 1;		/* Scale to 1 us steps */
