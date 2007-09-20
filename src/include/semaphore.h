@@ -29,7 +29,7 @@
  * \brief A semaphore
  */
 typedef struct {
-	int16_t count;						/**< \brief The semaphore count */
+	int32_t count;						/**< \brief The semaphore count */
 	struct list_head waiting;	/**< \brief The list of waiting processes */
 } semaphore_t;
 
@@ -38,7 +38,7 @@ typedef struct {
  * @param s The semaphore to initialixe
  * @param count The semaphore-count to set
  */
-void sem_init(semaphore_t* s, int16_t count);
+void sem_init(semaphore_t* s, int32_t count);
 
 /**
  * \brief Count down the semaphore, and possibly block the process if count

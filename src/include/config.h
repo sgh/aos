@@ -2,6 +2,9 @@
 
 #define HZ 1000
 
-#define TIME_SLICE_MS 10
+#define QUANTUM 10
+
+#define USIZE 512
+#define KSIZE 256
 
 #endif

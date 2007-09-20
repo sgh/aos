@@ -24,11 +24,12 @@
 #include <timer.h>
 #include <arch/cpu.h>
 
+
 /**
  * \brief This is defined if the system should be using a shared stack.
  * create_task does not currently support creating tasks with seperate stacks.
  */
-#define SHARED_STACK
+//#define SHARED_STACK
 
 /**
  * \brief Define that eases creation of aos tasks.
@@ -73,7 +74,7 @@ struct task_t {
 	/**
 	 * \brief Pointer to the process's saved CPU-state (the registers, not the stack).
 	 */
-	struct cpu_context* context;
+	struct context ctx;
 
 	/**
 	 * \brief Size of the space pointed to by ::fragment
@@ -105,6 +106,10 @@ struct task_t {
 	 * \brief Fragment-store to store stack in when doing context-switch.
 	 */
 	struct fragment_store* fragment;
+
+	int8_t resched;
+
+	int32_t lock_count;
 
 };
 

@@ -40,8 +40,8 @@
 // #define _NR_enable_irqs    5
 #define _NR_block          6
 #define _NR_unblock        7
-#define _NR_disable_cs     8
-#define _NR_enable_cs      9
+// #define _NR_disable_cs     8
+// #define _NR_enable_cs      9
 #define _NR_get_sysutime   10
 #define _NR_get_sysmtime   11
 #define _NR_malloc         12
@@ -71,8 +71,8 @@ void sys_yield(void);
 void sys_aos_mm_init(void* start, void* end);
 void sys_msleep(uint16_t ms);
 void sys_usleep(uint32_t us);
-void sys_disable_cs(void);
-void sys_enable_cs(void);
+// void sys_disable_cs(void);
+// void sys_enable_cs(void);
 // void sys_disable_irqs();
 // void sys_enable_irqs();
 void sys_mutex_init(mutex_t* m);
@@ -88,7 +88,7 @@ void sys_mmstat(struct mm_stat* stat);
 struct task_t* sys_create_task(funcPtr entrypoint, const char* name, void* arg, int8_t priority);
 void sys_aos_hooks(struct aos_hooks* hooks);
 
-void sys_sem_init(semaphore_t* s, int16_t count);
+void sys_sem_init(semaphore_t* s, int32_t count);
 void sys_sem_down(semaphore_t* s);
 void sys_sem_up(semaphore_t* s);
 

@@ -29,23 +29,12 @@
 #include <irq.h>
 #include <aos_hooks.h>
 #include <assert.h>
+#include <interrupt.h>
 
 LIST_HEAD(readyQ);
 LIST_HEAD(usleepQ);
 LIST_HEAD(process_list);
 
-
-uint8_t do_context_switch = 0;
-
-/**
- * \brief Is context-switches allowed.
- */
-uint8_t allow_context_switch = 1;
-
-/**
- * \brief Are interrupts disabled.
- */
-// uint8_t interrupts_disabled = 0;
 
 uint32_t num_context_switch;
 
@@ -53,7 +42,7 @@ uint32_t num_context_switch;
 struct aos_hooks* _aos_hooks = NULL;
 struct aos_status _aos_status;
 
-struct task_t* idle_task;
+struct task_t idle_task;
 
 
 /**
@@ -61,7 +50,7 @@ struct task_t* idle_task;
  * Used in assembler routines to fetch location of
  * the memory to store registers in.
  */
-const uint32_t context_offset = offsetof(struct task_t,context);
+// const uint32_t context_offset = offsetof(struct task_t,context);
 
 // uint32_t last_context_time = 0;
 
@@ -99,31 +88,42 @@ static void do_initcalls(void) {
 
 void aos_basic_init() {
 	interrupt_init();
-	do_initcalls();
-	init_runtime_check();
-	current = NULL;
+// 	init_runtime_check();
 }
 
 
 void aos_context_init(uint32_t timer_refclk) {
-// 	int i;
-	/** @todo this should problably be a syscall too */
-	// Create to idle task
-	idle_task = create_task(NULL, "Idle", NULL, 1);
-	list_erase(&idle_task->q);	// We ARE the idle task -> it is not in any queue.
-	current = idle_task;
+	// Setup idle task
+  init_task(&idle_task, NULL, NULL, 1);
+	idle_task.name = "Idle";
+	list_push_back(&process_list, &idle_task.glist);
+	
+	current = &idle_task;
 	current->state = RUNNING;
+
+	sched_lock(); // Lock scheduler
+
+	do_initcalls();
 
 	init_clock(timer_refclk);
 	enable_clock();
+	
+	sched_unlock(); // Unlock scheduler
 }
 
 
 void sys_yield(void) {
 
+	sched_lock();
+	
 	// Only do context-switch if some else want CPU-time
-	if (!list_isempty(&readyQ))
-		do_context_switch = 1;
+	if (!list_isempty(&readyQ)) {
+		current->resched = 1;
+		if (!is_background())
+			list_push_back(&readyQ,&current->q);
+	}
+
+	sched_unlock();
 }
 
 
@@ -134,7 +134,7 @@ void sys_yield(void) {
  * @return 0 if the current process is not the idle-process
  */
 uint8_t is_background(void) {
-	return (current == idle_task);
+	return (current == &idle_task);
 }
 
 // static uint32_t time_slice_elapsed(void) {
@@ -161,49 +161,48 @@ void sys_aos_hooks(struct aos_hooks* hooks) {
 	_aos_hooks = hooks;	
 }
 
-// void (*func)(void*)
 
 void sys_usleep(uint32_t us) {
 	timer_timeout(&current->sleep_timer, (void*) process_wakeup, current, us2ticks(us));
 
 	current->state = SLEEPING;
-	do_context_switch = 1;
 }
 
 void sys_msleep(uint16_t ms) {
+	sched_lock();
+	assert(current->lock_count == 1);
+	
 	timer_timeout(&current->sleep_timer, (void*) process_wakeup, current, ms2ticks(ms));
-
+	
 	current->state = SLEEPING;
-	do_context_switch = 1;
+	current->resched = 1;
+
+	sched_unlock();
 }
 
-struct list_head* sys_get_process_list( void )
-{
+struct list_head* sys_get_process_list(void) {
   return ( &process_list ); 
 }
 
 void sys_block(struct list_head* q) {
+// 	irq_lock();
+	
 	list_push_back(q,&current->q);
+	current->resched = 1;
 	current->state = BLOCKED;
-	do_context_switch = 1;
-	/** @todo maybe the decission of weither to do context-switch should be done somewhere central */
+
+// 	irq_unlock();
 }
 
 
 void sys_unblock(struct task_t* task) {
+// 	irq_lock();
+	
 	sys_assert(task->state == BLOCKED);
 	list_erase(&task->q);
 	process_wakeup(task);
-}
 
-
-void sys_disable_cs() {
-	allow_context_switch = 0;
-}
-
-
-void sys_enable_cs() {
-	allow_context_switch = 1;
+// 	irq_unlock();
 }
 
 

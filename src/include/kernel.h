@@ -45,7 +45,7 @@ extern uint32_t __stack_irq_bottom__;
 /**
  * \brief The idle task
  */
-extern struct task_t* idle_task;
+extern struct task_t idle_task;
 
 /**
  * \brief The aos hooks
@@ -89,6 +89,9 @@ void sched_clock(void);
  * @return 1 if the current process is the background-process
  */
 uint8_t is_background(void);
+
+void sched_unlock(void);
+void sched_lock(void);
 
 
 #endif // _KERNEL_H_
