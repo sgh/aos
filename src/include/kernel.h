@@ -36,6 +36,7 @@ void context_init(struct context* ctx, void* kstack);
 void context_set(struct context* ctx, uint8_t type, uint32_t val);
 #define USER_STACK 0
 #define USER_ENTRY 1
+#define USER_ARG 2
 
 /**
  * \brief Total number of context-switches in current uptime

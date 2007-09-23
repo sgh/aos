@@ -31,9 +31,6 @@
 
 #define TIMER0_IRQ 4
 
-// static int8_t vector_num;
-
-// static uint32_t timer_overflows = 0;
 
 static void clock_isr(void* UNUSED arg) {
 	system_ticks++;
@@ -42,7 +39,7 @@ static void clock_isr(void* UNUSED arg) {
 	sched_clock();
 
 	AOS_HOOK(timer_event,ticks2ms(system_ticks));
-	
+
 	T0_IR = BIT0;    // Clear interrupt
 }
 
