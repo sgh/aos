@@ -139,8 +139,13 @@ static void sched_switch(void) {
 
 
 void process_wakeup(struct task_t* task) {
+
+	if (task->state == SLEEPING)
+		list_push_front(&readyQ , &task->q);
+	else
+		list_push_back(&readyQ , &task->q);
+
 	task->state = READY;
 
-	list_push_back(&readyQ , &task->q);
 	current->resched = 1;
 }
