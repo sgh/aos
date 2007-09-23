@@ -29,6 +29,14 @@
 
 #include <aos.h> /** @todo make this go away */
 
+/** @todo move theese to sched.h or something like that */
+void sched_unlock(void);
+void sched_lock(void);
+void context_init(struct context* ctx, void* kstack);
+void context_set(struct context* ctx, uint8_t type, uint32_t val);
+#define USER_STACK 0
+#define USER_ENTRY 1
+
 /**
  * \brief Total number of context-switches in current uptime
  */
@@ -37,10 +45,10 @@ extern uint32_t num_context_switch;
 /**
  * \brief linker-provided placement of stacks
  */
-extern uint32_t __stack_usr_top__;
-extern uint32_t __stack_usr_bottom__;
-extern uint32_t __stack_svc_bottom__;
-extern uint32_t __stack_irq_bottom__;
+extern void __stack_usr_top__;
+extern void __stack_usr_bottom__;
+extern void __stack_svc_bottom__;
+extern void __stack_irq_bottom__;
 
 /**
  * \brief The idle task
@@ -89,9 +97,6 @@ void sched_clock(void);
  * @return 1 if the current process is the background-process
  */
 uint8_t is_background(void);
-
-void sched_unlock(void);
-void sched_lock(void);
 
 
 #endif // _KERNEL_H_

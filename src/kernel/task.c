@@ -28,8 +28,6 @@
 #include <fragment.h>
 #include <config.h>
 
-void syscall_ret(void);
-
 /** @todo This function is architechture specific and should be moved away */
 /**
  * \brief Initializes a struct task
@@ -39,41 +37,24 @@ void syscall_ret(void);
  * processes with different data.
  * @param priority The priority. Less is more :)
  */
+
 void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priority) {
-	struct kern_regs* k;
-	struct cpu_regs* u;
 
-	//REGISTER_TYPE cpsr = 0x00000010; // User-mode
-	REGISTER_TYPE cpsr = 0x0000001F; // System-mode
-	char* ustack = sys_malloc(USIZE);
-	char* kstack = sys_malloc(KSIZE);
-	ustack += USIZE;
+// 	char* ustack = sys_malloc(USIZE);
+	void* ustack = (char*)&__stack_usr_top__;
+	void* kstack = sys_malloc(KSIZE);
+
+// 	ustack += USIZE;
 	kstack += KSIZE;
-
-	// If address is thumb we must set it in the PSR
-	if (((uint32_t)entrypoint & 1) == 1) 
-		cpsr |= 0x20;	// Set thumb bit
 
 	memset(task, 0, sizeof(struct task_t));
 
-	task->fragment = NULL;
+	task->fragment = create_fragment(USIZE);
+// 	task->stack = sys_malloc(USIZE);
 
-	task->ctx.uregs = (struct cpu_regs*)(kstack - sizeof(struct cpu_regs));
-
-	k = &task->ctx.kregs;
-
-	k->lr = (uint32_t)syscall_ret;
-	k->sp = (uint32_t)task->ctx.uregs;
-
-	u = task->ctx.uregs;
-	u->r0 = (uint32_t)arg;
-	u->r1 = 0x11111111;
-	u->r2 = 0x22222222;
-	u->r3 = 0x33333333;
-	u->svc_sp = (uint32_t)kstack;
-	u->sp = (uint32_t)ustack;
-	u->pc = u->lr = (uint32_t)(entrypoint); // Entrypoint
-	u->cpsr = cpsr;
+	context_init(&task->ctx, kstack);
+	context_set(&task->ctx, USER_STACK, (uint32_t)ustack);
+	context_set(&task->ctx, USER_ENTRY, (uint32_t)entrypoint);
 
 	task->prio = priority;
 	task->sleep_timer.type = TMR_STOP;

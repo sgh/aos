@@ -19,6 +19,7 @@
 #ifndef CPU_H
 #define CPU_H
 
+#include <stdint.h>
 
 struct cpu_regs {
 	uint32_t r0;	/*  +0 (00) */
