@@ -4,7 +4,7 @@
 
 #define QUANTUM 10
 
-#define USIZE 512
+#define USIZE 256
 #define KSIZE 256
 
 #endif

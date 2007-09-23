@@ -30,6 +30,7 @@
 #include <irq.h>
 #include <assert.h>
 #include <interrupt.h>
+#include <string.h>
 
 static void sched_switch(void);
 
@@ -77,13 +78,13 @@ void switch_context(struct context* old, struct context* new);
 static void sched_switch(void) {
 	struct task_t* prev = current;
 	struct task_t* next = NULL;
+	uint32_t stat;
+	uint32_t current_len;
+	struct fragment_store* current_fragment;
+	struct fragment_store* next_fragment;
+	uint32_t current_sp;
+	uint32_t next_len;
 	
-
-#ifdef SHARED_STACK
-	#error SHARED_STACK not supported in new schedueler
-#endif
-	
-	sys_assert(current);
 
 	// If processes is preempted
 	if (current->state == RUNNING) {
@@ -102,14 +103,30 @@ static void sched_switch(void) {
 	if (prev == next)
 		return;
 
-// 	assert(prev != next);
+
+	current->stack_size = (uint32_t)&__stack_usr_top__ - current->ctx.uregs->sp;
+
+	if (current->stack_size > current->max_stack_size)
+		current->max_stack_size = current->stack_size;
+
+	
+	current_sp = current->ctx.uregs->sp;
+	current_len = current->stack_size;
+	next_len = next->stack_size;
+	current_fragment = current->fragment;
+	next_fragment = next->fragment;
+	
+	interrupt_save(&stat);
+// 	interrupt_enable();
+	store_fragment(current_fragment, (void*)current_sp, current_len);
+	load_fragment(&__stack_usr_top__ - next_len, next_fragment);
+	interrupt_restore(stat);
 
 	next->state = RUNNING;
-
 	current = next;
 
 	switch_context(&prev->ctx, &next->ctx); // Zzz
-
+	
 }
 
 

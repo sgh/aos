@@ -5,12 +5,12 @@ APP = libaos
 
 MARCH = arm-lpc2xxx
 
-KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c task.c kernel.c timer_interrupt.c wait.c irq.c timer.c runtime_check.c assert.c
+KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c task.c kernel.c sched.c wait.c irq.c timer.c runtime_check.c assert.c
 
 DRIVER_SOURCES =  
 #driver_core.c driver_class.c platform/platform.c
 
-ARCH_SOURCES = interrupt.c context.s atomic.s clock.c
+ARCH_SOURCES = interrupt.c context.c atomic.s clock.c core.s
 
 MM_SOURCES = mm.c fragment.c 
 

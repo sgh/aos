@@ -1,6 +1,6 @@
 /*
 	AOS - ARM Operating System
-	Copyright (C) 2007  SÃ¸ren Holm (sgh@sgh.dk)
+	Copyright (C) 2007  Søren Holm (sgh@sgh.dk)
 
 	This library is free software; you can redistribute it and/or
 	modify it under the terms of the GNU Lesser General Public
