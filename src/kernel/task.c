@@ -49,12 +49,13 @@ void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priorit
 
 	memset(task, 0, sizeof(struct task_t));
 
-	task->fragment = create_fragment(USIZE);
-// 	task->stack = sys_malloc(USIZE);
+	task->fragment = NULL;
+// 	task->stack = NULL;
 
 	context_init(&task->ctx, kstack);
 	context_set(&task->ctx, USER_STACK, (uint32_t)ustack);
 	context_set(&task->ctx, USER_ENTRY, (uint32_t)entrypoint);
+	context_set(&task->ctx, USER_ARG, (uint32_t)arg);
 
 	task->prio = priority;
 	task->sleep_timer.type = TMR_STOP;

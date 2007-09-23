@@ -34,6 +34,9 @@
 
 static void sched_switch(void);
 
+// Lock for scheduler in context-switching process
+static volatile uint_fast8_t switch_lock = 0;
+
 void sched_clock(void) {
 
 	current->ticks++;
@@ -52,11 +55,16 @@ void sched_clock(void) {
 }
 
 void sched_lock(void) {
-	current->lock_count++;
+	if (!switch_lock)
+		current->lock_count++;
 }
 
 void sched_unlock(void) {
 	uint32_t stat;
+
+	if (switch_lock)
+		return;
+	
 	interrupt_save(&stat);
 	interrupt_disable();
 
@@ -79,12 +87,6 @@ static void sched_switch(void) {
 	struct task_t* prev = current;
 	struct task_t* next = NULL;
 	uint32_t stat;
-	uint32_t current_len;
-	struct fragment_store* current_fragment;
-	struct fragment_store* next_fragment;
-	uint32_t current_sp;
-	uint32_t next_len;
-	
 
 	// If processes is preempted
 	if (current->state == RUNNING) {
@@ -104,22 +106,28 @@ static void sched_switch(void) {
 		return;
 
 
+// 	switch_lock = 1;
+	interrupt_save(&stat);
+	interrupt_enable();
+
 	current->stack_size = (uint32_t)&__stack_usr_top__ - current->ctx.uregs->sp;
 
-	if (current->stack_size > current->max_stack_size)
+	if (current->stack_size > current->max_stack_size) {
+		if (current->fragment) {
+			free_fragment(current->fragment);
+			current->fragment = NULL;
+		}
 		current->max_stack_size = current->stack_size;
+	}
 
-	
-	current_sp = current->ctx.uregs->sp;
-	current_len = current->stack_size;
-	next_len = next->stack_size;
-	current_fragment = current->fragment;
-	next_fragment = next->fragment;
-	
-	interrupt_save(&stat);
-// 	interrupt_enable();
-	store_fragment(current_fragment, (void*)current_sp, current_len);
-	load_fragment(&__stack_usr_top__ - next_len, next_fragment);
+	if (!current->fragment)
+		current->fragment = create_fragment(current->max_stack_size);
+
+	store_fragment(current->fragment, (void*)current->ctx.uregs->sp, current->stack_size);
+
+	if (next->fragment)
+		load_fragment(&__stack_usr_top__ - next->stack_size, next->fragment);
+
 	interrupt_restore(stat);
 
 	next->state = RUNNING;

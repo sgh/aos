@@ -30,8 +30,6 @@ struct fragment_store* create_fragment(unsigned int size) {
 	struct fragment_store* retval;
 	struct fragment_store* prev_fragment = NULL;
 	unsigned int chunksize;
-
-	sys_assert(size < 1024);
 	
 	do {
 		chunksize = ciel(size, FRAGMENT_SIZE);
