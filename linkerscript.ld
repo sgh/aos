@@ -18,7 +18,8 @@ SECTIONS
   { 
     *(.startup)
   } > flash =0
-
+	
+	PROVIDE(__aos_sot__ = .);
   .text :
   {
     *(.text)                   /* remaining code */
@@ -26,6 +27,7 @@ SECTIONS
   } > flash
 
   . = ALIGN(4);
+	PROVIDE(__aos_eot__ = .);
 
   .rodata :
   {
@@ -84,10 +86,10 @@ SECTIONS
 		. = . + 0x0400*2; /* 2 kb */
 		__stack_usr_top__    = .;
 		__stack_svc_bottom__ = .;
-		. = . + 0x0400*2; /* 2 kb */
+		. = . + 0x0400*1; /* 1 kb */
 		__stack_svc_top__    = .;
 		__stack_irq_bottom__ = .;
-		. = . + 0x0400*1; /* 1 kb */
+		. = . + 0x0400; /* 1 kb */
 		__stack_irq_top__    = .;
 		__stack_fiq_bottom__ = .;
 		. = . + 0x0080; /* 128 bytes */
