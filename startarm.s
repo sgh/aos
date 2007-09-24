@@ -271,7 +271,7 @@ LoopZI:       CMP    R1, R2
 /*
  * Enable interrupts
  */
-             /* MSR    CPSR_c, #Mode_SYS*/
+             MSR    CPSR_c, #Mode_SYS
 
 /*
  * Jump to main

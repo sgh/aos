@@ -5,13 +5,13 @@ APP = testapp
 #SOURCES = startarm.s testapp.c init_cpu_lpc21xx.c handlers.c
 SOURCES = startarm.s testapp.c init_cpu.c handlers.c
 
-CFLAGS = -mcpu=arm7tdmi -O0 -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration  -mthumb-interwork
+CFLAGS = -mcpu=arm7tdmi -O0 -ffreestanding -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration  -mthumb-interwork 
 #-mthumb 
 #-ffunction-sections -fdata-sections
 
 ASFLAGS = -mcpu=arm7tdmi -mthumb-interwork
 
-LDFLAGS = -nostartfiles  -nodefaultlibs  -nostdlib -mthumb-interwork
+LDFLAGS = -g -nostartfiles  -nodefaultlibs  -nostdlib -mthumb-interwork
 #--gc-sections
 	
 LINKERSCRIPT = linkerscript.ld
@@ -53,6 +53,8 @@ all: aos ${OBJS}
 	$(SIZE) $(APP).elf
 	cp ../Mikrofyn/Embedded/arm/xc2-bootcode/cb14_cradle-bootloader.bin . 
 	dd if=testapp.bin bs=8k seek=1 skip=1 oflag=append of=cb14_cradle-bootloader.bin
+	$(OBJCOPY) -I binary -O ihex cb14_cradle-bootloader.bin cb14_cradle-bootloader.hex
+
 
 aos:
 	$(MAKE) -C src 
