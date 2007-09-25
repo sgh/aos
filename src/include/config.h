@@ -19,6 +19,6 @@
 // - numirq+1 because a swi is also an interrupt-source
 //
 // Example: 
-#define KSIZE (2+1) * (19*4) + 256
+#define KSIZE (3+1) * (19*4) + 256
 
 #endif
