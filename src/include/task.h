@@ -22,6 +22,7 @@
 #include <types.h>
 #include <list.h>
 #include <timer.h>
+#include <mutex.h>
 #include <arch/cpu.h>
 
 /**
@@ -100,11 +101,11 @@ struct task_t {
 	 */
 	struct fragment_store* fragment;
 
-// 	void* stack;
-
 	int8_t resched;
 
 	int32_t lock_count;
+
+	mutex_t wait_mutex; /** @todo implement this */
 
 };
 

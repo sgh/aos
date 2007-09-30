@@ -20,7 +20,6 @@
 
 #include <kernel.h>
 #include <string.h>
-#include <driver_core.h>
 #include <bits.h>
 #include <assert.h>
 

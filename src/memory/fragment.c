@@ -20,7 +20,6 @@
 
 #include <fragment.h>
 #include <string.h>
-#include <driver_core.h>
 #include <mm.h>
 #include <syscalls.h>
 #include <assert.h>
