@@ -38,6 +38,9 @@ void sys_mutex_lock(mutex_t* m) {
 	}
 	sys_block(&m->waiting);
 	sched_unlock();
+
+	/** @todo check if current == m->owner. If not we have reached a timeout and should return ETIMEOUT */
+// 	return ESUCCESS;
 }
 
 uint8_t sys_mutex_trylock(mutex_t* m) {

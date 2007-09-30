@@ -21,6 +21,8 @@
 
 #include <list.h>
 
+struct taskt; // Forward declaration of struct task_t
+
 #define DECLARE_MUTEX_LOCKED(m) mutex_t m = { .lock = 1, .waiting = LIST_HEAD_INIT(m.waiting) }
 #define DECLARE_MUTEX_UNLOCKED(m) mutex_t m = { .lock = 0, .waiting = LIST_HEAD_INIT(m.waiting) }
 
@@ -30,6 +32,7 @@
 typedef struct {
 	uint8_t lock;								/**< \brief The actual mutex lock */
 	struct list_head waiting;		/**< \brief List of waiting processes */
+	struct task_t* owner; /** @todo implement this */
 } mutex_t;
 
 /**

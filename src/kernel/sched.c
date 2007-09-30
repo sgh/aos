@@ -34,9 +34,6 @@
 
 static void sched_switch(void);
 
-// Lock for scheduler in context-switching process
-static volatile uint_fast8_t switch_lock = 0;
-
 void sched_clock(void) {
 
 	current->ticks++;
@@ -55,16 +52,12 @@ void sched_clock(void) {
 }
 
 void sched_lock(void) {
-	if (!switch_lock)
-		current->lock_count++;
+	current->lock_count++;
 }
 
 void sched_unlock(void) {
 	uint32_t stat;
 
-	if (switch_lock)
-		return;
-	
 	interrupt_save(&stat);
 	interrupt_disable();
 
@@ -81,8 +74,16 @@ void sched_unlock(void) {
 	interrupt_restore(stat);
 }
 
+/**
+ * \brief Assembler function for switching context
+ * @param old The context to switch from
+ * @param  new The context to switch to
+ */
 void switch_context(struct context* old, struct context* new);
 
+/**
+ * \brief Switch to another process
+ */
 static void sched_switch(void) {
 	struct task_t* prev = current;
 	struct task_t* next = NULL;
@@ -105,8 +106,6 @@ static void sched_switch(void) {
 	if (prev == next)
 		return;
 
-
-// 	switch_lock = 1;
 	interrupt_save(&stat);
 	interrupt_enable();
 
@@ -133,13 +132,13 @@ static void sched_switch(void) {
 	next->state = RUNNING;
 	current = next;
 
-	switch_context(&prev->ctx, &next->ctx); // Zzz
-	
+	switch_context(&prev->ctx, &next->ctx); // zzzZZZ
 }
 
 
 void process_wakeup(struct task_t* task) {
 
+	/** @todo implement better schdueling which does not make often sleeping processes take all cpu-time */
 	if (task->state == SLEEPING)
 		list_push_front(&readyQ , &task->q);
 	else

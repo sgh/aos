@@ -46,9 +46,8 @@ struct fragment_store {
 };
 
 /**
- * \brief Store data in a fragment
- * @param data 
- * @param size 
+ * \brief Create a fragment
+ * @param size The size of the fragment
  * @return 
  */
 struct fragment_store* create_fragment(unsigned int size);
@@ -66,6 +65,12 @@ void load_fragment(unsigned char* data, struct fragment_store* fragment);
  */
 void free_fragment(struct fragment_store* fragment);
 
+/**
+ * \brief Store data in a fragment
+ * @param data The data to store
+ * @param size The ammount of data to store
+ * @return 
+ */
 void store_fragment(struct fragment_store* fragment, const unsigned char* data, unsigned int size);
 
 #endif
