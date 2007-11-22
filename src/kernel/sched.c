@@ -65,7 +65,7 @@ void sched_unlock(void) {
 
 	if (current->lock_count == 1) {
 		if (current->resched) {
-			sched_switch();
+			sched_switch(); // ZZZzzz
 			current->resched = 0;
 		}
 	}
@@ -138,7 +138,7 @@ static void sched_switch(void) {
 
 void process_wakeup(struct task_t* task) {
 
-	/** @todo implement better schdueling which does not make often sleeping processes take all cpu-time */
+	/** @todo implement better schedueling which does not make often sleeping processes take all cpu-time */
 	if (task->state == SLEEPING)
 		list_push_front(&readyQ , &task->q);
 	else
@@ -147,4 +147,17 @@ void process_wakeup(struct task_t* task) {
 	task->state = READY;
 
 	current->resched = 1;
+
+	// Stop the timeout timer if it is active
+	timer_stop(&task->timeout_timer);
+}
+
+
+void sched_sleep(uint16_t ms) {
+	sched_lock();
+	timer_timeout(&current->sleep_timer, (void*) process_wakeup, current, ms2ticks(ms));
+	
+	current->state = SLEEPING;
+	current->resched = 1;
+	sched_unlock();
 }

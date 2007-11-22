@@ -88,6 +88,8 @@ void process_wakeup(struct task_t* task);
 
 void sched_clock(void);
 
+void sched_sleep(uint16_t ms);
+
 /**
  * \brief Check if current process is the background-process.
  * @return 1 if the current process is the background-process

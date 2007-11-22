@@ -19,28 +19,52 @@
 #define AOS_KERNEL_MODULE
 // #include <aos.h>
 #include <kernel.h>
+#include <errno.h>
 
 /**
- * \brief Mutes syscall definitions
+ * \brief Mutex syscall definitions
  */
 _syscall1(void, mutex_init, mutex_t*, m);
 _syscall1(void, mutex_lock, mutex_t*, m);
+_syscall2(uint8_t, mutex_timeout_lock, mutex_t*, m, uint32_t, timeoutms);
 _syscall1(uint8_t, mutex_trylock, mutex_t*, m);
 _syscall1(void, mutex_unlock, mutex_t*, m);
 
+
+static void mutex_timeout(void* arg) {
+	struct task_t* t = (struct task_t*)arg;
+
+	sys_unblock(t);
+	t->sleep_result = ETIMEOUT;
+}
+
+
 void sys_mutex_lock(mutex_t* m) {
+	current->sleep_result = ESUCCESS;
+	sys_mutex_timeout_lock(m, 0);
+}
+
+
+uint8_t sys_mutex_timeout_lock(mutex_t* m,  uint32_t timeoutms) {
 	sched_lock();
-	
+
 	if (!m->lock) { // Mutex is not locked - lock it
 		m->lock = 1;
+		m->owner = current;
 		sched_unlock();
-		return;
+		return ESUCCESS;
 	}
+
 	sys_block(&m->waiting);
+	
+	// Setup timeout for lock timeout
+	if (timeoutms > 0)
+		timer_timeout(&current->timeout_timer, (void*) mutex_timeout, current, ms2ticks(timeoutms));
+
 	sched_unlock();
 
-	/** @todo check if current == m->owner. If not we have reached a timeout and should return ETIMEOUT */
-// 	return ESUCCESS;
+	// Return sleep_result. ETIMEOUT indicates a timeout
+	return current->sleep_result;
 }
 
 uint8_t sys_mutex_trylock(mutex_t* m) {
@@ -65,11 +89,14 @@ void sys_mutex_unlock(mutex_t* m) {
 	sched_lock();
 	if (list_isempty(&m->waiting)) { // If none is waiting
 		m->lock = 0;
+		m->owner = NULL;
 		sched_unlock();
 		return;
 	}
 
+	
 	next = get_struct_task(list_get_front(&m->waiting));
+	m->owner = next;
 
 	sys_unblock(next);
 	sched_unlock();

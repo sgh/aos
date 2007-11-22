@@ -61,9 +61,19 @@ struct task_t {
 	enum task_state {RUNNING, READY, SLEEPING, BLOCKED, CRASHED} state;
 	
 	/**
-	 * \brief  useconds to sleep.
+	 * \brief  ticks to sleep.
 	 */
 	struct timer sleep_timer;
+
+	/**
+	 * \brief  ticks until timeout
+	 */
+	struct timer timeout_timer;
+
+	/**
+	 * \brief Return value for sleeps and blocks
+	 */
+	uint8_t sleep_result;
 
 	/**
 	 * \brief Pointer to the process's saved CPU-state (the registers, not the stack).
@@ -105,7 +115,7 @@ struct task_t {
 
 	int32_t lock_count;
 
-	mutex_t wait_mutex; /** @todo implement this */
+	//mutex_t wait_mutex; /** @todo implement this */
 
 };
 

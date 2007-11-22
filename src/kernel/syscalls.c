@@ -33,6 +33,7 @@ void* sys_call_table[] =
 // 	[_NR_enable_irqs] sys_enable_irqs,
 	[_NR_mutex_init] sys_mutex_init,
 	[_NR_mutex_lock] sys_mutex_lock,
+	[_NR_mutex_timeout_lock] sys_mutex_timeout_lock,
 	[_NR_mutex_unlock] sys_mutex_unlock,
 	[_NR_mutex_trylock] sys_mutex_trylock,
 	[_NR_block] sys_block,
