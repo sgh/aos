@@ -32,35 +32,36 @@
 
 
 /* Syscall numbers */
-#define _NR_yield          0
-#define _NR_test           1
-#define _NR_msleep         2
-#define _NR_usleep         3
-// #define _NR_disable_irqs   4
-// #define _NR_enable_irqs    5
-#define _NR_block          6
-#define _NR_unblock        7
-// #define _NR_disable_cs     8
-// #define _NR_enable_cs      9
-#define _NR_get_sysutime   10
-#define _NR_get_sysmtime   11
-#define _NR_malloc         12
-#define _NR_free           13
-#define _NR_mmstat         14
-#define _NR_create_task    15
+#define _NR_yield                  0
+#define _NR_test                   1
+#define _NR_msleep                 2
+#define _NR_usleep                 3
+// #define _NR_disable_irqs        4
+// #define _NR_enable_irqs         5
+#define _NR_block                  6
+#define _NR_unblock                7
+// #define _NR_disable_cs          8
+// #define _NR_enable_cs           9
+#define _NR_get_sysutime           10
+#define _NR_get_sysmtime           11
+#define _NR_malloc                 12
+#define _NR_free                   13
+#define _NR_mmstat                 14
+#define _NR_create_task            15
 // #define _NR_aos_basic_init 16
-#define _NR_aos_mm_init    17
-#define _NR_aos_hooks      18
-#define _NR_mutex_lock     19
-#define _NR_mutex_unlock   20
-#define _NR_mutex_trylock  21
-#define _NR_mutex_init     22
-#define _NR_sem_init       23
-#define _NR_sem_up         24
-#define _NR_sem_down       25
-#define _NR_user_syscall   26
-#define _NR_get_process_list 27
-#define _NR_assert_failed  28
+#define _NR_aos_mm_init            17
+#define _NR_aos_hooks              18
+#define _NR_mutex_lock             19
+#define _NR_mutex_unlock           20
+#define _NR_mutex_trylock          21
+#define _NR_mutex_init             22
+#define _NR_sem_init               23
+#define _NR_sem_up                 24
+#define _NR_sem_down               25
+#define _NR_user_syscall           26
+#define _NR_get_process_list       27
+#define _NR_assert_failed          28
+#define _NR_mutex_timeout_lock     29
 
 /* Syscall declarations */
 struct list_head* sys_get_process_list( void ); // for getting process list to display cpu% of each process on display.
@@ -77,6 +78,7 @@ void sys_usleep(uint32_t us);
 // void sys_enable_irqs();
 void sys_mutex_init(mutex_t* m);
 void sys_mutex_lock(mutex_t* m);
+uint8_t sys_mutex_timeout_lock(mutex_t* m, uint32_t timeout);
 uint8_t sys_mutex_trylock(mutex_t* m);
 void sys_mutex_unlock(mutex_t* m);
 void sys_get_sysutime(uint32_t* time);

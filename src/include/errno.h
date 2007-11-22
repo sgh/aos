@@ -21,7 +21,7 @@
 
 
 #define ESUCCESS     0  /* No error */
-#define ETIMEOUT     1  /* No error */
+#define ETIMEOUT     1  /* Timeout */
 
 #endif
 

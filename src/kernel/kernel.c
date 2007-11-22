@@ -169,15 +169,9 @@ void sys_usleep(uint32_t us) {
 }
 
 void sys_msleep(uint16_t ms) {
-	sched_lock();
-	assert(current->lock_count == 1);
-	
-	timer_timeout(&current->sleep_timer, (void*) process_wakeup, current, ms2ticks(ms));
-	
-	current->state = SLEEPING;
-	current->resched = 1;
+// 	assert(current->lock_count == 1);
 
-	sched_unlock();
+	sched_sleep(ms);
 }
 
 struct list_head* sys_get_process_list(void) {
@@ -187,7 +181,7 @@ struct list_head* sys_get_process_list(void) {
 void sys_block(struct list_head* q) {
 // 	irq_lock();
 	
-	list_push_back(q,&current->q);
+	list_push_back(q, &current->q);
 	current->resched = 1;
 	current->state = BLOCKED;
 

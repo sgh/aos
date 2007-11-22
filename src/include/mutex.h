@@ -32,7 +32,7 @@ struct taskt; // Forward declaration of struct task_t
 typedef struct {
 	uint8_t lock;								/**< \brief The actual mutex lock */
 	struct list_head waiting;		/**< \brief List of waiting processes */
-	struct task_t* owner; /** @todo implement this */
+	struct task_t* owner;				/**< \brief The owner of this mutex */
 } mutex_t;
 
 /**
@@ -40,6 +40,15 @@ typedef struct {
  * @param m The mutex to lock
  */
 void mutex_lock(mutex_t* m);
+
+/**
+ * \brief Lock mutex with a timeout
+ * @param m The mutex to lock
+ * @param timeout Time to wait for lock in milliseconds
+ * @return ESUCCESS or ETIMEOUT
+ */
+uint8_t mutex_timeout_lock(mutex_t* m, uint32_t timeoutms);
+
 
 /**
  * \brief Unlock mutex
