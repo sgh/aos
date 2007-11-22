@@ -20,6 +20,7 @@
 #define MUTEX_H
 
 #include <list.h>
+#include <errno.h>
 
 struct taskt; // Forward declaration of struct task_t
 
