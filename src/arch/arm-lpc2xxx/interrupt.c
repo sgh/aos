@@ -42,10 +42,11 @@
 void interrupt_handler(void);
 
 static uint_fast8_t lpc_family = 0;
-#define LPC2229_ID 33685267
-#define LPC2292_ID 67239699
-#define LPC2364_ID 100924162
-#define LPC2368_ID 100924197
+#define LPC2229_ID  33685267
+#define LPC2292_ID  67239699
+#define LPC2364A_ID 100924162
+#define LPC2364B_ID 369162498
+#define LPC2368_ID  100924197
 
 #define IAP_LOCATION 0x7ffffff1
 #define REG32 (volatile unsigned int*)
@@ -73,7 +74,8 @@ static void detect_lpc_family(void) {
 			lpc_family = 2122;
 			break;
 		case LPC2368_ID:
-		case LPC2364_ID:
+		case LPC2364A_ID:
+		case LPC2364B_ID:
 			lpc_family = 2324;
 			break;
 	}
