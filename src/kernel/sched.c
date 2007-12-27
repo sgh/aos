@@ -106,6 +106,7 @@ static void sched_switch(void) {
 	if (prev == next)
 		return;
 
+	mm_schedlock(1);
 	interrupt_save(&stat);
 	interrupt_enable();
 
@@ -128,6 +129,7 @@ static void sched_switch(void) {
 		load_fragment(&__stack_usr_top__ - next->stack_size, next->fragment);
 
 	interrupt_restore(stat);
+	mm_schedlock(0);
 
 	next->state = RUNNING;
 	current = next;

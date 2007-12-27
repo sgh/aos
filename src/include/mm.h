@@ -44,6 +44,11 @@ struct mm_stat {
 	 * \brief The total size of the memory-area used for malloc.
 	 */
 	uint16_t size;
+
+	/**
+	 * \brief The total number of allocations,
+	 */
+	uint16_t mcount;
 };
 
 /**
@@ -64,5 +69,11 @@ void free(void* ptr);
  * @param stat Pointer to a struct mm_stat where stats should be stored.
  */
 void mmstat(struct mm_stat* stat);
+
+/*
+ * \brief Specify to the malloc weither is may lock the schdueler.
+ * @param allowlock 1 if schedueler may not be locked
+ */
+void mm_schedlock(uint8_t allowlock);
 
 #endif
