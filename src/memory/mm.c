@@ -36,6 +36,7 @@
 /* MM status variables */
 static uint8_t* mm_start;
 static uint8_t* mm_end;
+static uint8_t schedlock = 1;
 
 typedef struct mm_header mm_header_t;
 
@@ -47,6 +48,11 @@ struct mm_header {
 // 	uint8_t padding:2;
 	uint16_t size/*:15*/;
 };
+
+
+void mm_schedlock(uint8_t allowlock) {
+	schedlock = allowlock;
+}
 
 void sys_mmstat(struct mm_stat* stat) {
 	int segment = 0;
@@ -65,15 +71,17 @@ void sys_mmstat(struct mm_stat* stat) {
 //
 		if (header->free)
 			stat->free += header->size;
-		else
+		else {
 			stat->used += header->size;
+			stat->mcount++;
+		}
 		
 		ptr = ptr + header->size + sizeof(mm_header_t);
 
 		segment++;
 	} while (ptr<mm_end);
 
-		stat->overhead = segment * sizeof(struct mm_header);
+	stat->overhead = segment * sizeof(struct mm_header);
 
 // 	printf("Total size : %4d\n",total_size);
 // 	printf("Largest segmentnum: %d\n", largest_segmentnum);
@@ -102,6 +110,8 @@ void* sys_malloc(size_t size)
 	mm_header_t* next_header;
 
 //  	mm_status();
+	if (!schedlock)
+		sched_lock();
 	do {
 		header = (mm_header_t*)ptr;
 		next_header = (mm_header_t*)(ptr + header->size + sizeof(mm_header_t));
@@ -132,6 +142,8 @@ void* sys_malloc(size_t size)
 				}
 			}
 // 			mm_status();
+			if (!schedlock)
+				sched_unlock();
 			return ptr + sizeof(mm_header_t);
 		}
 		ptr += header->size + sizeof(mm_header_t);
@@ -152,6 +164,8 @@ void sys_free(void* segment) {
 
 // 	mm_status();
 	
+	if (!schedlock)
+		sched_lock();
 	header->free=1;
 	do {
 		header = (mm_header_t*)ptr;
@@ -161,6 +175,8 @@ void sys_free(void* segment) {
 			prev_header = header;
 		ptr += header->size + sizeof(mm_header_t);
 	}	while (header->free==1 && ptr<=(uint8_t*)mm_end - sizeof(mm_header_t));	
+	if (!schedlock)
+		sched_unlock();
 // 	mm_status();
 }
 
