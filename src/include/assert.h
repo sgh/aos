@@ -16,6 +16,8 @@
 
 #endif
 
+#define static_assert(test, msg) typedef char _static_assert_ ## msg [ (test) ? 1 : -1]
+
 
 void assert_failed(const char * const exp, const char* const file, unsigned int line);
 

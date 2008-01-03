@@ -58,9 +58,16 @@ void sched_lock(void) {
 void sched_unlock(void) {
 	uint32_t stat;
 
+	/*
+	 * Reentrancy handled by allways doing lock/unlock in pairs. The topmost
+	 * interrupt is framed inside such a pair. As the lock_count is only
+	 * decremented AFTER the sched_switch(), the interrupt-enabled part of
+	 * sched_switch will still have lock_count > 0. The sched_switch will
+	 * therefore only be executed once.
+	 */
 	interrupt_save(&stat);
 	interrupt_disable();
-
+	
 	assert(current->lock_count > 0);
 
 	if (current->lock_count == 1) {
@@ -89,7 +96,7 @@ static void sched_switch(void) {
 	struct task_t* next = NULL;
 	uint32_t stat;
 
-	// If processes is preempted
+	// If process is preempted
 	if (current->state == RUNNING) {
 		current->state = READY;
 		if (!is_background())
@@ -106,7 +113,10 @@ static void sched_switch(void) {
 	if (prev == next)
 		return;
 
-	mm_schedlock(1);
+	// tell mm-system not to use scheck_lock
+	mm_schedlock(0);
+		
+	// Enable interrupts
 	interrupt_save(&stat);
 	interrupt_enable();
 
@@ -128,8 +138,11 @@ static void sched_switch(void) {
 	if (next->fragment)
 		load_fragment(&__stack_usr_top__ - next->stack_size, next->fragment);
 
+	// Disable interrupts again
 	interrupt_restore(stat);
-	mm_schedlock(0);
+
+	// Tell mm-system to use schedlock
+	mm_schedlock(1);
 
 	next->state = RUNNING;
 	current = next;

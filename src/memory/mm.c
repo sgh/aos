@@ -36,19 +36,29 @@
 /* MM status variables */
 static uint8_t* mm_start;
 static uint8_t* mm_end;
-static uint8_t schedlock = 1;
+static volatile uint8_t schedlock = 0;
 
 typedef struct mm_header mm_header_t;
 
 /**
  * \brief Housekeeping structure used for each memory-allocation
  */
-struct mm_header {
-	uint8_t free:1;
-// 	uint8_t padding:2;
-	uint16_t size/*:15*/;
+struct PACKED mm_header {
+	uint8_t  free;
+	uint8_t  ________reserved;
+	uint16_t size;
 };
 
+#define boundary4_assert(val) sys_assert( ((uint32_t)(val) & 0x3) == 0)
+
+static_assert(sizeof(struct mm_header) == 4, MM_HEADER_MUST_BE_4_BYTES);
+
+
+/* Memory-functions */
+_syscall2(void, aos_mm_init, void*,  start, void*, end);
+_syscall1(void*, malloc, size_t, size);
+_syscall1(void, free, void*, free);
+_syscall1(void, mmstat, struct mm_stat*, stat);
 
 void mm_schedlock(uint8_t allowlock) {
 	schedlock = allowlock;
@@ -61,8 +71,9 @@ void sys_mmstat(struct mm_stat* stat) {
 	uint32_t total_size = 0;
 
 	memset(stat, 0, sizeof(struct mm_stat));
-
-	stat->size = mm_end - mm_start;
+	
+	if (schedlock)
+		sched_lock();
 
 	do {
 		header = (mm_header_t*)ptr;
@@ -82,6 +93,14 @@ void sys_mmstat(struct mm_stat* stat) {
 	} while (ptr<mm_end);
 
 	stat->overhead = segment * sizeof(struct mm_header);
+	stat->size = stat->free + stat->used + stat->overhead;
+	
+	// Check for corruption. Of cause only done when fetching stats, but
+	// corruptions may not be immediately fatal.
+	assert(stat->size == (mm_end - mm_start));
+	
+	if (schedlock)
+		sched_unlock();
 
 // 	printf("Total size : %4d\n",total_size);
 // 	printf("Largest segmentnum: %d\n", largest_segmentnum);
@@ -91,6 +110,10 @@ void sys_mmstat(struct mm_stat* stat) {
 
 void sys_aos_mm_init(void* start, void* end) {
 	struct mm_header* head;
+	
+	boundary4_assert(start);
+	boundary4_assert(end);
+	
 	mm_start =  start;
 	mm_end = end;
 	memset(mm_start, 0x0, end-start);
@@ -108,10 +131,16 @@ void* sys_malloc(size_t size)
 	uint8_t* ptr = (uint8_t*)mm_start;
 	mm_header_t* header;
 	mm_header_t* next_header;
+	
+	// Only allocate on 4 byte boundaroes
+	if (size & 0x3)
+		size += 4;
+	size &= ~0x3;
 
 //  	mm_status();
-	if (!schedlock)
+	if (schedlock)
 		sched_lock();
+
 	do {
 		header = (mm_header_t*)ptr;
 		next_header = (mm_header_t*)(ptr + header->size + sizeof(mm_header_t));
@@ -128,8 +157,8 @@ void* sys_malloc(size_t size)
 			segmentsize = header->size;
 // 			mm_status();
 // 			printf("Allocating %d bytes on offset %d\n",size,(unsigned char*)ptr-mm_start+sizeof(mm_header_t));
-			header->free=0;
-			header->size=size;
+			header->free = 0;
+			header->size = size;
 			
 			/* If there is no room left for new mm_header after allocation */
 			if (segmentsize - size < sizeof(mm_header_t))
@@ -142,11 +171,16 @@ void* sys_malloc(size_t size)
 				}
 			}
 // 			mm_status();
-			if (!schedlock)
+			if (schedlock)
 				sched_unlock();
+
+			// Run statistics to verify integrity
+			struct mm_stat mmstat;
+			sys_mmstat(&mmstat);
+
 			return ptr + sizeof(mm_header_t);
 		}
-		ptr += header->size + sizeof(mm_header_t);
+		ptr += sizeof(mm_header_t) + header->size;
 	} while ((uint8_t*)ptr<mm_end);
 // 	printf("Not enough memory\n");
 // 	mm_status();
@@ -164,8 +198,9 @@ void sys_free(void* segment) {
 
 // 	mm_status();
 	
-	if (!schedlock)
+	if (schedlock)
 		sched_lock();
+
 	header->free=1;
 	do {
 		header = (mm_header_t*)ptr;
@@ -175,7 +210,12 @@ void sys_free(void* segment) {
 			prev_header = header;
 		ptr += header->size + sizeof(mm_header_t);
 	}	while (header->free==1 && ptr<=(uint8_t*)mm_end - sizeof(mm_header_t));	
-	if (!schedlock)
+	
+	// Run statistics to verify integrity
+	struct mm_stat mmstat;
+	sys_mmstat(&mmstat);
+
+	if (schedlock)
 		sched_unlock();
 // 	mm_status();
 }
