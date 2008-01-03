@@ -74,12 +74,6 @@ _syscall4(struct task_t*, create_task, funcPtr, entrypoint, const char*, name, v
 // _syscall0(void, disable_irqs);
 // _syscall0(void, aos_basic_init);
 
-/* Memory-functions */
-_syscall2(void, aos_mm_init, void*,  start, void*, end);
-_syscall1(void*, malloc, size_t, size);
-_syscall1(void, free, void*, free);
-_syscall1(void, mmstat, struct mm_stat*, stat);
-
 /* Time-functions */
 _syscall1(void, get_sysutime, uint32_t*, time);
 _syscall1(void, get_sysmtime, uint32_t*, time);
