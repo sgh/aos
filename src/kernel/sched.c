@@ -161,7 +161,8 @@ void process_wakeup(struct task_t* task) {
 
 	task->state = READY;
 
-	current->resched = 1;
+	if (task->prio < current->prio)
+		current->resched = 1;
 
 	// Stop the timeout timer if it is active
 	timer_stop(&task->timeout_timer);
