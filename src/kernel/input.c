@@ -10,27 +10,55 @@ uint8_t keyscans[] = {
 	bin(1,0,0,0,0,0,0,1),
 	bin(1,0,0,0,0,0,0,1),
 	bin(1,0,0,0,0,0,0,0),
-	bin(0,0,0,0,0,0,0,0),
-	bin(0,0,0,0,0,0,0,0),
-	bin(0,0,0,0,0,0,0,0),
-	bin(0,0,0,0,0,0,0,0),
+	bin(1,0,0,0,0,0,0,1),
+	bin(1,0,0,0,0,0,1,1),
+	bin(1,0,0,0,0,1,1,1),
+	bin(1,0,0,0,0,0,0,0),
 	bin(0,0,0,0,0,0,0,0),
 	bin(0,0,0,0,0,0,0,0),
 	bin(0,0,0,0,0,0,0,0),
 };
 
+static uint8_t additional_keys[2];
+static uint8_t active_key;
+static uint8_t pressed_idx;
+
+void pressedlist_add(uint32_t scancode) {
+	pressed_idx++;
+	if (pressed_idx > 1)
+		pressed_idx = 0;
+
+	additional_keys[pressed_idx] = active_key = scancode;
+}
+
+void pressedlist_remove(uint32_t scancode) {
+	int i;
+	for (i=0; i<2; i++) {
+		if (additional_keys[i] == scancode)
+			additional_keys[i] = 0;
+	}
+	
+	if (active_key == scancode)
+		active_key = 0;
+}
 
 void scancode_press(uint32_t scancode) {
-	printf("press: %d  ", scancode);
+
+	printf("press:   %4d ", scancode);
+
+	pressedlist_add(scancode);
 }
 
 void scancode_release(uint32_t scancode) {
-	printf("release: %d  ", scancode);
+	printf("release: %4d ", scancode);
+
+	pressedlist_remove(scancode);
 }
 
 
 void register_keyscan(uint8_t keyscan) {
 	static uint8_t last_keyscan;
+	int i;
 	uint32_t bit;
 	uint32_t scancode = 1;
 	uint8_t press = keyscan & ~last_keyscan;
@@ -39,19 +67,26 @@ void register_keyscan(uint8_t keyscan) {
 	
 	printf("keyscan:0x%02X ", keyscan);
 	
-	scancode = 1;
-	while (press || release) {
-		scancode++;
-		if (press & 1)
-			scancode_press(scancode);
-		press >>= 1;
-
+	// Run through released keys
+// 	scancode = 1;
+	for (scancode = 1; release ; release >>= 1) {
 		if (release & 1)
 			scancode_release(scancode);
-		release >>= 1;
+		scancode++;
 	}
+	
+	for (scancode = 1; press ; press >>= 1) {
+		if (press & 1)
+			scancode_press(scancode);
+		scancode++;
+	}
+	
+	printf(" %d[", active_key);
 
-	printf("\n");
+	for (i=0; i<2; i++)
+		printf("%d ", additional_keys[i]);
+
+	printf("]\n");
 }
 
 
