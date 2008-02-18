@@ -1,10 +1,13 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#define MAX_CONCURRENT_KEYS 3
+
 /** @todo refine this */
 struct extended_char {
-	uint32_t key;   // The key
-	uint32_t time;  // The time the key was pressed (not repeated)
+	uint32_t keys[MAX_CONCURRENT_KEYS];   // The keys
+	uint32_t times[MAX_CONCURRENT_KEYS];  // The time the keys was pressed (not repeated)
+	uint32_t repeatcount;
 };
 
 
@@ -12,14 +15,14 @@ struct extended_char {
  * \brief Normal getchar
  * @return A available character
  */
-uint32_t aos_getchar(void);
+uint32_t aos_getchar(int timeout);
 
 /**
- * \brief Getchar-function the get extended information like
+ * \brief Getchar-function that get extended information like
  * simultanously pressed keys, and when they where pressed.
  * @return The extended key-information
  */
-struct extended_char aos_extended_getchar(void);
+struct extended_char aos_extended_getchar(int timeout);
 
 /**
  * \brief Set the repeatrate 
@@ -32,6 +35,10 @@ void aos_input_setrate(uint32_t hzrate);
  * @param msdelay Time in milliseconds
  */
 void aos_input_setdelay(uint32_t msdelay);
+
+void aos_register_keyscan(uint32_t scancode);
+
+void aos_key_management_task(void* arg);
 
 
 #endif
