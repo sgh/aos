@@ -65,31 +65,25 @@ static uint32_t active_key;
 static uint32_t active_time;
 static uint8_t pressed_idx;
 
-#ifndef __arm__
-static sem_t scancode_ready;
-#else
-	DECLARE_MUTEX_LOCKED(scancode_ready);
-#endif
-
+static DECLARE_MUTEX_LOCKED(scancode_ready);
 static uint32_t _getchar;
+static DECLARE_MUTEX_UNLOCKED(_getchar_ready);
 
-#ifndef __arm__
-static sem_t _getchar_ready;
-#else
-	DECLARE_MUTEX_UNLOCKED(_getchar_ready);
-#endif
 
 
 void pressedlist_add(uint32_t time, uint32_t scancode) {
 	int i;
-// Move all keypresses
-	for (i=MAX_CONCURRENT_KEYS-1; i>=0; i--) {
-		additional_keys[i+1]  = additional_keys[i];
-		additional_times[i+1] = additional_times[i];
+// Move all keypresses a step right
+	for (i=MAX_CONCURRENT_KEYS-1; i>0; i--) {
+		additional_keys[i]  = additional_keys[i-1];
+		additional_times[i] = additional_times[i-1];
 	}
 
 	additional_keys[0]  = active_key  = scancode;
 	additional_times[0] = active_time = time;
+	
+// 	for (i=0; i<MAX_CONCURRENT_KEYS; i++)
+// 		additional_times[0] = 3;
 }
 
 void pressedlist_remove(uint32_t scancode) {
@@ -101,7 +95,7 @@ void pressedlist_remove(uint32_t scancode) {
 			additional_times[i] = 0;
 		}
 	}
-
+	
 	// Fill 0 entries
 	for (i=0; i<MAX_CONCURRENT_KEYS-1; i++) {
 		if (additional_keys[i] == 0) {
@@ -171,11 +165,7 @@ void aos_register_keyscan(uint32_t keyscan) {
 		for (i=0; i<2; i++)
 			printf("%d ", additional_keys[i]);
 		printf("]\n");
-#ifndef __arm__
-		sem_post(&scancode_ready);
-#else
 		sys_mutex_unlock(&scancode_ready);
-#endif
 	} else {
 		printf("\n");
 	}
@@ -196,9 +186,6 @@ void aos_register_keyscan(uint32_t keyscan) {
 static unsigned int repeatcount = 0;
 
 void aos_key_management_task(void* arg) {
-#ifndef __arm__
-	struct timespec ts;
-#endif
 	uint8_t last_scancode = 0;
 	int s = 0;
 	unsigned int timedwait = 0;
@@ -206,47 +193,21 @@ void aos_key_management_task(void* arg) {
 	while (1) {
 
 		if (active_key != 0) {
-			
-#ifndef __arm__
-			clock_gettime(CLOCK_REALTIME, &ts);
-#endif
-			if (repeatcount == 0) {
-#ifndef __arm__
-				ts.tv_sec += 1;
-#else
-				timedwait = 500;
-#endif
-			} else {
-#ifndef __arm__
-// 				ts.tv_sec += 0;
-				ts.tv_nsec += 500000000;
-				while (ts.tv_nsec > 999999999) {
-					ts.tv_nsec = ts.tv_nsec - 999999999;
-					ts.tv_sec += 1;
-				}
-#else
-				timedwait = 100;
-#endif
-			}
 
-#ifndef __arm__
-			s = sem_timedwait(&scancode_ready, &ts);
-#else
+			if (repeatcount == 0)
+				timedwait = 500;
+			else
+				timedwait = 100;
+
+
 			if (mutex_timeout_lock(&scancode_ready, timedwait) == ETIMEOUT)
 				s = -1;
 			else
 				s=0;
-#endif
 		}	else {
 			timedwait = 0;
-#ifndef __arm__
-			sem_wait(&scancode_ready);
-#else
 			mutex_lock(&scancode_ready);
-#endif
 		}
-		
-		printf("SCANCODE HANDLER ");
 		
 		if (s == -1)  {
 			repeatcount++;
@@ -261,11 +222,7 @@ void aos_key_management_task(void* arg) {
 		}
 		
 		_getchar = active_key;
-#ifndef __arm__
-		sem_post(&_getchar_ready);
-#else
 		mutex_unlock(&_getchar_ready);
-#endif
 
 		last_scancode = active_key;
 		printf("\n");
@@ -278,9 +235,6 @@ struct extended_char aos_extended_getchar(int timeout) {
 	uint8_t fetchkey;
 	int i;
 
-#ifndef __arm__
-	sem_wait();
-#else
 	do {
 		fetchkey = 0;
 		if (timeout >= 0 && mutex_timeout_lock(&_getchar_ready, timeout) == ESUCCESS)
@@ -298,7 +252,7 @@ struct extended_char aos_extended_getchar(int timeout) {
 		if (timeout != 0) // When we get a timeout we must not loop
 			break;
 	} while (retchar.keys[0] == 0);
-#endif
+
 	return retchar;
 }
 
