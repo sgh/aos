@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+
+
 #ifndef __arm__
 #include <unistd.h>
 #include <sys/time.h>
@@ -9,9 +11,12 @@
 #include <semaphore.h>
 #include <time.h>
 #else
+#define AOS_KERNEL_MODULE
+#include <kernel.h>
 #include <aos.h>
 #include <mutex.h>
 #endif
+#include <input.h>
 
 
 #ifdef __arm__
@@ -21,15 +26,15 @@
 
 #define bin(a,b,c,d,e,f,g,h) ((a)*128+(b)*64+(c)*32+(d)*16+(e)*8+(f)*4+(g)*2+(h)*1)
 
+#ifndef __arm__
 static uint32_t mtime_bias;
 
-#ifndef __arm__
+
 void get_sysmtime(uint32_t* time) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	*time = (tv.tv_sec*1000000 + tv.tv_usec)/1000 - mtime_bias;
 }
-#endif
 
 uint8_t keyscans[] = {
 	bin(0,0,0,0,0,0,0,0),
@@ -52,10 +57,12 @@ uint8_t keyscans[] = {
 	bin(0,0,0,0,0,0,0,0),
 	bin(0,0,0,0,0,0,0,0),
 };
+#endif
 
-static uint8_t additional_keys[2];
-static uint8_t active_scancode;
-static uint8_t active_time;
+static uint32_t additional_keys[MAX_CONCURRENT_KEYS];
+static uint32_t additional_times[MAX_CONCURRENT_KEYS];
+static uint32_t active_key;
+static uint32_t active_time;
 static uint8_t pressed_idx;
 
 #ifndef __arm__
@@ -74,24 +81,43 @@ static sem_t _getchar_ready;
 
 
 void pressedlist_add(uint32_t time, uint32_t scancode) {
-	pressed_idx++;
-	if (pressed_idx > 1)
-		pressed_idx = 0;
+	int i;
+// Move all keypresses
+	for (i=MAX_CONCURRENT_KEYS-1; i>=0; i--) {
+		additional_keys[i+1]  = additional_keys[i];
+		additional_times[i+1] = additional_times[i];
+	}
 
-	additional_keys[pressed_idx] = active_scancode = scancode;
-	active_time = time;
+	additional_keys[0]  = active_key  = scancode;
+	additional_times[0] = active_time = time;
 }
 
 void pressedlist_remove(uint32_t scancode) {
+	uint8_t found = 0;
 	int i;
-	for (i=0; i<2; i++) {
-		if (additional_keys[i] == scancode)
+	for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
+		if (additional_keys[i] == scancode) {
 			additional_keys[i] = 0;
+			additional_times[i] = 0;
+		}
 	}
-	
-	if (active_scancode == scancode)
-		active_scancode = 0;
+
+	// Fill 0 entries
+	for (i=0; i<MAX_CONCURRENT_KEYS-1; i++) {
+		if (additional_keys[i] == 0) {
+			additional_keys[i] = additional_keys[i+1];
+			additional_times[i] = additional_times[i+1];
+			additional_keys[i+1] = 0;
+			additional_times[i+1] = 0;
+		}
+	}
+
+	if (active_key == scancode) {
+		active_key = 0;
+		active_time = 0;
+	}
 }
+
 
 void scancode_press(uint32_t time, uint32_t scancode) {
 
@@ -106,29 +132,34 @@ void scancode_release(uint32_t scancode) {
 	pressedlist_remove(scancode);
 }
 
+void beep(void);
 
-void register_keyscan(uint8_t keyscan) {
-	static uint8_t last_keyscan;
+void aos_register_keyscan(uint32_t keyscan) {
+	static uint32_t last_keyscan;
 	int i;
 	uint32_t now = 0;
-	uint32_t scancode = 1;
-	uint8_t press = keyscan & ~last_keyscan;
-	uint8_t release = last_keyscan & ~keyscan;
-	uint8_t scancode_change = (press != 0) | (release |= 0);
+	uint32_t scancode;
+	uint32_t press = keyscan & ~last_keyscan;
+	uint32_t release = last_keyscan & ~keyscan;
+	uint8_t scancode_change = 0;
 	last_keyscan = keyscan;
+
+	if ((press != 0) || (release |= 0))
+		scancode_change = 1;
 	
 	printf("keyscan:0x%02X ", keyscan);
 	
 	// Run through released keys
-// 	scancode = 1;
 	for (scancode = 1; release ; release >>= 1) {
 		if (release & 1)
 			scancode_release(scancode);
 		scancode++;
 	}
 	
-	if (press)
-		get_sysmtime(&now);
+	if (press) {
+		sys_get_sysmtime(&now);
+// 		beep();
+	}
 	for (scancode = 1; press ; press >>= 1) {
 		if (press & 1)
 			scancode_press(now, scancode);
@@ -136,17 +167,18 @@ void register_keyscan(uint8_t keyscan) {
 	}
 	
 	if (scancode_change) {
-		printf(" %d[", active_scancode);
+		printf(" %d[", active_key);
 		for (i=0; i<2; i++)
 			printf("%d ", additional_keys[i]);
 		printf("]\n");
 #ifndef __arm__
 		sem_post(&scancode_ready);
 #else
-		mutex_unlock(&scancode_ready);
+		sys_mutex_unlock(&scancode_ready);
 #endif
-	} else
+	} else {
 		printf("\n");
+	}
 }
 
 
@@ -161,19 +193,19 @@ void register_keyscan(uint8_t keyscan) {
 //  return count;
 // }
 
+static unsigned int repeatcount = 0;
 
-void key_management_task(void* arg) {
+void aos_key_management_task(void* arg) {
 #ifndef __arm__
 	struct timespec ts;
 #endif
 	uint8_t last_scancode = 0;
 	int s = 0;
-	int timedwait = 0;
-	unsigned int repeatcount = 0;
+	unsigned int timedwait = 0;
 	
 	while (1) {
-		
-		if (active_scancode != 0) {
+
+		if (active_key != 0) {
 			
 #ifndef __arm__
 			clock_gettime(CLOCK_REALTIME, &ts);
@@ -182,7 +214,7 @@ void key_management_task(void* arg) {
 #ifndef __arm__
 				ts.tv_sec += 1;
 #else
-				timedwait = 1000;
+				timedwait = 500;
 #endif
 			} else {
 #ifndef __arm__
@@ -193,14 +225,17 @@ void key_management_task(void* arg) {
 					ts.tv_sec += 1;
 				}
 #else
-				timedwait = 500;
+				timedwait = 100;
 #endif
 			}
 
 #ifndef __arm__
 			s = sem_timedwait(&scancode_ready, &ts);
 #else
-			s = mutex_timeout_lock(&scancode_ready, timedwait);
+			if (mutex_timeout_lock(&scancode_ready, timedwait) == ETIMEOUT)
+				s = -1;
+			else
+				s=0;
 #endif
 		}	else {
 			timedwait = 0;
@@ -215,37 +250,67 @@ void key_management_task(void* arg) {
 		
 		if (s == -1)  {
 			repeatcount++;
-			printf("repeat %d", active_scancode);
+			printf("repeat %d", active_key);
 		} else {
-			if (active_scancode != 0)
+			if (active_key != 0) {
 				printf("beep ");
-			printf("change %d", active_scancode);
+				beep();
+			}
+			printf("change %d", active_key);
 			repeatcount = 0;
 		}
 		
-		_getchar = active_scancode;
+		_getchar = active_key;
 #ifndef __arm__
 		sem_post(&_getchar_ready);
 #else
 		mutex_unlock(&_getchar_ready);
 #endif
 
-		last_scancode = active_scancode;
+		last_scancode = active_key;
 		printf("\n");
 	}
 }
 
 
-uint32_t aostk_getchar(void) {
+struct extended_char aos_extended_getchar(int timeout) {
+	struct extended_char retchar;
+	uint8_t fetchkey;
+	int i;
+
 #ifndef __arm__
-	sem_wait(&_getchar_ready);
+	sem_wait();
 #else
-	mutex_lock(&_getchar_ready);
+	do {
+		fetchkey = 0;
+		if (timeout >= 0 && mutex_timeout_lock(&_getchar_ready, timeout) == ESUCCESS)
+			fetchkey = 1;
+			
+		if (timeout < 0 && mutex_trylock(&_getchar_ready))
+			fetchkey = 1;
+
+		for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
+			retchar.keys[i] = additional_keys[i];
+			retchar.times[i] = additional_times[i];
+		}
+		retchar.repeatcount = repeatcount;
+		
+		if (timeout != 0) // When we get a timeout we must not loop
+			break;
+	} while (retchar.keys[0] == 0);
 #endif
-	return _getchar;
+	return retchar;
+}
+
+uint32_t aos_getchar(int timeout) {
+	struct extended_char ch;
+
+	ch = aos_extended_getchar(timeout);
+	return ch.keys[0];
 }
 
 
+#ifndef __arm__
 void consumer_task(void* arg) {
 	while (1) {
 		printf("%s: %d\n", __FUNCTION__, aostk_getchar());
@@ -253,7 +318,6 @@ void consumer_task(void* arg) {
 }
 
 
-#ifndef __arm__
 int main(/*int argc, const char* argv[]*/) {
 	unsigned int i;
 	pthread_t keytask;
@@ -261,12 +325,12 @@ int main(/*int argc, const char* argv[]*/) {
 	
 	sem_init(&scancode_ready, 0, 0);
 	sem_init(&_getchar_ready, 0, 0);
-	pthread_create(&keytask, NULL, key_management_task, NULL);
+	pthread_create(&keytask, NULL, aos_key_management_task, NULL);
 	pthread_create(&keytask, NULL, consumer_task, NULL);
 	
 	get_sysmtime(&mtime_bias);
 	for (i = 0; i<sizeof(keyscans); i++) {
-		register_keyscan(keyscans[i]);
+		aos_register_keyscan(keyscans[i]);
 		usleep(5000000);
 	}
 	
