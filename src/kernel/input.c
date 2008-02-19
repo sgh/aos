@@ -11,12 +11,15 @@ static uint32_t additional_keys[MAX_CONCURRENT_KEYS];
 static uint32_t additional_times[MAX_CONCURRENT_KEYS];
 static uint32_t active_key;
 static uint32_t active_time;
-static uint8_t pressed_idx;
+// static uint8_t pressed_idx;
 
 static DECLARE_MUTEX_LOCKED(scancode_ready);
 static uint32_t _getchar;
 static DECLARE_MUTEX_UNLOCKED(_getchar_ready);
 static unsigned int repeatcount = 0;
+
+uint32_t aos_get_keybuf(void);
+uint32_t get_keybuf(void);
 
 
 static void pressedlist_add(uint32_t time, uint32_t scancode) {
@@ -31,8 +34,9 @@ static void pressedlist_add(uint32_t time, uint32_t scancode) {
 	additional_times[0] = active_time = time;
 }
 
+
 static void pressedlist_remove(uint32_t scancode) {
-	uint8_t found = 0;
+// 	uint8_t found = 0;
 	int i;
 	for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
 		if (additional_keys[i] == scancode) {
@@ -58,15 +62,6 @@ static void pressedlist_remove(uint32_t scancode) {
 }
 
 
-static void scancode_press(uint32_t time, uint32_t scancode) {
-	pressedlist_add(time, scancode);
-}
-
-
-static void scancode_release(uint32_t scancode) {
-	pressedlist_remove(scancode);
-}
-
 void beep(void);
 void beep_error(void);
 uint_fast32_t quickmenu_keyhook(uint_fast32_t key);
@@ -74,7 +69,7 @@ uint_fast32_t quickmenu_keyhook(uint_fast32_t key);
 
 void aos_register_keyscan(uint32_t keyscan) {
 	static uint32_t last_keyscan;
-	int i;
+// 	int i;
 	uint32_t now = 0;
 	uint32_t scancode;
 	uint32_t press = keyscan & ~last_keyscan;
@@ -88,7 +83,7 @@ void aos_register_keyscan(uint32_t keyscan) {
 	// Run through released keys
 	for (scancode = 1; release ; release >>= 1) {
 		if (release & 1)
-			scancode_release(scancode);
+			pressedlist_remove(scancode);
 		scancode++;
 	}
 
@@ -96,7 +91,7 @@ void aos_register_keyscan(uint32_t keyscan) {
 
 	for (scancode = 1; press ; press >>= 1) {
 		if (press & 1)
-			scancode_press(now, scancode);
+			pressedlist_add(now, scancode);
 		scancode++;
 	}
 	
@@ -104,9 +99,9 @@ void aos_register_keyscan(uint32_t keyscan) {
 		sys_mutex_unlock(&scancode_ready);
 }
 
-void aos_key_management_task(void* arg) {
+void aos_key_management_task(UNUSED void* arg) {
 	uint8_t last_scancode = 0;
-	int s = 0;
+// 	int s = 0;
 	unsigned int timedwait = 0;
 	
 	while (1) {
