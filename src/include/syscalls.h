@@ -62,6 +62,7 @@
 #define _NR_get_process_list       27
 #define _NR_assert_failed          28
 #define _NR_mutex_timeout_lock     29
+#define _NR_sem_timeout_down       30
 
 /* Syscall declarations */
 struct list_head* sys_get_process_list( void ); // for getting process list to display cpu% of each process on display.
@@ -79,6 +80,7 @@ void sys_usleep(uint32_t us);
 void sys_mutex_init(mutex_t* m);
 void sys_mutex_lock(mutex_t* m);
 uint8_t sys_mutex_timeout_lock(mutex_t* m, uint32_t timeout);
+uint8_t sys_sem_timeout_down(semaphore_t* m, uint32_t timeout);
 uint8_t sys_mutex_trylock(mutex_t* m);
 void sys_mutex_unlock(mutex_t* m);
 void sys_get_sysutime(uint32_t* time);

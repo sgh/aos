@@ -38,6 +38,8 @@ void aos_input_setdelay(uint32_t msdelay);
 
 void aos_register_keyscan(uint32_t scancode);
 
+void aos_put_keybuffer(uint32_t key);
+
 void aos_key_management_task(void* arg);
 
 uint32_t aos_concurrent_keys(struct extended_char* exchar, uint32_t keys[MAX_CONCURRENT_KEYS]);

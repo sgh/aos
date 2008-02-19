@@ -52,6 +52,7 @@ void* sys_call_table[] =
 	[_NR_sem_init] sys_sem_init,
 	[_NR_sem_up] sys_sem_up,
 	[_NR_sem_down] sys_sem_down,
+ 	[_NR_sem_timeout_down] sys_sem_timeout_down,
 	[_NR_user_syscall] sys_user_syscall,
 	[_NR_get_process_list] sys_get_process_list,
 	[_NR_assert_failed] sys_assert_failed,
