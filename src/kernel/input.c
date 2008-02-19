@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-
+#include <string.h>
 #define AOS_KERNEL_MODULE
 #include <kernel.h>
 #include <aos.h>
@@ -59,26 +59,17 @@ static void pressedlist_remove(uint32_t scancode) {
 
 
 static void scancode_press(uint32_t time, uint32_t scancode) {
-
-// 	printf("press(%6u): %-4d ", time, scancode);
-
 	pressedlist_add(time, scancode);
 }
 
 
 static void scancode_release(uint32_t scancode) {
-// 	printf("release: %-4d ", scancode);
-
 	pressedlist_remove(scancode);
 }
 
 void beep(void);
 void beep_error(void);
-
-void check_watches(uint32_t now) {
-// 	if (additional_keys[0] == 17 && additional_keys[1] == 18 && (now - additional_times[0] > 2000) && (now - additional_times[1] > 2000))
-// 		beep_error();
-}
+uint_fast32_t quickmenu_keyhook(uint_fast32_t key);
 
 
 void aos_register_keyscan(uint32_t keyscan) {
@@ -101,12 +92,7 @@ void aos_register_keyscan(uint32_t keyscan) {
 		scancode++;
 	}
 
-// 	if (press) {
 	sys_get_sysmtime(&now);
-// 		beep();
-// 	}
-	
-	check_watches(now);
 
 	for (scancode = 1; press ; press >>= 1) {
 		if (press & 1)
@@ -130,24 +116,78 @@ void aos_key_management_task(void* arg) {
 			if (repeatcount == 0)
 					timedwait = 500;
 				else
-					timedwait = 100;
+					timedwait = 50;
 		}
 
 		if (mutex_timeout_lock(&scancode_ready, timedwait) == ETIMEOUT) {
 			repeatcount++; // Key is repeated
 		} else {
-			if (last_scancode != active_key) { // New active key
+			if (last_scancode != active_key && active_key != 0) { // New active key
 				beep();
 				repeatcount = 0;
 			}
 		}
 
 		_getchar = active_key;
+		_getchar = quickmenu_keyhook(active_key);
 		mutex_unlock(&_getchar_ready);
 
-		last_scancode = active_key;
+	 last_scancode = active_key;
 	}
 }
+
+
+
+uint32_t aos_concurrent_keys(struct extended_char* exchar, uint32_t keys[MAX_CONCURRENT_KEYS]) {
+	uint32_t maxtime = 0;
+	uint32_t now = 0;
+	int i,k;
+	uint8_t found = 0;
+
+	// Check to align character count
+	for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
+		if (keys[i])
+			found++;
+		if (exchar->keys[i])
+			found--;
+	}
+
+	// If count does not match the concurrent keypress is not valid
+	if (found != 0)
+		return 0;
+
+	for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
+
+		uint32_t act_key = exchar->keys[i];
+
+		if (!act_key)
+			continue;
+
+		found = 0;
+
+		// Check for key existence
+		for (k=0; k<MAX_CONCURRENT_KEYS; k++) {
+
+			if (act_key == keys[k]) 
+				found = 1;
+		}
+
+		if (found) {
+			if (exchar->times[i] > maxtime)
+				maxtime = exchar->times[i];
+		} else
+			break;
+	}
+
+	get_sysmtime(&now);
+
+	if (found)
+		return now - maxtime + 1; // At least one ms
+
+	return 0;
+}
+
+
 
 
 struct extended_char aos_extended_getchar(int timeout) {
@@ -155,6 +195,7 @@ struct extended_char aos_extended_getchar(int timeout) {
 	uint8_t fetchkey;
 	int i;
 
+	memset(&retchar, 0, sizeof(retchar));
 	do {
 		fetchkey = 0;
 		if (timeout >= 0 && mutex_timeout_lock(&_getchar_ready, timeout) == ESUCCESS)
@@ -163,11 +204,14 @@ struct extended_char aos_extended_getchar(int timeout) {
 		if (timeout < 0 && mutex_trylock(&_getchar_ready))
 			fetchkey = 1;
 
-		for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
-			retchar.keys[i] = additional_keys[i];
-			retchar.times[i] = additional_times[i];
+		if (fetchkey) {
+			for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
+				retchar.keys[i] = additional_keys[i];
+				retchar.times[i] = additional_times[i];
+			}
+			retchar.keys[0] = _getchar;
+			retchar.repeatcount = repeatcount;
 		}
-		retchar.repeatcount = repeatcount;
 		
 		if (timeout != 0) // When we get a timeout we must not loop
 			break;
