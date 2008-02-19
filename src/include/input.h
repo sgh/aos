@@ -11,6 +11,12 @@ struct extended_char {
 };
 
 
+struct input_hooks {
+	void (*beep)();
+	uint32_t (*keyfilter)(uint32_t);
+};
+
+
 /**
  * \brief Normal getchar
  * @return A available character
@@ -43,5 +49,7 @@ void aos_put_keybuffer(uint32_t key);
 void aos_key_management_task(void* arg);
 
 uint32_t aos_concurrent_keys(struct extended_char* exchar, uint32_t keys[MAX_CONCURRENT_KEYS]);
+
+void aos_input_init(const struct input_hooks* hooks);
 
 #endif

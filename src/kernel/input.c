@@ -7,70 +7,63 @@
 #include <mutex.h>
 #include <input.h>
 
-static uint32_t additional_keys[MAX_CONCURRENT_KEYS];
-static uint32_t additional_times[MAX_CONCURRENT_KEYS];
-static uint32_t active_key;
-static uint32_t active_time;
-// static uint8_t pressed_idx;
+#define BUFFER_SIZE 10
+#define TOTAL_CONCURRENT_KEYS 6
 
-static DECLARE_MUTEX_LOCKED(scancode_ready);
+static struct extended_char scancode_buffer[BUFFER_SIZE];
+static unsigned int buffer_put_idx;
+static unsigned int buffer_get_idx;
+
+static uint32_t current_keys[TOTAL_CONCURRENT_KEYS];
+static uint32_t current_times[TOTAL_CONCURRENT_KEYS];
+
+static semaphore_t scancode_ready_sem;
 static uint32_t _getchar;
-// static DECLARE_MUTEX_UNLOCKED(_getchar_ready);
-semaphore_t _getchar_ready;
+
+static semaphore_t getchar_ready_sem;
 static unsigned int repeatcount = 0;
 
-uint32_t aos_get_keybuf(void);
-uint32_t get_keybuf(void);
-
+const static struct input_hooks* inputhooks;
 
 static void pressedlist_add(uint32_t time, uint32_t scancode) {
 	int i;
 // Move all keypresses a step right
-	for (i=MAX_CONCURRENT_KEYS-1; i>0; i--) {
-		additional_keys[i]  = additional_keys[i-1];
-		additional_times[i] = additional_times[i-1];
+	for (i=TOTAL_CONCURRENT_KEYS-1; i>0; i--) {
+		current_keys[i]  = current_keys[i-1];
+		current_times[i] = current_times[i-1];
 	}
 
-	additional_keys[0]  = active_key  = scancode;
-	additional_times[0] = active_time = time;
+	current_keys[0]  = scancode;
+	current_times[0] = time;
 }
 
 
 static void pressedlist_remove(uint32_t scancode) {
-// 	uint8_t found = 0;
 	int i;
-	for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
-		if (additional_keys[i] == scancode) {
-			additional_keys[i] = 0;
-			additional_times[i] = 0;
+	for (i=0; i<TOTAL_CONCURRENT_KEYS; i++) {
+		if (current_keys[i] == scancode) {
+			current_keys[i] = 0;
+			current_times[i] = 0;
 		}
 	}
 	
 	// Fill 0 entries
-	for (i=0; i<MAX_CONCURRENT_KEYS-1; i++) {
-		if (additional_keys[i] == 0) {
-			additional_keys[i] = additional_keys[i+1];
-			additional_times[i] = additional_times[i+1];
-			additional_keys[i+1] = 0;
-			additional_times[i+1] = 0;
+	for (i=0; i<TOTAL_CONCURRENT_KEYS-1; i++) {
+		if (current_keys[i] == 0) {
+			current_keys[i] = current_keys[i+1];
+			current_times[i] = current_times[i+1];
+			current_keys[i+1] = 0;
+			current_times[i+1] = 0;
 		}
 	}
 
-	if (active_key == scancode) {
-		active_key = 0;
-		active_time = 0;
-	}
 }
 
 
-void beep(void);
-void beep_error(void);
-uint_fast32_t quickmenu_keyhook(uint_fast32_t key);
 
-
+/** @todo used user-space version of this to add keypresses from external switches etc. */
 void aos_register_keyscan(uint32_t keyscan) {
 	static uint32_t last_keyscan;
-// 	int i;
 	uint32_t now = 0;
 	uint32_t scancode;
 	uint32_t press = keyscan & ~last_keyscan;
@@ -97,39 +90,40 @@ void aos_register_keyscan(uint32_t keyscan) {
 	}
 	
 	if (scancode_change)
-		sys_mutex_unlock(&scancode_ready);
+		sys_sem_up(&scancode_ready_sem);
 }
+
 
 void aos_key_management_task(UNUSED void* arg) {
 	uint8_t last_scancode = 0;
-// 	int s = 0;
 	unsigned int timedwait = 0;
 	
 	while (1) {
 		timedwait = 0;
 		
-		if (active_key != 0) {
+		if (last_scancode != 0) {
 			if (repeatcount == 0)
 					timedwait = 500;
 				else
 					timedwait = 50;
 		}
 
-		if (mutex_timeout_lock(&scancode_ready, timedwait) == ETIMEOUT) {
+		if (sem_timeout_down(&scancode_ready_sem, timedwait) == ETIMEOUT) {
 			repeatcount++; // Key is repeated
 		} else {
-			if (last_scancode != active_key && active_key != 0) { // New active key
-				beep();
+			if (last_scancode != current_keys[0] && current_keys[0] != 0) { // New active key
+				if (inputhooks && inputhooks->beep) inputhooks->beep();
 				repeatcount = 0;
 			}
 		}
 
-		_getchar = active_key;
-		_getchar = quickmenu_keyhook(active_key);
-// 		mutex_unlock(&_getchar_ready);
-		sem_up(&_getchar_ready);
+		_getchar = current_keys[0];
+		if (inputhooks && inputhooks->keyfilter)
+			_getchar = inputhooks->keyfilter(current_keys[0]);
 
-	 last_scancode = active_key;
+		sem_up(&getchar_ready_sem);
+
+		last_scancode = current_keys[0];
 	}
 }
 
@@ -195,16 +189,16 @@ struct extended_char aos_extended_getchar(int timeout) {
 	memset(&retchar, 0, sizeof(retchar));
 	do {
 		fetchkey = 0;
-		if (timeout >= 0 && sem_timeout_down(&_getchar_ready, timeout) == ESUCCESS)
+		if (timeout >= 0 && sem_timeout_down(&getchar_ready_sem, timeout) == ESUCCESS)
 			fetchkey = 1;
 			
-		if (timeout < 0 && mutex_trylock(&_getchar_ready))
+		if (timeout < 0 && mutex_trylock(&getchar_ready_sem))
 			fetchkey = 1;
 
 		if (fetchkey) {
 			for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
-				retchar.keys[i] = additional_keys[i];
-				retchar.times[i] = additional_times[i];
+				retchar.keys[i] = current_keys[i];
+				retchar.times[i] = current_times[i];
 			}
 			retchar.keys[0] = _getchar;
 			retchar.repeatcount = repeatcount;
@@ -224,8 +218,13 @@ uint32_t aos_getchar(int timeout) {
 	return ch.keys[0];
 }
 
+void aos_input_init(const struct input_hooks* hooks) {
+	inputhooks = hooks;
+}
+
 static void input_init(void) {
-	sem_init(&_getchar_ready, 0);
+	sem_init(&getchar_ready_sem, 0);
+	sem_init(&scancode_ready_sem, 0);
 }
 
 AOS_MODULE_INIT(input_init);
