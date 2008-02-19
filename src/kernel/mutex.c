@@ -47,13 +47,13 @@ void sys_mutex_lock(mutex_t* m) {
 uint8_t sys_mutex_timeout_lock(mutex_t* m,  uint32_t timeoutms) {
 	sched_lock();
 
-	current->sleep_result = ESUCCESS; // Default we return EESUCCESS
+	current->sleep_result = ESUCCESS; // Default we return ESUCCESS
 
 	if (!m->lock) { // Mutex is not locked - lock it
 		m->lock = 1;
 		m->owner = current;
 		sched_unlock();
-		return ESUCCESS;
+		return current->sleep_result;
 	}
 
 	sys_block(&m->waiting);

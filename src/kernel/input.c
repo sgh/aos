@@ -15,7 +15,8 @@ static uint32_t active_time;
 
 static DECLARE_MUTEX_LOCKED(scancode_ready);
 static uint32_t _getchar;
-static DECLARE_MUTEX_UNLOCKED(_getchar_ready);
+// static DECLARE_MUTEX_UNLOCKED(_getchar_ready);
+semaphore_t _getchar_ready;
 static unsigned int repeatcount = 0;
 
 uint32_t aos_get_keybuf(void);
@@ -125,7 +126,8 @@ void aos_key_management_task(UNUSED void* arg) {
 
 		_getchar = active_key;
 		_getchar = quickmenu_keyhook(active_key);
-		mutex_unlock(&_getchar_ready);
+// 		mutex_unlock(&_getchar_ready);
+		sem_up(&_getchar_ready);
 
 	 last_scancode = active_key;
 	}
@@ -193,7 +195,7 @@ struct extended_char aos_extended_getchar(int timeout) {
 	memset(&retchar, 0, sizeof(retchar));
 	do {
 		fetchkey = 0;
-		if (timeout >= 0 && mutex_timeout_lock(&_getchar_ready, timeout) == ESUCCESS)
+		if (timeout >= 0 && sem_timeout_down(&_getchar_ready, timeout) == ESUCCESS)
 			fetchkey = 1;
 			
 		if (timeout < 0 && mutex_trylock(&_getchar_ready))
@@ -222,3 +224,8 @@ uint32_t aos_getchar(int timeout) {
 	return ch.keys[0];
 }
 
+static void input_init(void) {
+	sem_init(&_getchar_ready, 0);
+}
+
+AOS_MODULE_INIT(input_init);
