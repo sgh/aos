@@ -6,12 +6,12 @@
 
 struct aosfifo {
 	unsigned char nr;
-	char* txbuf;
+	char* buffer;
 	unsigned int buf_size;
 	
 	unsigned int putidx;
 	unsigned int getidx;
-	unsigned int txbuf_size;
+	unsigned int buffer_size;
 };
 
 
@@ -25,10 +25,10 @@ static unsigned int put_fifo(struct aosfifo* f, const unsigned char* src, unsign
 
 	while (size--) {
 
-		assert( f->txbuf_size > 0 ) // assert on full
+		assert( f->buffer_size > 0 ) // assert on full
 
-		assert( f->txbuf != NULL );
-		f->txbuf[f->putidx++] = *src;
+		assert( f->buffer != NULL );
+		f->buffer[f->putidx++] = *src;
 
 		if (f->putidx == f->buf_size)
 			f->putidx = 0;
@@ -36,7 +36,7 @@ static unsigned int put_fifo(struct aosfifo* f, const unsigned char* src, unsign
 		src++;
 		num++;
 
-		f->txbuf_size--;
+		f->buffer_size--;
 	}
 	return num;
 }
@@ -45,11 +45,11 @@ static unsigned int get_fifo(struct aosfifo* f, unsigned char* dst, unsigned int
 	unsigned int num = 0;
 
 	while (size--) {
-		if ( f->txbuf_size == f->buf_size ) // if empty, return //->getidx == m->putidx)
+		if ( f->buffer_size == f->buf_size ) // if empty, return //->getidx == m->putidx)
 			return 0;
 
 		
-		*dst = f->txbuf[f->getidx++];
+		*dst = f->buffer[f->getidx++];
 
 		if (f->getidx == f->buf_size)
 			f->getidx = 0;
@@ -57,9 +57,9 @@ static unsigned int get_fifo(struct aosfifo* f, unsigned char* dst, unsigned int
 		num++;
 		dst++;
 	}
-	f->txbuf_size += num;
+	f->buffer_size += num;
 
-	assert( f->txbuf_size <= f->buf_size );
+	assert( f->buffer_size <= f->buf_size );
 	return num;
 }
 
