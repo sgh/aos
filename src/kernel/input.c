@@ -172,7 +172,7 @@ void aos_key_management_task(UNUSED void* arg) {
 		
 
 		if (inputhooks && inputhooks->keyfilter)
-			char_buffer[buffer_put_idx].keys[0] = inputhooks->keyfilter(char_buffer[buffer_put_idx].keys[0]);
+			inputhooks->keyfilter(&char_buffer[buffer_put_idx]);
 		
 		sem_up(&getchar_ready_sem);
 		mutex_unlock(&char_buffer_lock);

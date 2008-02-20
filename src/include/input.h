@@ -12,8 +12,8 @@ struct extended_char {
 
 
 struct input_hooks {
-	void (*beep)();
-	uint32_t (*keyfilter)(uint32_t);
+	void (*beep)(void);
+	void (*keyfilter)(struct extended_char*);
 };
 
 
