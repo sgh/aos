@@ -23,6 +23,7 @@
 #include <list.h>
 #include <timer.h>
 #include <mutex.h>
+#include <semaphore.h>
 #include <arch/cpu.h>
 
 /**
@@ -115,7 +116,9 @@ struct task_t {
 
 	int32_t lock_count;
 
-	//mutex_t wait_mutex; /** @todo implement this */
+	mutex_t* wait_mutex;
+
+	semaphore_t* wait_semaphore;
 
 };
 

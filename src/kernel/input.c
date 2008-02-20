@@ -6,19 +6,20 @@
 #include <aos.h>
 #include <mutex.h>
 #include <input.h>
+#include <irq.h>
 
-#define BUFFER_SIZE 10
+#define BUFFER_SIZE 5
 #define TOTAL_CONCURRENT_KEYS 6
 
-static struct extended_char scancode_buffer[BUFFER_SIZE];
+static struct extended_char char_buffer[BUFFER_SIZE];
 static unsigned int buffer_put_idx;
 static unsigned int buffer_get_idx;
+static DECLARE_MUTEX_UNLOCKED(char_buffer_lock);
 
 static uint32_t current_keys[TOTAL_CONCURRENT_KEYS];
 static uint32_t current_times[TOTAL_CONCURRENT_KEYS];
 
 static semaphore_t scancode_ready_sem;
-static uint32_t _getchar;
 
 static semaphore_t getchar_ready_sem;
 static unsigned int repeatcount = 0;
@@ -60,9 +61,7 @@ static void pressedlist_remove(uint32_t scancode) {
 }
 
 
-
-/** @todo used user-space version of this to add keypresses from external switches etc. */
-void aos_register_keyscan(uint32_t keyscan) {
+static void generic_register_keyscan(uint32_t keyscan, uint8_t irq) {
 	static uint32_t last_keyscan;
 	uint32_t now = 0;
 	uint32_t scancode;
@@ -74,6 +73,8 @@ void aos_register_keyscan(uint32_t keyscan) {
 	if ((press != 0) || (release |= 0))
 		scancode_change = 1;
 
+	if (!irq) irq_lock();
+
 	// Run through released keys
 	for (scancode = 1; release ; release >>= 1) {
 		if (release & 1)
@@ -81,7 +82,10 @@ void aos_register_keyscan(uint32_t keyscan) {
 		scancode++;
 	}
 
-	sys_get_sysmtime(&now);
+	if (irq) 
+		sys_get_sysmtime(&now);
+	else
+		get_sysmtime(&now);
 
 	for (scancode = 1; press ; press >>= 1) {
 		if (press & 1)
@@ -89,44 +93,93 @@ void aos_register_keyscan(uint32_t keyscan) {
 		scancode++;
 	}
 	
-	if (scancode_change)
-		sys_sem_up(&scancode_ready_sem);
+	if (scancode_change) {
+		if (irq)
+			sys_sem_up(&scancode_ready_sem);
+		else
+			sem_up(&scancode_ready_sem);
+	}
+	
+	if (!irq) irq_unlock();
+}
+
+
+void aos_register_keyscan_irq(uint32_t keyscan) {
+	generic_register_keyscan(keyscan, 1);
+}
+
+
+void aos_register_keypress(uint32_t scancode) {
+	struct extended_char xchar;
+	
+	memset(&xchar, 0, sizeof(xchar));
+	xchar.keys[0] = scancode;
+	
+	mutex_lock(&char_buffer_lock);
+	
+	buffer_put_idx++;
+	if (buffer_put_idx == BUFFER_SIZE)
+		buffer_put_idx = 0;
+	
+	char_buffer[buffer_put_idx] = xchar;
+	
+
+	sem_up(&getchar_ready_sem);
+	
+	mutex_unlock(&char_buffer_lock);
 }
 
 
 void aos_key_management_task(UNUSED void* arg) {
-	uint8_t last_scancode = 0;
+	int i;
+	struct extended_char last_scancode;
 	unsigned int timedwait = 0;
+	
+	memset(&last_scancode, 0, sizeof(last_scancode));
 	
 	while (1) {
 		timedwait = 0;
 		
-		if (last_scancode != 0) {
+		if (last_scancode.keys[0] != 0) {
 			if (repeatcount == 0)
-					timedwait = 500;
+					timedwait = 500; // Pre repeation delay
 				else
-					timedwait = 50;
+					timedwait = 50; // Repeation delay
 		}
+		
 
 		if (sem_timeout_down(&scancode_ready_sem, timedwait) == ETIMEOUT) {
 			repeatcount++; // Key is repeated
 		} else {
-			if (last_scancode != current_keys[0] && current_keys[0] != 0) { // New active key
+			if (last_scancode.keys[0] != current_keys[0] && current_keys[0] != 0) { // New active key
 				if (inputhooks && inputhooks->beep) inputhooks->beep();
 				repeatcount = 0;
 			}
 		}
 
-		_getchar = current_keys[0];
+		
+		mutex_lock(&char_buffer_lock);
+		
+		buffer_put_idx++;
+		if (buffer_put_idx == BUFFER_SIZE)
+			buffer_put_idx = 0;
+		
+		for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
+			char_buffer[buffer_put_idx].keys[i] = current_keys[i];
+			char_buffer[buffer_put_idx].times[i] = current_times[i];
+		}
+		char_buffer[buffer_put_idx].repeatcount = repeatcount;
+		
+
 		if (inputhooks && inputhooks->keyfilter)
-			_getchar = inputhooks->keyfilter(current_keys[0]);
-
+			char_buffer[buffer_put_idx].keys[0] = inputhooks->keyfilter(char_buffer[buffer_put_idx].keys[0]);
+		
 		sem_up(&getchar_ready_sem);
+		mutex_unlock(&char_buffer_lock);
 
-		last_scancode = current_keys[0];
+		last_scancode.keys[0] = current_keys[0];
 	}
 }
-
 
 
 uint32_t aos_concurrent_keys(struct extended_char* exchar, uint32_t keys[MAX_CONCURRENT_KEYS]) {
@@ -179,8 +232,6 @@ uint32_t aos_concurrent_keys(struct extended_char* exchar, uint32_t keys[MAX_CON
 }
 
 
-
-
 struct extended_char aos_extended_getchar(int timeout) {
 	struct extended_char retchar;
 	uint8_t fetchkey;
@@ -192,16 +243,16 @@ struct extended_char aos_extended_getchar(int timeout) {
 		if (timeout >= 0 && sem_timeout_down(&getchar_ready_sem, timeout) == ESUCCESS)
 			fetchkey = 1;
 			
-		if (timeout < 0 && mutex_trylock(&getchar_ready_sem))
-			fetchkey = 1;
+// 		if (timeout < 0 && mutex_trylock(&getchar_ready_sem))
+// 			fetchkey = 1;
 
 		if (fetchkey) {
-			for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
-				retchar.keys[i] = current_keys[i];
-				retchar.times[i] = current_times[i];
-			}
-			retchar.keys[0] = _getchar;
-			retchar.repeatcount = repeatcount;
+			mutex_lock(&char_buffer_lock);
+			buffer_get_idx++;
+			if (buffer_get_idx == BUFFER_SIZE)
+				buffer_get_idx = 0;
+			retchar = char_buffer[buffer_get_idx];
+			mutex_unlock(&char_buffer_lock);
 		}
 		
 		if (timeout != 0) // When we get a timeout we must not loop

@@ -58,11 +58,15 @@ uint8_t sys_mutex_timeout_lock(mutex_t* m,  uint32_t timeoutms) {
 
 	sys_block(&m->waiting);
 	
+	current->wait_mutex = m;
+	
 	// Setup timeout for lock timeout
 	if (timeoutms > 0)
 		timer_timeout(&current->timeout_timer, (void*) mutex_timeout, current, ms2ticks(timeoutms));
 
 	sched_unlock();
+	
+	current->wait_mutex = NULL;
 
 	// Return sleep_result. ETIMEOUT indicates a timeout
 	return current->sleep_result;
