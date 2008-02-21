@@ -48,6 +48,13 @@ void sem_init(semaphore_t* s, int32_t count);
 void sem_down(semaphore_t* s);
 
 /**
+ * \brief Count down the semaphore, return 1 if success, 0 if teh semaphore
+ * is <=0. THIS MAY NOT BE CALLED FROM INTERRUPT-ROUTINES
+ * @param s The semaphore the descrement
+ */
+uint8_t sem_trydown(semaphore_t* s);
+
+/**
  * \brief Count down the semaphore, and possibly block the process if count
  * is decremented below 0. THIS MAY NOT BE CALLED FROM INTERRUPT-ROUTINES
  * @param m The mutex to lock

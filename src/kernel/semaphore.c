@@ -30,6 +30,7 @@
  * \brief Semaphore syscall definitions
  */
 _syscall1(void, sem_down, semaphore_t*, s);
+_syscall1(uint8_t, sem_trydown, semaphore_t*, s);
 _syscall1(void, sem_up, semaphore_t*, s);
 _syscall2(void, sem_init, semaphore_t*, s, int32_t, count);
 _syscall2(uint8_t, sem_timeout_down, semaphore_t*, s, uint32_t, timeoutms);
@@ -78,19 +79,26 @@ uint8_t sys_sem_timeout_down(semaphore_t* s, uint32_t timeoutms) {
 
 void sys_sem_down(semaphore_t* s) {
 	sys_sem_timeout_down(s, 0);
-	return;
+}
+
+uint8_t sys_sem_trydown(semaphore_t* s) {
+	uint8_t retval = 0;
+	
 	sched_lock();
 
-	s->count--;
 
-	// Assert on underflows
-	sys_assert(s->count != INT32_MAX);
-
-	if (s->count < 0)
-		sys_block(&s->waiting);
+	if (s->count > 0) {
+		retval = 1;
+		s->count--;
+			// Assert on underflows
+		sys_assert(s->count != INT32_MAX);
+	}
 
 	sched_unlock();
+	
+	return retval;
 }
+
 
 
 void sys_sem_up(semaphore_t* s) {

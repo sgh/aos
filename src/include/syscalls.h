@@ -63,6 +63,7 @@
 #define _NR_assert_failed          28
 #define _NR_mutex_timeout_lock     29
 #define _NR_sem_timeout_down       30
+#define _NR_sem_trydown            31
 
 /* Syscall declarations */
 struct list_head* sys_get_process_list( void ); // for getting process list to display cpu% of each process on display.
@@ -94,6 +95,7 @@ void sys_aos_hooks(struct aos_hooks* hooks);
 
 void sys_sem_init(semaphore_t* s, int32_t count);
 void sys_sem_down(semaphore_t* s);
+uint8_t sys_sem_trydown(semaphore_t* s);
 void sys_sem_up(semaphore_t* s);
 
 void sys_assert_failed(const char * const exp, const char* const file, unsigned int line);
