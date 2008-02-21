@@ -243,8 +243,8 @@ struct extended_char aos_extended_getchar(int timeout) {
 		if (timeout >= 0 && sem_timeout_down(&getchar_ready_sem, timeout) == ESUCCESS)
 			fetchkey = 1;
 			
-// 		if (timeout < 0 && mutex_trylock(&getchar_ready_sem))
-// 			fetchkey = 1;
+		if (timeout < 0 && sem_trydown(&getchar_ready_sem))
+			fetchkey = 1;
 
 		if (fetchkey) {
 			mutex_lock(&char_buffer_lock);
