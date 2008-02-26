@@ -130,7 +130,7 @@ void aos_register_keypress(uint32_t scancode) {
 }
 
 
-void aos_key_management_task(UNUSED void* arg) {
+void aos_key_management_task(void) {
 	int i;
 	struct extended_char last_scancode;
 	unsigned int timedwait = 0;
@@ -182,7 +182,7 @@ void aos_key_management_task(UNUSED void* arg) {
 }
 
 
-uint32_t aos_concurrent_keys(struct extended_char* exchar, uint32_t keys[MAX_CONCURRENT_KEYS]) {
+uint32_t aos_concurrent_keys(const struct extended_char* exchar, const uint32_t keys[MAX_CONCURRENT_KEYS]) {
 	uint32_t maxtime = 0;
 	uint32_t now = 0;
 	int i,k;
