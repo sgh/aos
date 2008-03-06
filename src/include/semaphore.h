@@ -70,4 +70,6 @@ uint8_t sem_timeout_down(semaphore_t* s, uint32_t timeoutms);
  */
 void sem_up(semaphore_t* s);
 
+void sem_upn(semaphore_t* s, uint32_t n);
+
 #endif
