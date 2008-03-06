@@ -32,6 +32,7 @@
 _syscall1(void, sem_down, semaphore_t*, s);
 _syscall1(uint8_t, sem_trydown, semaphore_t*, s);
 _syscall1(void, sem_up, semaphore_t*, s);
+_syscall2(void, sem_upn, semaphore_t*, s, uint32_t, n);
 _syscall2(void, sem_init, semaphore_t*, s, int32_t, count);
 _syscall2(uint8_t, sem_timeout_down, semaphore_t*, s, uint32_t, timeoutms);
 
@@ -115,6 +116,32 @@ void sys_sem_up(semaphore_t* s) {
 		sys_assert(!list_isempty(&s->waiting));
 		task = get_struct_task(list_get_front(&s->waiting));
 		sys_unblock(task);
+	}
+
+	sched_unlock();
+}
+
+
+void sys_sem_upn(semaphore_t* s, uint32_t n) {
+	int32_t old;
+	sched_lock();
+// 	assert(current->lock_count == 1);
+
+	old = s->count;
+
+	s->count += n;
+
+	// Assert on overflows
+	sys_assert(s->count != INT32_MIN);
+	
+	while ((old < 0) && (n > 0)) {
+		struct task_t* task;
+
+		sys_assert(!list_isempty(&s->waiting));
+		task = get_struct_task(list_get_front(&s->waiting));
+		sys_unblock(task);
+		n--;
+		old++;
 	}
 
 	sched_unlock();

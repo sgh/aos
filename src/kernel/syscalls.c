@@ -51,6 +51,7 @@ void* sys_call_table[] =
 	[_NR_aos_hooks] sys_aos_hooks,
 	[_NR_sem_init] sys_sem_init,
 	[_NR_sem_up] sys_sem_up,
+	[_NR_sem_upn] sys_sem_upn,
 	[_NR_sem_down] sys_sem_down,
  	[_NR_sem_trydown] sys_sem_trydown,
  	[_NR_sem_timeout_down] sys_sem_timeout_down,
