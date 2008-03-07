@@ -65,6 +65,7 @@
 #define _NR_sem_timeout_down       30
 #define _NR_sem_trydown            31
 #define _NR_sem_upn                32
+#define _NR_sem_downn              33
 
 /* Syscall declarations */
 struct list_head* sys_get_process_list( void ); // for getting process list to display cpu% of each process on display.
@@ -96,6 +97,7 @@ void sys_aos_hooks(struct aos_hooks* hooks);
 
 void sys_sem_init(semaphore_t* s, int32_t count);
 void sys_sem_down(semaphore_t* s);
+uint32_t  sys_sem_downn(semaphore_t* s, uint32_t n);
 uint8_t sys_sem_trydown(semaphore_t* s);
 void sys_sem_up(semaphore_t* s);
 void sys_sem_upn(semaphore_t* s, uint32_t n);

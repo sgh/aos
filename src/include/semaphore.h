@@ -46,6 +46,7 @@ void sem_init(semaphore_t* s, int32_t count);
  * @param s The semaphore the descrement
  */
 void sem_down(semaphore_t* s);
+uint32_t  sem_downn(semaphore_t* s, uint32_t n);
 
 /**
  * \brief Count down the semaphore, return 1 if success, 0 if teh semaphore
@@ -69,7 +70,6 @@ uint8_t sem_timeout_down(semaphore_t* s, uint32_t timeoutms);
  * @param s The semaphore to increment
  */
 void sem_up(semaphore_t* s);
-
 void sem_upn(semaphore_t* s, uint32_t n);
 
 #endif

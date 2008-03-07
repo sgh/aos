@@ -30,6 +30,7 @@
  * \brief Semaphore syscall definitions
  */
 _syscall1(void, sem_down, semaphore_t*, s);
+_syscall2(uint32_t, sem_downn, semaphore_t*, s, uint32_t, n);
 _syscall1(uint8_t, sem_trydown, semaphore_t*, s);
 _syscall1(void, sem_up, semaphore_t*, s);
 _syscall2(void, sem_upn, semaphore_t*, s, uint32_t, n);
@@ -80,6 +81,52 @@ uint8_t sys_sem_timeout_down(semaphore_t* s, uint32_t timeoutms) {
 
 void sys_sem_down(semaphore_t* s) {
 	sys_sem_timeout_down(s, 0);
+}
+
+uint32_t sys_sem_downn(semaphore_t* s, uint32_t n) {
+	uint32_t timeoutms = 0;
+	uint8_t blocknow = 1;
+	uint32_t count = 1;
+
+	if (n == 0)
+		return 0;
+
+	sched_lock();
+
+	current->sleep_result = ESUCCESS; // Default we return EESUCCESS
+	
+
+	if (s->count > 0) {
+		blocknow = 0;
+		
+		if (n > s->count) {
+			count = s->count;
+			s->count = 0;
+		} else {
+			count = n;
+			s->count -= n;
+		}
+	} else
+		s->count--;
+
+	
+
+	// Assert on underflows
+	sys_assert(s->count != INT32_MAX);
+
+	if (blocknow) {
+		sys_block(&s->waiting);
+		current->wait_semaphore = s;
+		// Setup timeout for lock timeout
+		if (timeoutms > 0)
+			timer_timeout(&current->timeout_timer, (void*) semaphore_timeout, current, ms2ticks(timeoutms));
+	}
+
+	sched_unlock();
+	
+	current->wait_semaphore = NULL;
+
+	return count;
 }
 
 uint8_t sys_sem_trydown(semaphore_t* s) {
