@@ -42,8 +42,8 @@
 #define _NR_unblock                7
 // #define _NR_disable_cs          8
 // #define _NR_enable_cs           9
-#define _NR_get_sysutime           10
-#define _NR_get_sysmtime           11
+//#define _NR_get_sysutime           10
+//#define _NR_get_sysmtime           11
 #define _NR_malloc                 12
 #define _NR_free                   13
 #define _NR_mmstat                 14
@@ -86,8 +86,8 @@ uint8_t sys_mutex_timeout_lock(mutex_t* m, uint32_t timeout);
 uint8_t sys_sem_timeout_down(semaphore_t* m, uint32_t timeout);
 uint8_t sys_mutex_trylock(mutex_t* m);
 void sys_mutex_unlock(mutex_t* m);
-void sys_get_sysutime(uint32_t* time);
-void sys_get_sysmtime(uint32_t* time);
+//void sys_get_sysutime(uint32_t* time);
+//void sys_get_sysmtime(uint32_t* time);
 void* sys_malloc(size_t size);
 void sys_free(void* segment);
 void sys_mmstat(struct mm_stat* stat);

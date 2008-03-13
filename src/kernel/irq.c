@@ -26,16 +26,20 @@ struct irq irq_table[32];
 
 
 int irq_attach(int irqnum, void (*isr)(void* arg), void* arg) {
+	irq_lock();
 	irq_table[irqnum].isr = isr;
 	irq_table[irqnum].arg = arg;
+	irq_unlock();
 	return 0;
 }
 
 int irq_detach(int irqnum) {
+	irq_lock();
 	interrupt_mask(irqnum);
 	irq_table[irqnum].isr = NULL;
 	irq_table[irqnum].arg = NULL;
 	irq_table[irqnum].num_irqs = 0;
+	irq_unlock();
 	return 0;
 }
 
