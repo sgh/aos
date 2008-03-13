@@ -82,9 +82,9 @@ static void generic_register_keyscan(uint32_t keyscan, uint8_t irq) {
 		scancode++;
 	}
 
-	if (irq) 
+/*	if (irq) 
 		sys_get_sysmtime(&now);
-	else
+	else*/
 		get_sysmtime(&now);
 
 	for (scancode = 1; press ; press >>= 1) {
@@ -235,7 +235,7 @@ uint32_t aos_concurrent_keys(const struct extended_char* exchar, const uint32_t 
 struct extended_char aos_extended_getchar(int timeout) {
 	struct extended_char retchar;
 	uint8_t fetchkey;
-	int i;
+	//int i;
 
 	memset(&retchar, 0, sizeof(retchar));
 	do {

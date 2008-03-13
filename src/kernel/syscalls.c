@@ -40,8 +40,8 @@ void* sys_call_table[] =
 	[_NR_unblock] sys_unblock,
 // 	[_NR_disable_cs] sys_disable_cs,
 // 	[_NR_enable_cs] sys_enable_cs,
-	[_NR_get_sysutime] sys_get_sysutime,
-	[_NR_get_sysmtime] sys_get_sysmtime,
+//	[_NR_get_sysutime] sys_get_sysutime,
+//	[_NR_get_sysmtime] sys_get_sysmtime,
 	[_NR_malloc] sys_malloc,
 	[_NR_free] sys_free,
 	[_NR_mmstat] sys_mmstat,
@@ -79,8 +79,8 @@ _syscall4(struct task_t*, create_task, funcPtr, entrypoint, const char*, name, v
 // _syscall0(void, aos_basic_init);
 
 /* Time-functions */
-_syscall1(void, get_sysutime, uint32_t*, time);
-_syscall1(void, get_sysmtime, uint32_t*, time);
+//_syscall1(void, get_sysutime, uint32_t*, time);
+//_syscall1(void, get_sysmtime, uint32_t*, time);
 
 /* Statistics-functions */
 _syscall1(void, aos_hooks, struct aos_hooks*, hooks);

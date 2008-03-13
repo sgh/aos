@@ -150,7 +150,7 @@ void sys_get_sysutime(uint32_t* time) {
 	*time = ticks2us(system_ticks);
 }
 
-void sys_get_sysmtime(uint32_t* time) {
+void /*sys_*/get_sysmtime(uint32_t* time) {
 	if (time == NULL)
 		return;
 	
