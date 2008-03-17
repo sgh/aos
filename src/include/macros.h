@@ -50,6 +50,7 @@
 // Compiler stuff
 #define PACKED __attribute__((packed))
 #define UNUSED __attribute__((unused))
+#define FLATTEN __attribute__((flatten))
 #define DEPRECATED __attribute__((deprecated))
 
 /**
