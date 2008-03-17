@@ -112,7 +112,7 @@ void interrupt_init(void) {
 		VICDefVectAddr = (uint32_t)aos_irq_entry;
 }
 
-static void interrupt_dispatch(int vector) {
+static FLATTEN void interrupt_dispatch(int vector) {
 
 	if (vector == 32)
 		return;
@@ -127,16 +127,13 @@ static void interrupt_dispatch(int vector) {
 // 	}
 }
 
-volatile int i;
-
-void interrupt_handler(void) {
+void FLATTEN interrupt_handler(void) {
 	uint32_t vector;
 	uint32_t bits;
-// 	uint32_t oldbits;
 
 	bits = VICIRQStatus;
 
-// retry:
+	/** @TODO optimize this */
 	for (vector = 0; vector<32; vector++) {
 		if (bits & (1<<vector))
 			break;
@@ -144,25 +141,9 @@ void interrupt_handler(void) {
 
 	interrupt_dispatch(vector);
 
-// 	oldbits = bits;
-// 	bits = VICIRQStatus;
-
-// 	if (bits != oldbits)
-// 		goto retry;
-
 	switch (lpc_family) {
 		case 2122: VICVectAddr_LPC21xx = 0; break;
 		case 2324: VICVectAddr_LPC23xx = 0; break;
 	}
 }
 
-
-		// Update priority hardware
-//  		T0_IR = BIT0;    // Clear interrupt
-// 		if (vector == 6) {
-// 			i = UART0_IIR;
-// 			i = UART0_LSR;
-// 			i = UART0_RBR;
-// 			VICVectAddr_LPC21xx = 0;
-// 		}
-// 		VICVectAddr_LPC21xx = 0;
