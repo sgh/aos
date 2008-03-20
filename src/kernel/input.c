@@ -24,7 +24,7 @@ static semaphore_t scancode_ready_sem;
 static semaphore_t getchar_ready_sem;
 static unsigned int repeatcount = 0;
 
-const static struct input_hooks* inputhooks;
+static const struct input_hooks* inputhooks;
 
 static void pressedlist_add(uint32_t time, uint32_t scancode) {
 	int i;
