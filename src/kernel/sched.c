@@ -44,7 +44,7 @@ void sched_clock(void) {
 	*/
 	if (!current->time_left) {
 
-		if (!list_isempty(&readyQ))
+		if (!list_isempty(&readyQ) /*&& current->prio > -127*/)
 			current->resched = 1;
 
 	} else // Very important to avoid underflow of time_left member
@@ -95,20 +95,44 @@ static void sched_switch(void) {
 	struct task_t* prev = current;
 	struct task_t* next = NULL;
 	uint32_t stat;
+	uint32_t time_longest;
+
+/** @todo optimize this func. It is run with irq_lock held */
+	
+	// Find next process
+	if (!list_isempty(&readyQ)) {
+		next = get_struct_task(list_get_front(&readyQ));
+		list_erase(&next->q);
+	}
 
 	// If process is preempted
 	if (current->state == RUNNING) {
 		current->state = READY;
-		if (!is_background())
-			list_push_back(&readyQ, &current->q);
-	}
+		if (!is_background()) {
 
-	if (list_isempty(&readyQ)) {
-		next = &idle_task; // Idle
-	} else {
-		next = get_struct_task(list_get_front(&readyQ));
-		list_erase(&next->q);
-	}
+			/**
+			 * Processed with time left to run is place en front of the queue. Other
+			 * processes are placed last.
+			 */
+			if (current->time_left)
+				list_push_front(&readyQ, &current->q);
+			else
+				list_push_back(&readyQ, &current->q);
+		}
+		current->nonvoluntary_ctxt++;
+	} else
+		current->voluntary_ctxt++;
+
+	/** @todo this will eventually end up with QUANTUM as highes time_slice */
+	time_longest = QUANTUM - current->time_left;
+	if (time_longest > current->time_longest)
+		current->time_longest = time_longest;
+
+	if (!next)
+		next = &idle_task;
+
+	if (next->time_left == 0)
+		next->time_left = QUANTUM;
 
 	if (prev == next)
 		return;
@@ -152,17 +176,27 @@ static void sched_switch(void) {
 
 
 void process_wakeup(struct task_t* task) {
+	struct list_head* it;
+	
 
-	/** @todo implement better schedueling which does not make often sleeping processes take all cpu-time */
-	if (task->state == SLEEPING)
+	// Higher priority task is placed in front of tje queue
+	if (task->prio < current->prio) {
 		list_push_front(&readyQ , &task->q);
-	else
-		list_push_back(&readyQ , &task->q);
+		current->resched = 1;
+	} else { // Place according to priority
+		struct list_head* insertion_point = NULL;
+		list_for_each(it, &readyQ) {
+			struct task_t* _t = get_struct_task(it);
+
+			if (task->prio < _t->prio) {
+				insertion_point = it;
+				break;
+			}
+		}
+		list_push_back(insertion_point ? insertion_point: &readyQ , &task->q);
+	}
 
 	task->state = READY;
-
-	if (task->prio < current->prio)
-		current->resched = 1;
 
 	// Stop the timeout timer if it is active
 	timer_stop(&task->timeout_timer);

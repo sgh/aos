@@ -58,6 +58,7 @@ void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priorit
 	context_set(&task->ctx, USER_ARG, (uint32_t)arg);
 
 	task->prio = priority;
+	task->time_left = QUANTUM;
 	task->sleep_timer.type = TMR_STOP;
 	task->timeout_timer.type = TMR_STOP;
 	task->state = READY;

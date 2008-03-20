@@ -108,6 +108,21 @@ struct task_t {
 	uint32_t time_left;
 
 	/**
+	 * \brief Number of voluntary context-switches
+	 */
+	uint32_t voluntary_ctxt;
+
+	/**
+	 * \brief Number of nonvoluntary context-switches
+	 */
+	uint32_t nonvoluntary_ctxt;
+
+	/**
+	 * \brief Longest used timeslice
+	 */
+	uint32_t time_longest;
+
+	/**
 	 * \brief Fragment-store to store stack in when doing context-switch.
 	 */
 	struct fragment_store* fragment;
