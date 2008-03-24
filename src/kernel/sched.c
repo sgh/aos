@@ -91,7 +91,7 @@ void switch_context(struct context* old, struct context* new);
 /**
  * \brief Switch to another process
  */
-static void sched_switch(void) {
+static FLATTEN void sched_switch(void) {
 	struct task_t* prev = current;
 	struct task_t* next = NULL;
 	uint32_t stat;
@@ -177,7 +177,6 @@ static void sched_switch(void) {
 
 void process_wakeup(struct task_t* task) {
 	struct list_head* it;
-	
 
 	// Higher priority task is placed in front of tje queue
 	if (task->prio < current->prio) {
