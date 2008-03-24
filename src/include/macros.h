@@ -48,10 +48,10 @@
 #define us2ticks(us) ((us * HZ) / 1000000)
 
 // Compiler stuff
-#define PACKED __attribute__((packed))
-#define UNUSED __attribute__((unused))
-#define FLATTEN __attribute__((flatten))
-#define DEPRECATED __attribute__((deprecated))
+#define PACKED     __attribute__(( packed ))
+#define UNUSED     __attribute__(( unused ))
+#define FLATTEN    __attribute__(( flatten ))
+#define DEPRECATED __attribute__(( deprecated ))
 
 /**
  * \brief Calculate the difference between two uint32_t
