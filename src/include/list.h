@@ -87,19 +87,31 @@ void list_push_back(struct list_head* list, struct list_head* node);
 
 
 /**
+ * \brief Return wether the list is empty.
+ * @param list The list in question.
+ * @return 0 if the list is not empty.
+ */
+static inline uint8_t list_isempty(struct list_head* list) {
+	return (list->next == list);
+}
+
+/**
  * \brief Get the last node in a list.
  * @param list The list to get the last node from. 
  * @return A Pointer to the last node.
  */
-struct list_head* list_get_back(struct list_head* list);
-
+static inline struct list_head* list_get_back(struct list_head* list) {
+	return  list->prev;
+}
 
 /**
  * \brief Get the first node in a list.
  * @param list The list to get the first node from.
  * @return Pointer to the first node.
  */
-struct list_head* list_get_front(struct list_head* list);
+static inline struct list_head* list_get_front(struct list_head* list) {
+	return  list->next;
+}
 
 
 /**
@@ -108,13 +120,6 @@ struct list_head* list_get_front(struct list_head* list);
  */
 void list_erase(struct list_head* node);
 
-
-/**
- * \brief Return wether the list is empty.
- * @param list The list in question.
- * @return 0 if the list is not empty.
- */
-uint8_t list_isempty(struct list_head* list);
 
 
 #endif // _QUEUE_H_
