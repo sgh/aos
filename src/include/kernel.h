@@ -29,14 +29,23 @@
 
 #include <aos.h> /** @todo make this go away */
 
-/** @todo move theese to sched.h or something like that */
-void sched_unlock(void);
-void sched_lock(void);
+
+
 void context_init(struct context* ctx, void* kstack);
 void context_set(struct context* ctx, uint8_t type, uint32_t val);
 #define USER_STACK 0
 #define USER_ENTRY 1
 #define USER_ARG   2
+
+/**
+ * \brief Lock the schedueler
+ */
+void sched_lock(void);
+
+/**
+ * \brief Unlock and do context-switch if nescessary
+ */
+void sched_unlock(void);
 
 /**
  * \brief Total number of context-switches in current uptime
