@@ -37,21 +37,7 @@ void list_push_back(struct list_head* list, struct list_head* node) {
 	list->prev = node;					// Set new back to node
 }
 
-uint8_t list_isempty(struct list_head* list) {
-	return (list->next == list);
-}
 
-struct list_head* list_get_back(struct list_head* list) {
-	//struct list_head* prev = list->prev;
-	//return prev;
-	return  list->prev;
-}
-
-struct list_head* list_get_front(struct list_head* list) {
-	//struct list_head* next = list->next;
-	//return next;
-	return  list->next;
-}
 
 void list_erase(struct list_head* node) {
 	/* First we point previous and next entries to each other */
