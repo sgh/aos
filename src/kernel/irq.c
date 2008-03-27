@@ -7,14 +7,15 @@
 #include <string.h>
 #include <syscalls.h>
 
-#define FIO_BASE_ADDR		0x3FFFC000
-#define FIO2SET        (*(volatile unsigned int *)(FIO_BASE_ADDR + 0x58))
-#define FIO2CLR        (*(volatile unsigned int *)(FIO_BASE_ADDR + 0x5C))
+//#define FIO_BASE_ADDR		0x3FFFC000
+//#define FIO2SET        (*(volatile unsigned int *)(FIO_BASE_ADDR + 0x58))
+//#define FIO2CLR        (*(volatile unsigned int *)(FIO_BASE_ADDR + 0x5C))
 
 struct irq {
 	void (*isr)(void* arg);
 	uint32_t num_irqs;
 	void* arg;
+	uint8_t flags;
 };
 
 
@@ -43,18 +44,23 @@ int irq_detach(int irqnum) {
 	return 0;
 }
 
+int irq_flag(int irqnum, unsigned int flags) {
+	sys_assert(irqnum < 32);
+
+	irq_table[irqnum].flags = flags;
+}
+
 
 uint8_t irq_handler(int vector) {
-	sys_assert(vector < 32);
+	uint8_t exclusive = irq_table[vector].flags & IRQ_EXCLUSIVE;
 
-	
 	if (!irq_table[vector].isr)
 		return 0;
 
-	interrupt_enable();
+	if (exclusive) interrupt_enable();
 	irq_table[vector].num_irqs++;
 	irq_table[vector].isr(irq_table[vector].arg);
-	interrupt_disable();
+	if (exclusive) interrupt_disable();
 	return 1;
 }
 
