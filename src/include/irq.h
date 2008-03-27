@@ -21,6 +21,8 @@
 
 #include <types.h>
 
+#define IRQ_EXCLUSIVE 1
+
 extern volatile int irq_nesting;
 
 #define IRQ_ASSERT() do { if (irq_nesting > 0) \

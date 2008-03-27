@@ -87,6 +87,7 @@ void interrupt_unmask(uint8_t irqnum) {
 	if (irqnum>31)
 		return;
 
+	irq_lock();
 	if (lpc_family == 2324) {
 		vector_addr += irqnum;
 		*vector_addr = (uint32_t)aos_irq_entry;
@@ -94,6 +95,7 @@ void interrupt_unmask(uint8_t irqnum) {
 
 	VICIntEnable = (BIT0<<irqnum); /* Enable Interrrupt */
 	
+	irq_unlock();
 }
 
 
@@ -114,13 +116,15 @@ void interrupt_init(void) {
 
 static FLATTEN void interrupt_dispatch(int vector) {
 
-	if (vector == 32)
+	if (vector > 31)
 		return;
 
-	if (!irq_handler(vector))
-		return;
+	irq_handler(vector);
 
-	// Update priority hardware
+// 	if (!irq_handler(vector))
+// 		return;
+
+// 	// Update priority hardware
 // 	switch (lpc_family) {
 // 		case 2122: VICVectAddr_LPC21xx = 0; break;
 // 		case 2324: VICVectAddr_LPC23xx = 0; break;
