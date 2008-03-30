@@ -94,7 +94,7 @@ void switch_context(struct context* old, struct context* new);
 static FLATTEN void sched_switch(void) {
 	struct task_t* prev = current;
 	struct task_t* next = NULL;
-	uint32_t stat;
+	uint32_t irqstat;
 	uint32_t time_longest;
 
 /** @todo optimize this func. It is run with irq_lock held */
@@ -106,33 +106,34 @@ static FLATTEN void sched_switch(void) {
 	}
 
 	// If process is preempted
-	if (current->state == RUNNING) {
-		current->state = READY;
+	if (prev->state == RUNNING) {
+		prev->state = READY;
+
 		if (!is_background()) {
 
 			/**
-			 * Processed with time left to run is place en front of the queue. Other
+			 * Processes with time left to run is place en front of the queue. Other
 			 * processes are placed last.
 			 */
-			if (current->time_left || current->prio < next->prio)
-				list_push_front(&readyQ, &current->q);
+			if (prev->time_left || prev->prio < next->prio)
+				list_push_front(&readyQ, &prev->q);
 			else
-				list_push_back(&readyQ, &current->q);
+				list_push_back(&readyQ, &prev->q);
 		}
-		current->nonvoluntary_ctxt++;
+		prev->nonvoluntary_ctxt++;
 	} else
-		current->voluntary_ctxt++;
+		prev->voluntary_ctxt++;
 
 	/** @todo this will eventually end up with QUANTUM as highes time_slice */
-	time_longest = QUANTUM - current->time_left;
-	if (time_longest > current->time_longest)
-		current->time_longest = time_longest;
+	time_longest = QUANTUM - prev->time_left;
+	if (time_longest > prev->time_longest)
+		prev->time_longest = time_longest;
 
 	if (!next)
 		next = &idle_task;
 
 	if (next->time_left == 0)
-		next->time_left = (current->prio < next->prio) ? 1 : QUANTUM;
+		next->time_left = (prev->prio < next->prio) ? 1 : QUANTUM;
 
 	if (prev == next)
 		return;
@@ -141,29 +142,29 @@ static FLATTEN void sched_switch(void) {
 	mm_schedlock(0);
 		
 	// Enable interrupts
-	interrupt_save(&stat);
+	interrupt_save(&irqstat);
 	interrupt_enable();
 
-	current->stack_size = (uint32_t)&__stack_usr_top__ - current->ctx.uregs->sp;
+	prev->stack_size = (uint32_t)&__stack_usr_top__ - prev->ctx.uregs->sp;
 
-	if (current->stack_size > current->max_stack_size) {
-		if (current->fragment) {
-			free_fragment(current->fragment);
-			current->fragment = NULL;
+	if (prev->stack_size > prev->max_stack_size) {
+		if (prev->fragment) {
+			free_fragment(prev->fragment);
+			prev->fragment = NULL;
 		}
-		current->max_stack_size = current->stack_size;
+		prev->max_stack_size = prev->stack_size;
 	}
 
-	if (!current->fragment)
-		current->fragment = create_fragment(current->max_stack_size);
+	if (!prev->fragment)
+		prev->fragment = create_fragment(prev->max_stack_size);
 
-	store_fragment(current->fragment, (void*)current->ctx.uregs->sp, current->stack_size);
+	store_fragment(prev->fragment, (void*)prev->ctx.uregs->sp, prev->stack_size);
 
 	if (next->fragment)
 		load_fragment(&__stack_usr_top__ - next->stack_size, next->fragment);
 
 	// Disable interrupts again
-	interrupt_restore(stat);
+	interrupt_restore(irqstat);
 
 	// Tell mm-system to use schedlock
 	mm_schedlock(1);

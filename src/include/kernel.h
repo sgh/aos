@@ -100,10 +100,13 @@ void sched_clock(void);
 void sched_sleep(uint16_t ms);
 
 /**
- * \brief Check if current process is the background-process.
- * @return 1 if the current process is the background-process
+ * \brief Check if current process is the idle-process.
+ * If so it should not be allowed to block in any way
+ * @return 0 if the current process is not the idle-process
  */
-uint8_t is_background(void);
+static inline uint8_t is_background(void) {
+	return (current == &idle_task);
+}
 
 
 #endif // _KERNEL_H_
