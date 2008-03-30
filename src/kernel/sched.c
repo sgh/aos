@@ -32,7 +32,7 @@
 #include <interrupt.h>
 #include <string.h>
 
-static void sched_switch(void);
+static FLATTEN void sched_switch(void);
 
 void sched_clock(void) {
 
