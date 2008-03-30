@@ -127,16 +127,6 @@ void sys_yield(void) {
 }
 
 
-
-/**
- * \brief Check if current process is the idle-process.
- * If so it should not be allowed to block in any way
- * @return 0 if the current process is not the idle-process
- */
-uint8_t is_background(void) {
-	return (current == &idle_task);
-}
-
 // static uint32_t time_slice_elapsed(void) {
 	/** @todo  there might be a problem with uint32diff 
 	that makes use in usleep leave some processes dead */
