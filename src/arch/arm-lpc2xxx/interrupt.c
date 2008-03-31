@@ -56,7 +56,7 @@ static uint32_t lpc_family = 0;
 #define UART0_IIR          (*((volatile unsigned char *) 0xE000C008))
 #define UART0_LSR          (*((volatile unsigned char *) 0xE000C014))
 
-
+extern uint32_t high_priority_irqs;
 		
 static void detect_lpc_family(void) {
 	typedef void (*IAP)(uint32_t [], uint32_t[]);
@@ -114,28 +114,14 @@ void interrupt_init(void) {
 		VICDefVectAddr = (uint32_t)aos_irq_entry;
 }
 
-static FLATTEN void interrupt_dispatch(int vector) {
-
-	if (vector > 31)
-		return;
-
-	irq_handler(vector);
-
-// 	if (!irq_handler(vector))
-// 		return;
-
-// 	// Update priority hardware
-// 	switch (lpc_family) {
-// 		case 2122: VICVectAddr_LPC21xx = 0; break;
-// 		case 2324: VICVectAddr_LPC23xx = 0; break;
-// 	}
-}
-
 void FLATTEN interrupt_handler(void) {
 	uint32_t vector;
 	uint32_t bits;
 
 	bits = VICIRQStatus;
+
+	if (high_priority_irqs & bits)
+		bits = bits & high_priority_irqs;
 
 	/** @TODO optimize this */
 	for (vector = 0; vector<32; vector++) {
@@ -143,7 +129,7 @@ void FLATTEN interrupt_handler(void) {
 			break;
 	}
 
-	interrupt_dispatch(vector);
+	irq_handler(vector);
 
 	switch (lpc_family) {
 		case 2122: VICVectAddr_LPC21xx = 0; break;

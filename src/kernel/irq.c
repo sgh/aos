@@ -15,13 +15,13 @@ struct irq {
 	void (*isr)(void* arg);
 	uint32_t num_irqs;
 	void* arg;
-	uint8_t flags;
 };
 
 
-static volatile uint32_t saved_irq_state;
+static volatile uint32_t saved_irq_state = 0;
 static volatile uint32_t nr_irq_lock = 0;
 uint32_t volatile irq_nest_count = 0;
+uint32_t high_priority_irqs = 0;
 
 struct irq irq_table[32];
 
@@ -44,17 +44,20 @@ int irq_detach(int irqnum) {
 	return 0;
 }
 
-int irq_flags(int irqnum, unsigned int flags) {
-	sys_assert(irqnum < 32);
 
-	irq_lock();
-	irq_table[irqnum].flags = flags;
-	irq_unlock();
+void irq_set_prio(uint8_t irqnum, uint8_t prio) {
+  if (irqnum > 31)
+    return;
+
+	if (prio)
+  	high_priority_irqs |= (1 << irqnum);
+	else
+  	high_priority_irqs &= ~(1 << irqnum);
 }
 
 
 uint8_t irq_handler(int vector) {
-	uint8_t exclusive = irq_table[vector].flags & IRQ_EXCLUSIVE;
+	uint32_t exclusive = high_priority_irqs & (1 << vector);
 
 	if (!irq_table[vector].isr)
 		return 0;
