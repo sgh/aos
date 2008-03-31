@@ -44,10 +44,12 @@ int irq_detach(int irqnum) {
 	return 0;
 }
 
-int irq_flag(int irqnum, unsigned int flags) {
+int irq_flags(int irqnum, unsigned int flags) {
 	sys_assert(irqnum < 32);
 
+	irq_lock();
 	irq_table[irqnum].flags = flags;
+	irq_unlock();
 }
 
 
@@ -57,10 +59,10 @@ uint8_t irq_handler(int vector) {
 	if (!irq_table[vector].isr)
 		return 0;
 
-	if (exclusive) interrupt_enable();
+	if (!exclusive) interrupt_enable();
 	irq_table[vector].num_irqs++;
 	irq_table[vector].isr(irq_table[vector].arg);
-	if (exclusive) interrupt_disable();
+	if (!exclusive) interrupt_disable();
 	return 1;
 }
 
