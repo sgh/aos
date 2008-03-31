@@ -34,7 +34,7 @@ int irq_attach(int irqnum, void (*isr)(void*), void* arg);
 
 int irq_detach(int irqnum);
 
-int irq_flag(int irqnum, unsigned int flags);
+int irq_flags(int irqnum, unsigned int flags);
 
 uint8_t irq_handler(int vector);
 
