@@ -94,7 +94,6 @@ void switch_context(struct context* old, struct context* new);
 static FLATTEN void sched_switch(void) {
 	struct task_t* prev = current;
 	struct task_t* next = NULL;
-	uint32_t irqstat;
 	uint32_t time_longest;
 
 /** @todo optimize this func. It is run with irq_lock held */
@@ -142,7 +141,6 @@ static FLATTEN void sched_switch(void) {
 	mm_schedlock(0);
 		
 	// Enable interrupts
-	interrupt_save(&irqstat);
 	interrupt_enable();
 
 	prev->stack_size = (uint32_t)&__stack_usr_top__ - prev->ctx.uregs->sp;
@@ -164,7 +162,7 @@ static FLATTEN void sched_switch(void) {
 		load_fragment(&__stack_usr_top__ - next->stack_size, next->fragment);
 
 	// Disable interrupts again
-	interrupt_restore(irqstat);
+	interrupt_disable();
 
 	// Tell mm-system to use schedlock
 	mm_schedlock(1);
