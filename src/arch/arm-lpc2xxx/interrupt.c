@@ -129,7 +129,8 @@ void FLATTEN interrupt_handler(void) {
 			break;
 	}
 
-	irq_handler(vector);
+	if (vector < 32)
+		irq_handler(vector);
 
 	switch (lpc_family) {
 		case 2122: VICVectAddr_LPC21xx = 0; break;
