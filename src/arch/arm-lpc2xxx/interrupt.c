@@ -118,19 +118,19 @@ void FLATTEN interrupt_handler(void) {
 	uint32_t vector;
 	uint32_t bits;
 
-	bits = VICIRQStatus;
+	while (bits = VICIRQStatus) {
+		if (high_priority_irqs & bits)
+			bits = bits & high_priority_irqs;
 
-	if (high_priority_irqs & bits)
-		bits = bits & high_priority_irqs;
+		/** @TODO optimize this */
+		for (vector = 0; vector<32; vector++) {
+			if (bits & (1<<vector))
+				break;
+		}
 
-	/** @TODO optimize this */
-	for (vector = 0; vector<32; vector++) {
-		if (bits & (1<<vector))
-			break;
+		if (vector < 32)
+			irq_handler(vector);
 	}
-
-	if (vector < 32)
-		irq_handler(vector);
 
 	switch (lpc_family) {
 		case 2122: VICVectAddr_LPC21xx = 0; break;
