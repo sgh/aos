@@ -50,7 +50,7 @@ extern struct task_t* current;
  * @return Pointer to the created thread. It is not necessary to store it -
  * it can be retrieved as current from the running process.
  */
-struct task_t* create_task(funcPtr entrypoint, const char* name, void* arg, int8_t priority);
+struct task_t* create_task(taskFuncPtr entrypoint, const char* name, void* arg, int8_t priority);
 
 /**
  * \brief Do basic initialization.

@@ -48,7 +48,7 @@ void aos_register_keypress(uint32_t scancode);
 
 void aos_put_keybuffer(uint32_t key);
 
-void aos_key_management_task(void);
+void aos_key_management_task(void*);
 
 uint32_t aos_concurrent_keys(const struct extended_char* exchar, const uint32_t keys[MAX_CONCURRENT_KEYS]);
 

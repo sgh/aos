@@ -24,6 +24,7 @@
 #include <inttypes.h>
 
 typedef void (*funcPtr)(void);
+typedef void (*taskFuncPtr)(void*);
 
 typedef enum {FALSE=0, TRUE} bool;
 

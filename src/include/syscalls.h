@@ -92,7 +92,7 @@ void* sys_malloc(size_t size);
 void sys_free(void* segment);
 void sys_mmstat(struct mm_stat* stat);
 // void sys_aos_basic_init(void);
-struct task_t* sys_create_task(funcPtr entrypoint, const char* name, void* arg, int8_t priority);
+struct task_t* sys_create_task(taskFuncPtr entrypoint, const char* name, void* arg, int8_t priority);
 void sys_aos_hooks(struct aos_hooks* hooks);
 
 void sys_sem_init(semaphore_t* s, int32_t count);
