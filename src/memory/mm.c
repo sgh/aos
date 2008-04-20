@@ -133,9 +133,10 @@ void* sys_malloc(size_t size)
 	mm_header_t* next_header;
 	
 	// Only allocate on 4 byte boundaroes
-	if (size & 0x3)
+	if (size & 0x3) {
+		size &= ~0x3;
 		size += 4;
-	size &= ~0x3;
+	}
 
 //  	mm_status();
 	if (schedlock)

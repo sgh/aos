@@ -130,7 +130,7 @@ void aos_register_keypress(uint32_t scancode) {
 }
 
 
-void aos_key_management_task(void) {
+void aos_key_management_task(UNUSED void* arg) {
 	int i;
 	struct extended_char last_scancode;
 	unsigned int timedwait = 0;

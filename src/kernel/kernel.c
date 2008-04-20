@@ -190,7 +190,7 @@ void sys_unblock(struct task_t* task) {
 }
 
 
-struct task_t* sys_create_task(funcPtr entrypoint, const char* name, void* arg, int8_t priority) {
+struct task_t* sys_create_task(taskFuncPtr entrypoint, const char* name, void* arg, int8_t priority) {
   struct task_t* t;
   t = sys_malloc(sizeof(struct task_t));
   init_task(t, entrypoint, arg, priority);
