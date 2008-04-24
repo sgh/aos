@@ -118,7 +118,7 @@ void FLATTEN interrupt_handler(void) {
 	uint32_t vector;
 	uint32_t bits;
 
-	while (bits = VICIRQStatus) {
+	while ((bits = VICIRQStatus)) {
 		if (high_priority_irqs & bits)
 			bits = bits & high_priority_irqs;
 
