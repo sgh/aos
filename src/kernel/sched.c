@@ -114,7 +114,7 @@ static FLATTEN void sched_switch(void) {
 			 * Processes with time left to run is place en front of the queue. Other
 			 * processes are placed last.
 			 */
-			if (prev->time_left || prev->prio < next->prio)
+			if (prev->time_left /*|| prev->prio < next->prio*/)
 				list_push_front(&readyQ, &prev->q);
 			else
 				list_push_back(&readyQ, &prev->q);
