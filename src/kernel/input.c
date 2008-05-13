@@ -122,7 +122,11 @@ void aos_register_keypress(uint32_t scancode) {
 		buffer_put_idx = 0;
 	
 	char_buffer[buffer_put_idx] = xchar;
+
+	if (inputhooks && inputhooks->beep) inputhooks->beep();
 	
+	if (inputhooks && inputhooks->keyfilter)
+		inputhooks->keyfilter(&char_buffer[buffer_put_idx]);
 
 	sem_up(&getchar_ready_sem);
 	
@@ -170,7 +174,6 @@ void aos_key_management_task(UNUSED void* arg) {
 		}
 		char_buffer[buffer_put_idx].repeatcount = repeatcount;
 		
-
 		if (inputhooks && inputhooks->keyfilter)
 			inputhooks->keyfilter(&char_buffer[buffer_put_idx]);
 		
