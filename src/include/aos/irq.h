@@ -19,7 +19,7 @@
 #ifndef IRQ_H
 #define IRQ_H
 
-#include <types.h>
+#include <aos/types.h>
 
 #define IRQ_EXCLUSIVE 1
 

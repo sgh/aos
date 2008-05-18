@@ -18,18 +18,18 @@
 */
 #define AOS_KERNEL_MODULE
 
-#include <kernel.h>
-#include <task.h>
-#include <clock.h>
-#include <timer.h>
-#include <kernel.h>
-#include <types.h>
-#include <list.h>
-#include <fragment.h>
-#include <macros.h>
-#include <irq.h>
-#include <assert.h>
-#include <interrupt.h>
+#include <aos/kernel.h>
+#include <aos/task.h>
+#include <aos/clock.h>
+#include <aos/timer.h>
+#include <aos/kernel.h>
+#include <aos/types.h>
+#include <aos/list.h>
+#include <aos/fragment.h>
+#include <aos/macros.h>
+#include <aos/irq.h>
+#include <aos/assert.h>
+#include <aos/interrupt.h>
 #include <string.h>
 
 static FLATTEN void sched_switch(void);

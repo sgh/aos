@@ -19,9 +19,9 @@
 #ifndef FRAGMENT_H
 #define FRAGMENT_H
 
-#include <aos_module.h>
+#include <aos/aos_module.h>
 
-#include <types.h>
+#include <aos/types.h>
 
 /**
  * \brief The minimum block-size in fragment-stores

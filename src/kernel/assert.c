@@ -1,6 +1,6 @@
-#include <assert.h>
-#include <aos_hooks.h>
-#include <syscalls.h>
+#include <aos/assert.h>
+#include <aos/aos_hooks.h>
+#include <aos/syscalls.h>
 
 _syscall3(void, assert_failed, const char * const, exp, const char* const, file, unsigned int, line);
 

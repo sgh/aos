@@ -19,8 +19,8 @@
 #ifndef _MACROS_H_
 #define _MACROS_H_
 
-#include <types.h>
-#include <config.h>
+#include <aos/types.h>
+#include <aos/config.h>
 
 // Macros for number-manipulation
 #define ciel(val,max)  ((val)>(max) ? (max) : (val))

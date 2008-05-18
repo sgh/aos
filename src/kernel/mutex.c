@@ -18,8 +18,8 @@
 */
 #define AOS_KERNEL_MODULE
 // #include <aos.h>
-#include <kernel.h>
-#include <errno.h>
+#include <aos/kernel.h>
+#include <aos/errno.h>
 
 /**
  * \brief Mutex syscall definitions

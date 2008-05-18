@@ -18,11 +18,11 @@
 */
 #define AOS_KERNEL_MODULE
 
-#include <types.h>
-#include <bits.h>
-#include <irq.h>
-#include <macros.h>
-#include <interrupt.h>
+#include <aos/types.h>
+#include <aos/bits.h>
+#include <aos/irq.h>
+#include <aos/macros.h>
+#include <aos/interrupt.h>
 
 #define VICVectAddr0   (*(volatile uint32_t *)0xFFFFF100)
 

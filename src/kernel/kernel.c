@@ -18,18 +18,18 @@
 */
 #define AOS_KERNEL_MODULE
 
-#include <macros.h>
+#include <aos/macros.h>
 #include <string.h>
-#include <kernel.h>
-#include <task.h>
-#include <list.h>
-#include <timer.h>
-#include <clock.h>
-#include <bits.h>
-#include <irq.h>
-#include <aos_hooks.h>
-#include <assert.h>
-#include <interrupt.h>
+#include <aos/kernel.h>
+#include <aos/task.h>
+#include <aos/list.h>
+#include <aos/timer.h>
+#include <aos/clock.h>
+#include <aos/bits.h>
+#include <aos/irq.h>
+#include <aos/aos_hooks.h>
+#include <aos/assert.h>
+#include <aos/interrupt.h>
 
 LIST_HEAD(readyQ);
 LIST_HEAD(usleepQ);

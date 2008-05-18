@@ -1,11 +1,11 @@
 #define AOS_KERNEL_MODULE
 
-#include <types.h>
-#include <irq.h>
-#include <interrupt.h>
-#include <assert.h>
+#include <aos/types.h>
+#include <aos/irq.h>
+#include <aos/interrupt.h>
+#include <aos/assert.h>
 #include <string.h>
-#include <syscalls.h>
+#include <aos/syscalls.h>
 
 //#define FIO_BASE_ADDR		0x3FFFC000
 //#define FIO2SET        (*(volatile unsigned int *)(FIO_BASE_ADDR + 0x58))

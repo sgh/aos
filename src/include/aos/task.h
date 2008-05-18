@@ -19,11 +19,11 @@
 #ifndef _TASK_H_
 #define _TASK_H_
 
-#include <types.h>
-#include <list.h>
-#include <timer.h>
-#include <mutex.h>
-#include <semaphore.h>
+#include <aos/types.h>
+#include <aos/list.h>
+#include <aos/timer.h>
+#include <aos/mutex.h>
+#include <aos/semaphore.h>
 #include <arch/cpu.h>
 
 /**

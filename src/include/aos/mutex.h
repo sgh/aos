@@ -19,8 +19,8 @@
 #ifndef MUTEX_H
 #define MUTEX_H
 
-#include <list.h>
-#include <errno.h>
+#include <aos/list.h>
+#include <aos/errno.h>
 
 struct taskt; // Forward declaration of struct task_t
 

@@ -21,9 +21,9 @@
 
 #define AOS_KERNEL_MODULE
 
-#include <aos_module.h>
-#include <list.h>
-#include <types.h>
+#include <aos/aos_module.h>
+#include <aos/list.h>
+#include <aos/types.h>
 
 struct timer {
 	uint8_t type;

@@ -2,11 +2,11 @@
 #include <stdint.h>
 #include <string.h>
 #define AOS_KERNEL_MODULE
-#include <kernel.h>
-#include <aos.h>
-#include <mutex.h>
-#include <input.h>
-#include <irq.h>
+#include <aos/kernel.h>
+#include <aos/aos.h>
+#include <aos/mutex.h>
+#include <aos/input.h>
+#include <aos/irq.h>
 
 #define BUFFER_SIZE 5
 #define TOTAL_CONCURRENT_KEYS 6

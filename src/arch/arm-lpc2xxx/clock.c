@@ -19,20 +19,20 @@
 #define AOS_KERNEL_MODULE
 
 #include <arm/lpc2119.h>
-#include <bits.h>
-#include <types.h>
-#include <timer.h>
-#include <kernel.h>
-#include <irq.h>
-#include <macros.h>
-#include <clock.h>
-#include <config.h>
-#include <interrupt.h>
+#include <aos/bits.h>
+#include <aos/types.h>
+#include <aos/timer.h>
+#include <aos/kernel.h>
+#include <aos/irq.h>
+#include <aos/macros.h>
+#include <aos/clock.h>
+#include <aos/config.h>
+#include <aos/interrupt.h>
 
 #define TIMER0_IRQ 4
 
 
-static void clock_isr(void* UNUSED arg) {
+static void clock_isr(UNUSED void* arg) {
 	system_ticks++;
 
 	timer_clock();

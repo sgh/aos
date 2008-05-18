@@ -19,12 +19,12 @@
 
 #define AOS_KERNEL_MODULE
 
-#include <kernel.h>
-#include <semaphore.h>
-#include <syscalls.h>
-#include <assert.h>
-#include <irq.h>
-#include <interrupt.h>
+#include <aos/kernel.h>
+#include <aos/semaphore.h>
+#include <aos/syscalls.h>
+#include <aos/assert.h>
+#include <aos/irq.h>
+#include <aos/interrupt.h>
 
 /**
  * \brief Semaphore syscall definitions

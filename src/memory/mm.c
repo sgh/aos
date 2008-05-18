@@ -18,10 +18,10 @@
 */
 #define AOS_KERNEL_MODULE
 
-#include <kernel.h>
+#include <aos/kernel.h>
 #include <string.h>
-#include <bits.h>
-#include <assert.h>
+#include <aos/bits.h>
+#include <aos/assert.h>
 
 
 /* MM defines */

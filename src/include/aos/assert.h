@@ -1,8 +1,8 @@
 #ifndef ASSERT_H
 #define ASSERT_H
 
-#include <aos_hooks.h>
-#include <macros.h>
+#include <aos/aos_hooks.h>
+#include <aos/macros.h>
 
 #ifndef NODEBUG
 

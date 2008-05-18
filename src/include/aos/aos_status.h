@@ -18,7 +18,7 @@
 		*/
 #ifndef AOS_STATUS_H
 
-#include <types.h>
+#include <aos/types.h>
 
 struct aos_status {
 

@@ -19,9 +19,9 @@
 #ifndef TIMER_INTERRUPT_H
 #define TIMER_INTERRUPT_H
 
-#include <aos_module.h>
+#include <aos/aos_module.h>
 
-#include <types.h>
+#include <aos/types.h>
 
 /**
  * \brief Initialize a 1000Hz timer_interrupt
