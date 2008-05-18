@@ -19,9 +19,9 @@
 #ifndef SEMAPHORE_H
 #define SEMAPHORE_H
 
-#include <types.h>
-#include <mutex.h>
-#include <list.h>
+#include <aos/types.h>
+#include <aos/mutex.h>
+#include <aos/list.h>
 
 #define DECLARE_SEMAPHORE(s,val) semaphore_t s = { .count = val, .waiting = LIST_HEAD_INIT(s.waiting) }
 

@@ -19,7 +19,7 @@
 #ifndef _MM_H
 #define _MM_H
 
-#include <types.h>
+#include <aos/types.h>
 
 /**
  * \brief Dynamic memory statistics

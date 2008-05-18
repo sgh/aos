@@ -1,8 +1,8 @@
 #ifndef STACK_H
 #define STACK_H
 
-#include <aos_module.h>
-#include <bits.h>
+#include <aos/aos_module.h>
+#include <aos/bits.h>
 
 #define STACK_USR BIT0
 #define STACK_IRQ BIT1

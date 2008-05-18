@@ -19,15 +19,15 @@
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
 
-#include <aos_module.h>
+#include <aos/aos_module.h>
 
-#include <syscalls.h>
-#include <types.h>
-#include <task.h>
-#include <list.h>
-#include <runtime_check.h>
+#include <aos/syscalls.h>
+#include <aos/types.h>
+#include <aos/task.h>
+#include <aos/list.h>
+#include <aos/runtime_check.h>
 
-#include <aos.h> /** @todo make this go away */
+#include <aos/aos.h> /** @todo make this go away */
 
 
 

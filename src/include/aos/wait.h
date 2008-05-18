@@ -19,8 +19,8 @@
 #ifndef WAIT_H
 #define WAIT_H
 
-#include <mutex.h>
-#include <list.h>
+#include <aos/mutex.h>
+#include <aos/list.h>
 
 /**
  * \brief Structure for waiting on an event

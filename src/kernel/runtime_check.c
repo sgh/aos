@@ -1,12 +1,12 @@
 #define AOS_KERNEL_MODULE
 
-#include <kernel.h>
+#include <aos/kernel.h>
 #include <string.h>
-#include <aos_hooks.h>
+#include <aos/aos_hooks.h>
 #include <stdio.h>
-#include <assert.h>
-#include <runtime_check.h>
-#include <task.h>
+#include <aos/assert.h>
+#include <aos/runtime_check.h>
+#include <aos/task.h>
 
 static const char const magic_string[3] = "AOS";
 

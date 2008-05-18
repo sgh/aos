@@ -19,16 +19,16 @@
 #ifndef _SYSCALLS_H_
 #define _SYSCALLS_H_
 
-#include <aos_module.h>
+#include <aos/aos_module.h>
 
 // #include <kernel.h>
-#include <semaphore.h>
-#include <task.h>
-#include <types.h>
-#include <list.h>
-#include <mm.h>
-#include <aos_hooks.h>
-#include <macros.h>
+#include <aos/semaphore.h>
+#include <aos/task.h>
+#include <aos/types.h>
+#include <aos/list.h>
+#include <aos/mm.h>
+#include <aos/aos_hooks.h>
+#include <aos/macros.h>
 
 
 /* Syscall numbers */

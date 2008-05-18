@@ -19,17 +19,17 @@
 #ifndef AOS_H
 #define AOS_H
 
-#include <semaphore.h>
-#include <mutex.h>
-#include <wait.h>
-#include <list.h>
-#include <macros.h>
-#include <task.h>
-#include <types.h>
-#include <atomic.h>
-#include <mm.h>
-#include <aos_hooks.h>
-#include <aos_status.h>
+#include <aos/semaphore.h>
+#include <aos/mutex.h>
+#include <aos/wait.h>
+#include <aos/list.h>
+#include <aos/macros.h>
+#include <aos/task.h>
+#include <aos/types.h>
+#include <aos/atomic.h>
+#include <aos/mm.h>
+#include <aos/aos_hooks.h>
+#include <aos/aos_status.h>
 
 /**
  * \brief The readyQ. This is hwere processes lie when they are ready to run.

@@ -1,8 +1,8 @@
-#include <timer.h>
-#include <types.h>
-#include <list.h>
-#include <macros.h>
-#include <irq.h>
+#include <aos/timer.h>
+#include <aos/types.h>
+#include <aos/list.h>
+#include <aos/macros.h>
+#include <aos/irq.h>
 
 /**
  * Timer types

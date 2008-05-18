@@ -18,8 +18,8 @@
 */
 #define AOS_KERNEL_MODULE
 
-#include <syscalls.h>
-#include <aos.h>
+#include <aos/syscalls.h>
+#include <aos/aos.h>
 
 /**
 	\brief Table containing syscall pointers

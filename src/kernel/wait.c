@@ -16,8 +16,8 @@
 	License along with this library; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-#include <wait.h>
-#include <aos.h>
+#include <aos/wait.h>
+#include <aos/aos.h>
 
 
 void cond_init(struct condition* cond) {

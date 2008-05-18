@@ -18,15 +18,15 @@
 */
 #define AOS_KERNEL_MODULE
 
-#include <syscalls.h>
+#include <aos/syscalls.h>
 #include <string.h>
-#include <mm.h>
+#include <aos/mm.h>
 
-#include <kernel.h>
-#include <task.h>
-#include <types.h>
-#include <fragment.h>
-#include <config.h>
+#include <aos/kernel.h>
+#include <aos/task.h>
+#include <aos/types.h>
+#include <aos/fragment.h>
+#include <aos/config.h>
 
 /** @todo This function is architechture specific and should be moved away */
 /**

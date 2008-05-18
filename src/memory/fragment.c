@@ -18,11 +18,11 @@
 */
 #define AOS_KERNEL_MODULE
 
-#include <fragment.h>
+#include <aos/fragment.h>
 #include <string.h>
-#include <mm.h>
-#include <syscalls.h>
-#include <assert.h>
+#include <aos/mm.h>
+#include <aos/syscalls.h>
+#include <aos/assert.h>
 
 struct fragment_store* create_fragment(unsigned int size) {
 	struct fragment_store* fragment;

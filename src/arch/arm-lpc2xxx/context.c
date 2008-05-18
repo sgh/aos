@@ -20,7 +20,7 @@
 #define AOS_KERNEL_MODULE
 
 #include <arch/cpu.h>
-#include <kernel.h>
+#include <aos/kernel.h>
 
 void syscall_ret(void);
 
