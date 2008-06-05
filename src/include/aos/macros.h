@@ -41,11 +41,11 @@
 #define container_of(VAL,TYPE,MEMBER)  ((TYPE*)((size_t)VAL - offsetof(TYPE,MEMBER)))
 
 // Time-macros
-#define ticks2s(ticks) (ticks / HZ)
-#define ticks2ms(ticks) ((ticks * 1000) / HZ)
-#define ticks2us(ticks) ((ticks * 1000000) / HZ)
-#define ms2ticks(ms) ((ms * HZ) / 1000)
-#define us2ticks(us) ((us * HZ) / 1000000)
+#define ticks2s(ticks) ((ticks) / HZ)
+#define ticks2ms(ticks) (((ticks) * 1000) / HZ)
+#define ticks2us(ticks) (((ticks) * 1000000) / HZ)
+#define ms2ticks(ms) (((ms) * HZ) / 1000)
+#define us2ticks(us) (((us) * HZ) / 1000000)
 
 // Compiler stuff
 #define PACKED     __attribute__(( packed ))
