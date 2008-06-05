@@ -43,7 +43,7 @@ static void clock_isr(UNUSED void* arg) {
 	T0_IR = BIT0;    // Clear interrupt
 }
 
-mutex_t clocklock;
+//mutex_t clocklock;
 
 void init_clock(uint32_t timer_refclk) {
 	T0_PR = timer_refclk/1000000 - 1;		/* Scale to 1 us steps */
