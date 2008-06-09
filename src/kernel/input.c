@@ -108,6 +108,9 @@ void aos_register_keyscan_irq(uint32_t keyscan) {
 	generic_register_keyscan(keyscan, 1);
 }
 
+void aos_register_keyscan(uint32_t keyscan) {
+	generic_register_keyscan(keyscan, 0);
+}
 
 void aos_register_keypress(uint32_t scancode) {
 	struct extended_char xchar;
