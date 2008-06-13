@@ -114,7 +114,7 @@ void interrupt_init(void) {
 		VICDefVectAddr = (uint32_t)aos_irq_entry;
 }
 
-void FLATTEN interrupt_handler(void) {
+void HOT FLATTEN interrupt_handler(void) {
 	uint32_t vector;
 	uint32_t bits;
 
