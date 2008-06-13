@@ -52,6 +52,7 @@
 #define UNUSED     __attribute__(( unused ))
 #define FLATTEN    __attribute__(( flatten ))
 #define DEPRECATED __attribute__(( deprecated ))
+#define HOT        __attribute__(( hot ))
 
 /**
  * \brief Calculate the difference between two uint32_t

@@ -51,11 +51,11 @@ void sched_clock(void) {
 		current->time_left--;
 }
 
-void sched_lock(void) {
+void HOT sched_lock(void) {
 	current->lock_count++;
 }
 
-void sched_unlock(void) {
+void HOT sched_unlock(void) {
 	uint32_t stat;
 
 	/*
@@ -91,7 +91,7 @@ void switch_context(struct context* old, struct context* new);
 /**
  * \brief Switch to another process
  */
-static FLATTEN void sched_switch(void) {
+static FLATTEN HOT void sched_switch(void) {
 	struct task_t* prev = current;
 	struct task_t* next = NULL;
 	uint32_t time_longest;
