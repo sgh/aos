@@ -56,7 +56,7 @@ void irq_set_prio(uint8_t irqnum, uint8_t prio) {
 }
 
 
-uint8_t irq_handler(int vector) {
+uint8_t HOT irq_handler(int vector) {
 	uint32_t exclusive = high_priority_irqs & (1 << vector);
 
 	if (!irq_table[vector].isr)
