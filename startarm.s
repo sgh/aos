@@ -134,7 +134,7 @@
 .arm
 .align 0
 
-.org 0x2000
+@.org 0x2000
 
 _vectors:
               B     _reset_handler
@@ -148,7 +148,8 @@ _vectors:
               LDR   PC,FIQ_Addr
 
 Undef_Addr:   .word   Undef_Handler
-SWI_Addr:     .word   aos_swi_entry
+SWI_Addr:     .word   0
+@aos_swi_entry
 PAbt_Addr:    .word   PAbt_Handler
 DAbt_Addr:    .word   DAbt_Handler
 FIQ_Addr:     .word   FIQ_Handler
@@ -268,9 +269,27 @@ LoopZI:       CMP    R1, R2
               BL     Init_CPU
               BL     Init_Modules
 
+
+
 /*
- * Enable interrupts
- */
+   Call C++ constructors (for objects in "global scope")
+   ctor loop added by Martin Thomas 4/2005
+   based on a Anglia Design example-application for ST ARM
+*/
+
+    LDR   r0, =__ctors_start__
+    LDR   r1, =__ctors_end__
+ctor_loop:
+    CMP   r0, r1
+    BEQ   ctor_end
+    LDR   r2, [r0], #4
+    STMFD   sp!, {r0-r1}
+    MOV   lr, pc
+    MOV   pc, r2
+    LDMFD   sp!, {r0-r1}
+    B     ctor_loop
+ctor_end:
+
              MSR    CPSR_c, #Mode_SYS
 
 /*
