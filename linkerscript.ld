@@ -19,15 +19,26 @@ SECTIONS
     *(.startup)
   } > flash =0
 	
-	PROVIDE(__aos_sot__ = .);
-  .text :
-  {
-    *(.text)                   /* remaining code */
-    *(.glue_7t) *(.glue_7)
-  } > flash
+
+		/* .ctors .dtors are used for c++ constructors/destructors */
+		/* added by Martin Thomas 4/2005 based on Anglia Design example */
+		.ctors :
+		{
+						PROVIDE(__ctors_start__ = .);
+						KEEP(*(SORT(.ctors.*)))
+						KEEP(*(.ctors))
+						PROVIDE(__ctors_end__ = .);
+		} >flash
+
+		.dtors :
+		{
+						PROVIDE(__dtors_start__ = .);
+						KEEP(*(SORT(.dtors.*)))
+						KEEP(*(.dtors))
+						PROVIDE(__dtors_end__ = .);
+		} >flash
 
   . = ALIGN(4);
-	PROVIDE(__aos_eot__ = .);
 
   .rodata :
   {
@@ -36,17 +47,11 @@ SECTIONS
 
   . = ALIGN(4);
 
-	__initcalls_start__ = . ;
-  .initcalls :
-  {
-    *(.bus_initcalls)
-    *(.class_initcalls)
-    *(.driver_initcalls)
-    *(.aos_initcalls)
-	} > flash
-	__initcalls_end__ = . ;
-
-  . = ALIGN(4);
+    .ARM.exidx : {
+        __exidx_start = .;
+        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+        __exidx_end = .;
+    } >flash
 
 	_etext = . ;
 	__end_of_text__  = .;
@@ -58,7 +63,10 @@ SECTIONS
   	__data_beg__     = .;
     _data = . ;
     *(.data)
-    SORT(CONSTRUCTORS)
+		 KEEP(*(.jcr))
+		*(.got.plt) *(.got)
+		*(.shdata)
+		*(.data .data.* .gnu.linkonce.d.*)
   } > ram
   . = ALIGN(4);
   __data_end__     = .;
@@ -71,8 +79,9 @@ SECTIONS
 		__bss_beg__ = .;
     __bss_start = . ;
     __bss_start__ = . ;
-    *(.bss)
-    *(COMMON)
+		*(.shbss)
+		*(.bss .bss.* .gnu.linkonce.b.*)
+		*(COMMON)
   } > ram
   . = ALIGN(4);
   __bss_end__ = . ;
