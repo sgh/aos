@@ -31,6 +31,8 @@
  */
 #define AOS_TASK __attribute__((noreturn))
 
+enum task_state_enum  {RUNNING, READY, SLEEPING, BLOCKED, CRASHED};
+
 /**
  * \brief A process
  */
@@ -59,7 +61,7 @@ struct task_t {
 	/**
 	 * \brief Task state
 	 */
-	enum task_state {RUNNING, READY, SLEEPING, BLOCKED, CRASHED} state;
+	enum task_state_enum state;
 	
 	/**
 	 * \brief  ticks to sleep.

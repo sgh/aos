@@ -26,7 +26,9 @@
 typedef void (*funcPtr)(void);
 typedef void (*taskFuncPtr)(void*);
 
+#ifndef __cplusplus
 typedef enum {FALSE=0, TRUE} bool;
+#endif
 
 typedef uint32_t REGISTER_TYPE;
 

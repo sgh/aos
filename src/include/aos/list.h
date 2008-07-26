@@ -21,6 +21,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /**
  * \brief Initial value of a linked list.
  */
@@ -121,5 +125,8 @@ static inline struct list_head* list_get_front(struct list_head* list) {
 void list_erase(struct list_head* node);
 
 
+#ifdef __cplusplus
+	}
+#endif
 
 #endif // _QUEUE_H_

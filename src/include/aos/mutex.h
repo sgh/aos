@@ -22,11 +22,19 @@
 #include <aos/list.h>
 #include <aos/errno.h>
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 struct taskt; // Forward declaration of struct task_t
 
-#define DECLARE_MUTEX_LOCKED(m) mutex_t m = { .lock = 1, .waiting = LIST_HEAD_INIT(m.waiting) }
-#define DECLARE_MUTEX_UNLOCKED(m) mutex_t m = { .lock = 0, .waiting = LIST_HEAD_INIT(m.waiting) }
-
+#ifdef __cplusplus
+	#define DECLARE_MUTEX_LOCKED(m) mutex_t m = { lock : 1, waiting : LIST_HEAD_INIT(m.waiting), owner : (task_t* )0 }
+	#define DECLARE_MUTEX_UNLOCKED(m) mutex_t m = { lock : 0, waiting : LIST_HEAD_INIT(m.waiting), owner : (task_t*)0 }
+#else
+	#define DECLARE_MUTEX_LOCKED(m) mutex_t m = { .lock = 1, .waiting = LIST_HEAD_INIT(m.waiting) }
+	#define DECLARE_MUTEX_UNLOCKED(m) mutex_t m = { .lock = 0, .waiting = LIST_HEAD_INIT(m.waiting) }
+#endif
 /**
  * \brief A mutex
  */
@@ -69,5 +77,9 @@ uint8_t mutex_trylock(mutex_t* m);
  * @param m The mutex to initialize
  */
 void mutex_init(mutex_t* m);
+
+#ifdef __cplusplus
+	}
+#endif
 
 #endif
