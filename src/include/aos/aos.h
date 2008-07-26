@@ -31,6 +31,10 @@
 #include <aos/aos_hooks.h>
 #include <aos/aos_status.h>
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /**
  * \brief The readyQ. This is hwere processes lie when they are ready to run.
  */
@@ -134,5 +138,9 @@ uint32_t user_syscall(uint32_t syscallnr, void* data);
  * @return Pointer to process list.
  */
 struct list_head* get_process_list( void );
+
+#ifdef __cplusplus
+	}
+#endif
 
 #endif

@@ -21,6 +21,10 @@
 
 #include <aos/types.h>
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /**
  * \brief Dynamic memory statistics
  */
@@ -75,5 +79,9 @@ void mmstat(struct mm_stat* stat);
  * @param allowlock 1 if schedueler may not be locked
  */
 void mm_schedlock(uint8_t allowlock);
+
+#ifdef __cplusplus
+	}
+#endif
 
 #endif

@@ -35,7 +35,7 @@
 #define CLASS_MODULE_INIT(function) void* __attribute__((section(".class_initcalls"))) class_initcall_##function = function;
 #define BUS_MODULE_INIT(function) void* __attribute__((section(".bus_initcalls"))) bus_initcall_##function = function;
 #define DRIVER_MODULE_INIT(function) void* __attribute__((section(".driver_initcalls"))) driver_initcall_##function = function;
-#define AOS_MODULE_INIT(function) void* __attribute__((section(".aos_initcalls"))) aos_initcall_##function = function;
+#define AOS_MODULE_INIT(function) void* __attribute__((section(".aos_initcalls"))) aos_initcall_##function = (void*)function;
 
 // Structure-calculations
 #define container_of(VAL,TYPE,MEMBER)  ((TYPE*)((size_t)VAL - offsetof(TYPE,MEMBER)))

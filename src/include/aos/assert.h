@@ -18,9 +18,14 @@
 
 #define static_assert(test, msg) typedef char _static_assert_ ## msg [ (test) ? 1 : -1]
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 void assert_failed(const char * const exp, const char* const file, unsigned int line);
 
-
+#ifdef __cplusplus
+	}
+#endif
 
 #endif
