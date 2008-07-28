@@ -179,26 +179,26 @@ void Drawable::hide(void) {
 	}
 }
 
-void Drawable::invalidate_elapsed(int ms) {
+bool Drawable::invalidate_elapsed(int ms) {
 	unsigned int now;
 	if (_dirty)
-		return;
+		return true;
 	get_sysmtime(&now);
-	if (now - _last_update > ms)
-		invalidate();
+	if (now - _last_update >= ms)
+		return invalidate();
 }
 
-void Drawable::invalidate(void) {
+bool Drawable::invalidate(void) {
 	Drawable* d;
 
 	// Non-visible drawable must not be dirty, since it will result in a redraw
 	if (!isVisible()) {
-		return;
+		return false;
 	}
 
 	// If already dirty just return
 	if (_dirty)
-		return;
+		return true;
 
 	_dirty = true;
 
@@ -237,6 +237,7 @@ void Drawable::invalidate(void) {
 		d = d->_next;
 	}
 
+	return true;
 }
 
 void Drawable::invalidateOverlapped(void) {

@@ -99,9 +99,9 @@ public:
 	/**
 	 * \brief Invalidate the drawable and scheduele it to be redrawn
 	 */
-	void invalidate(void);
+	bool invalidate(void);
 
-	void invalidate_elapsed(int ms);
+	bool invalidate_elapsed(int ms);
 
 	void show();
 
