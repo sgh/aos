@@ -12,7 +12,7 @@ DRIVER_SOURCES =
 
 ARCH_SOURCES = interrupt.c context.c atomic.s clock.c core.s
 
-MM_SOURCES = mm.c fragment.c 
+MM_SOURCES = mm.c fragment.c newdelete.c
 
 ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
 
@@ -22,7 +22,10 @@ ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
 
 ASMLIST = -Wa,-alhmsd
 
-CFLAGS = -mcpu=arm7tdmi -O2 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes -mthumb-interwork
+FLAGS = -mcpu=arm7tdmi -O2 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -mthumb-interwork
+
+CFLAGS = $(FLAGS) -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes
+CPPFLAGS = $(FLAGS)
 #-fomit-frame-pointer
 #-mapcs
 #-ffreestanding
@@ -47,7 +50,7 @@ LIBDIRS = -L .
 # Tools
 ##
 ARM_PREFIX=arm-elf-
-GCC = $(ARM_PREFIX)gcc
+CC = $(ARM_PREFIX)gcc
 AS = $(ARM_PREFIX)as
 AR = $(ARM_PREFIX)ar
 LD = $(ARM_PREFIX)ld
@@ -61,6 +64,7 @@ INCLUDE_DIRS = include
 INCLUDE = $(addprefix -I,$(INCLUDE_DIRS))
 
 ARM_OBJS := $(patsubst %.c,%.o,$(ARM_SOURCES))
+OBJS := $(patsubst %.cpp,%.o,$(SOURCES))
 OBJS := $(patsubst %.c,%.o,$(SOURCES))
 OBJS := $(patsubst %.s,%.o,$(OBJS))
 DEPS := $(patsubst %.o,%.d,$(OBJS))
@@ -76,15 +80,19 @@ symlink_setup:
 	ln -sfn ../arch/$(MARCH) include/arch
 
 lint:
-	$(MAKE) GCC=splint CFLAGS=$(INCLUDE)
+	$(MAKE) CC=splint CFLAGS=$(INCLUDE)
+
+%.o: %.cpp
+	@echo "Compiling (C++) $< ..."
+	@$(CC) -MD $(THUMB) $(CPPFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
 
 %.o: %.c
-	@echo "Compiling $< ..."
-	@$(GCC) -MD $(THUMB) $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
+	@echo "Compiling (C) $< ..."
+	@$(CC) -MD $(THUMB) $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
 
 kernel/timer_interrupt.o:  kernel/timer_interrupt.c
 	@echo "Compiling (ARM) $<  ..."
-	@$(GCC) -MD $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
+	@$(CC) -MD $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
 
 %.o: %.s
 	@echo "Assembling (ARM) $< ..."
