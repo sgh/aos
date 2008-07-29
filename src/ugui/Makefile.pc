@@ -6,7 +6,7 @@ APP = ../../libugui.a
 SOURCES = Drawable.cpp ugui.cpp ugui_fontrenderer.cpp
 OBJS = $(patsubst %.cpp, %.o, $(SOURCES))
 
-CPPFLAGS =  -D__STDC_LIMIT_MACROS -fno-rtti -fno-exceptions -I include -Os -I .. -DNDEBUG
+CPPFLAGS =  -D__STDC_LIMIT_MACROS -fno-rtti -fno-exceptions -I ../include -Os -I .. -DNDEBUG
 #-fno-default-inline
 
 all: $(OBJS)
