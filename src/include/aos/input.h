@@ -44,6 +44,8 @@ void aos_input_setdelay(uint32_t msdelay);
 
 void aos_register_keyscan_irq(uint32_t scancode);
 
+void aos_register_keyscan(uint32_t keyscan);
+
 void aos_register_keypress(uint32_t scancode);
 
 void aos_put_keybuffer(uint32_t key);
