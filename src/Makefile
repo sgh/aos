@@ -68,14 +68,14 @@ OBJS := $(patsubst %.c,%.o,$(SOURCES))
 OBJS := $(patsubst %.s,%.o,$(OBJS))
 DEPS := $(patsubst %.o,%.d,$(OBJS))
 
-$(APP): symlink_setup $(OBJS)
+$(APP): include/arch $(OBJS)
 	@echo "Creating $(APP) ..."
 	@$(AR) rcs $(APP) $(OBJS)
 
 size:
 	@$(SIZE) -t $(OBJS)
 
-symlink_setup: include/arch
+include/arch:
 	ln -sfn ../arch/$(MARCH) include/arch
 
 lint:
