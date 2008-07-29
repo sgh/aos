@@ -1,7 +1,6 @@
-.SILENT: symlink_setup
-.PHONY: all symlink_setup clean application
+.PHONY: all symlink_setup clean
 
-APP = libaos
+APP = ../libaos.a
 
 MARCH = arm-lpc2xxx
 
@@ -69,14 +68,14 @@ OBJS := $(patsubst %.c,%.o,$(SOURCES))
 OBJS := $(patsubst %.s,%.o,$(OBJS))
 DEPS := $(patsubst %.o,%.d,$(OBJS))
 
-all: symlink_setup application
-	@echo "Creating $(APP).a ..."
-	@$(AR) rcs ../$(APP).a $(OBJS)
+$(APP): symlink_setup $(OBJS)
+	@echo "Creating $(APP) ..."
+	@$(AR) rcs $(APP) $(OBJS)
 
 size:
 	@$(SIZE) -t $(OBJS)
 
-symlink_setup:
+symlink_setup: include/arch
 	ln -sfn ../arch/$(MARCH) include/arch
 
 lint:
@@ -98,9 +97,8 @@ kernel/timer_interrupt.o:  kernel/timer_interrupt.c
 	@echo "Assembling (ARM) $< ..."
 	@$(AS) $(ASFLAGS) $(INCLUDE) -o $@ $<
 
-application: $(OBJS)
 
 clean:
-	rm -f include/arch $(OBJS) $(DEPS) ../$(APP).a
+	rm -f include/arch $(OBJS) $(DEPS) $(APP)
 
 -include $(DEPS)
