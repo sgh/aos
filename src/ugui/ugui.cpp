@@ -141,3 +141,4 @@ int UGui::drawTraverseAll(void) {
 // 	printf("\n");
 }
 
+#warning add functionallity to invalidate everything.
