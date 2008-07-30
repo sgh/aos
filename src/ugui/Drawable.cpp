@@ -224,7 +224,7 @@ bool Drawable::invalidate(void) {
 
 // Invalidate possibly overlapping toplevel widgets. See invalidateOverlapped
 // for further description.
-/*	d = this;
+	d = this;
 	while (d->_parent)
 		d = d->_parent;
 
@@ -235,7 +235,7 @@ bool Drawable::invalidate(void) {
 		if ( (box.width > 0 && box.height > 0))
 			d->invalidate();
 		d = d->_next;
-	}*/
+	}
 
 	return true;
 }
