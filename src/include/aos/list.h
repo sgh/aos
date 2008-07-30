@@ -30,6 +30,8 @@
  */
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 
+#define LIST_HEAD_INITIALIZER { 0, 0}
+
 
 /**
  * \brief Macro used for definition of lists.
