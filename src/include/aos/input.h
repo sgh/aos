@@ -3,6 +3,10 @@
 
 #define MAX_CONCURRENT_KEYS 3
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /** @todo refine this */
 struct extended_char {
 	uint32_t keys[MAX_CONCURRENT_KEYS];   // The keys
@@ -55,5 +59,9 @@ void aos_key_management_task(void*);
 uint32_t aos_concurrent_keys(const struct extended_char* exchar, const uint32_t keys[MAX_CONCURRENT_KEYS]);
 
 void aos_input_init(const struct input_hooks* hooks);
+
+#ifdef __cplusplus
+	}
+#endif
 
 #endif
