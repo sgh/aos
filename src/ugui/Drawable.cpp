@@ -4,9 +4,7 @@
 
 #include "ugui/ugui.h"
 #include "ugui/Drawable.h"
-
-#warning move to aos
-extern "C" void get_sysmtime(unsigned int* t);
+#include "aos/aos.h"
 
 DrawableDecoration::DrawableDecoration(void) {
 }
@@ -180,7 +178,7 @@ void Drawable::hide(void) {
 }
 
 bool Drawable::invalidate_elapsed(int ms) {
-	unsigned int now;
+	uint32_t now;
 	if (_dirty)
 		return true;
 	get_sysmtime(&now);
