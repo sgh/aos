@@ -2,6 +2,7 @@
 #define DRAWABLE_H
 
 #include "gtkfb.h"
+#include <stdint.h>
 
 struct Point {
 	int x;
@@ -54,7 +55,7 @@ protected:
 
 	void update(void);
 	virtual void erase(void);
-	unsigned int _last_update;
+	uint32_t _last_update;
 
 	// Decoration aware functions
 	int absx_deco(void);
