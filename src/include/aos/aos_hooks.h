@@ -19,7 +19,8 @@
 #ifndef AOS_HOOKS_H
 #define AOS_HOOKS_H
 
-#include <aos/task.h>
+//#include <aos/task.h>
+#include <stdint.h>
 
 /**
  * \brief This struct contains hook-functions to call at different conditions.

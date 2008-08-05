@@ -18,6 +18,7 @@
 */
 #include <aos/wait.h>
 #include <aos/aos.h>
+#include <aos/task.h>
 
 
 void cond_init(struct condition* cond) {

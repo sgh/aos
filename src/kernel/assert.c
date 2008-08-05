@@ -1,3 +1,5 @@
+#define AOS_KERNEL_MODULE
+
 #include <aos/assert.h>
 #include <aos/aos_hooks.h>
 #include <aos/syscalls.h>
