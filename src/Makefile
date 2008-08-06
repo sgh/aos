@@ -75,6 +75,8 @@ $(APP): include/arch $(OBJS)
 size:
 	@$(SIZE) -t $(OBJS)
 
+symlink_setup: include/arch
+
 include/arch:
 	ln -sfn ../arch/$(MARCH) include/arch
 
