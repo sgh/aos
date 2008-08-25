@@ -36,36 +36,29 @@
 #define _NR_test                   1
 #define _NR_msleep                 2
 #define _NR_usleep                 3
-// #define _NR_disable_irqs        4
-// #define _NR_enable_irqs         5
-#define _NR_block                  6
-#define _NR_unblock                7
-// #define _NR_disable_cs          8
-// #define _NR_enable_cs           9
-//#define _NR_get_sysutime           10
-//#define _NR_get_sysmtime           11
-#define _NR_malloc                 12
-#define _NR_free                   13
-#define _NR_mmstat                 14
-#define _NR_create_task            15
-// #define _NR_aos_basic_init 16
-#define _NR_aos_mm_init            17
-#define _NR_aos_hooks              18
-#define _NR_mutex_lock             19
-#define _NR_mutex_unlock           20
-#define _NR_mutex_trylock          21
-#define _NR_mutex_init             22
-#define _NR_sem_init               23
-#define _NR_sem_up                 24
-#define _NR_sem_down               25
-#define _NR_user_syscall           26
-#define _NR_get_process_list       27
-#define _NR_assert_failed          28
-#define _NR_mutex_timeout_lock     29
-#define _NR_sem_timeout_down       30
-#define _NR_sem_trydown            31
-#define _NR_sem_upn                32
-#define _NR_sem_downn              33
+#define _NR_block                  4 
+#define _NR_unblock                5
+#define _NR_malloc                 6
+#define _NR_free                   7
+#define _NR_mmstat                 8
+#define _NR_create_task            9
+#define _NR_aos_mm_init            10
+#define _NR_aos_hooks              11
+#define _NR_mutex_lock             12
+#define _NR_mutex_unlock           13
+#define _NR_mutex_trylock          14
+#define _NR_mutex_init             15
+#define _NR_sem_init               16
+#define _NR_sem_up                 17
+#define _NR_sem_down               18
+#define _NR_user_syscall           19
+#define _NR_get_process_list       20
+#define _NR_assert_failed          21
+#define _NR_mutex_timeout_lock     22
+#define _NR_sem_timeout_down       23
+#define _NR_sem_trydown            24
+#define _NR_sem_upn                25
+#define _NR_sem_downn              26
 
 /* Syscall declarations */
 struct list_head* sys_get_process_list( void ); // for getting process list to display cpu% of each process on display.
@@ -76,22 +69,15 @@ void sys_yield(void);
 void sys_aos_mm_init(void* start, void* end);
 void sys_msleep(uint16_t ms);
 void sys_usleep(uint32_t us);
-// void sys_disable_cs(void);
-// void sys_enable_cs(void);
-// void sys_disable_irqs();
-// void sys_enable_irqs();
 void sys_mutex_init(mutex_t* m);
 void sys_mutex_lock(mutex_t* m);
 uint8_t sys_mutex_timeout_lock(mutex_t* m, uint32_t timeout);
 uint8_t sys_sem_timeout_down(semaphore_t* m, uint32_t timeout);
 uint8_t sys_mutex_trylock(mutex_t* m);
 void sys_mutex_unlock(mutex_t* m);
-//void sys_get_sysutime(uint32_t* time);
-//void sys_get_sysmtime(uint32_t* time);
 void* sys_malloc(size_t size);
 void sys_free(void* segment);
 void sys_mmstat(struct mm_stat* stat);
-// void sys_aos_basic_init(void);
 struct task_t* sys_create_task(taskFuncPtr entrypoint, const char* name, void* arg, int8_t priority);
 void sys_aos_hooks(struct aos_hooks* hooks);
 
