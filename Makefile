@@ -1,7 +1,7 @@
 .PHONY:  aos
 APP = testapp
 
-#SOURCES = testgpio.c handlers.c init_cpu.c startarm.s
+#SOURCES = testgpio.c handlers.c init_cpu.c startarm.s gittest
 #SOURCES = startarm.s testapp.c init_cpu_lpc21xx.c handlers.c
 SOURCES = startarm.s testapp.cpp init_cpu.c handlers.c
 
