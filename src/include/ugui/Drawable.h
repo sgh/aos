@@ -31,9 +31,9 @@ class DrawableDecoration {
 		int _left;
 		int _right;
 		
-		DrawableDecoration(void);
+		DrawableDecoration(void) {}
 
-		virtual void draw(class Drawable* d);
+		virtual void draw(class Drawable* d) {};
 };
 
 extern class SimpleLineDecoration testdecoration;
@@ -79,9 +79,9 @@ public:
 
 	bool redraw(void);
 
-	virtual void predraw(void);
+	virtual void predraw(void) {};
 
-	virtual void draw(void);
+	virtual void draw(void) {};
 
 	bool isVisible(void) {
 		return _visible;
@@ -107,6 +107,10 @@ public:
 	void show();
 
 	void hide();
+
+	void setFocus() {}
+
+	virtual void key_event(struct extended_char* xchar) {}
 
 	int width(void) { return _width; }
 	int height(void) { return _height; }

@@ -6,23 +6,12 @@
 #include "ugui/Drawable.h"
 #include "aos/aos.h"
 
-DrawableDecoration::DrawableDecoration(void) {
-}
-
-void DrawableDecoration::draw(class Drawable* d) {}
-
 
 Drawable::Drawable(int x, int y, int width, int height)
 	: _parent(NULL), _children(NULL), _next(NULL), _prev(NULL), _last_update(0), _width(width), _height(height), _visible(true), _transparent(false), _modal(false), _dirty(0)  {
 	memset(&_ctx, 0, sizeof(_ctx));
 	setXY(x, y);
 	_decoration = NULL;//(class DrawableDecoration*)&testdecoration;
-}
-
-void Drawable::predraw(void) {
-}
-
-void Drawable::draw(void) {
 }
 
 bool Drawable::redraw(void) {
@@ -293,7 +282,6 @@ int Drawable::height_deco(void) {
 	}
 	return height;
 }
-
 
 struct Box Drawable::intersection(Drawable& d) {
 	struct Box b;
