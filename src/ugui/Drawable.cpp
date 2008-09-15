@@ -175,6 +175,7 @@ bool Drawable::invalidate_elapsed(int ms) {
 		return invalidate();
 }
 
+#warning Implement a O(1) function instead of this and its  friends. And place the real work in the GUI-thread
 bool Drawable::invalidate(void) {
 	Drawable* d;
 
