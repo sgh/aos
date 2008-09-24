@@ -13,6 +13,9 @@
 #define SCALE 2
 
 
+void get_sysmtime(unsigned int* u) {
+}
+
 static gboolean delete_event( UNUSED GtkWidget *widget, UNUSED GdkEvent  *event, UNUSED gpointer   data ) {
 	/* If you return FALSE in the "delete_event" signal handler,
 	* GTK will emit the "destroy" signal. Returning TRUE means
@@ -138,6 +141,12 @@ static int bound_x1;
 static int bound_x2;
 static int bound_y1;
 static int bound_y2;
+
+void ugui_lock(void) {
+}
+
+void ugui_unlock(void) {
+}
 
 void ugui_line(int x1, int y1, int x2, int y2, unsigned int color) {
 	int dx,dy;
