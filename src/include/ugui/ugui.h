@@ -16,12 +16,15 @@ class UGui {
 	Drawable* _root;
 
 public:
+	Drawable* _focus_drawable;
 	struct Point _update_min;
 	struct Point _update_max;
 
 	void pollTraverse(Drawable* d);
 
 	void drawTraverse(Drawable* d);
+
+  void key_event(struct extended_char* xchar);
 
 	int drawTraverseAll(void);
 

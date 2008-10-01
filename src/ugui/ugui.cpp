@@ -6,7 +6,7 @@
 
 struct DrawingContext* current_context;
 
-UGui::UGui() : _root(NULL) {
+UGui::UGui() : _root(NULL), _focus_drawable(NULL) {
 }
 
 // 	Drawable* d = this;
@@ -68,6 +68,12 @@ void UGui::drawTraverse(Drawable* d) {
 		d = d->next();
 	}
 }
+
+void UGui::key_event(struct extended_char* xchar) {
+	if (_focus_drawable)
+		_focus_drawable->key_event(xchar);
+}
+
 
 void UGui::pollTraverse(Drawable* d) {
 	while (d) {
@@ -140,5 +146,6 @@ int UGui::drawTraverseAll(void) {
 	return _draw_activity;
 // 	printf("\n");
 }
+
 
 #warning add functionallity to invalidate everything.
