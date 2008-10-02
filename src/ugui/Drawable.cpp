@@ -166,6 +166,9 @@ void Drawable::hide(void) {
 	}
 }
 
+void Drawable::focus(void) {
+}
+
 bool Drawable::invalidate_elapsed(int ms) {
 	uint32_t now;
 	if (_dirty)

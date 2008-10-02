@@ -108,7 +108,9 @@ public:
 
 	void hide();
 
-	void setFocus() {}
+	void focus(void);
+	virtual void focus_in(void) {};
+	virtual void focus_out(void) {};
 
 	virtual void key_event(struct extended_char* xchar) {}
 
