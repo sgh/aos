@@ -7,7 +7,7 @@ SOURCES = main.cpp gtkfb.c testfont.c
 OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
 OBJS := $(patsubst %.c, %.o, $(OBJS))
 
-CPPFLAGS =  -D__STDC_LIMIT_MACROS -fno-rtti -fno-exceptions -I ../include -Os -I .. -DNDEBUG
+CPPFLAGS =  -D__STDC_LIMIT_MACROS -fno-rtti -fno-exceptions -I ../include -Os -I .. -ggdb
 #-fno-default-inline
 
 all: $(OBJS)

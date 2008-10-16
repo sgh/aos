@@ -239,12 +239,13 @@ void Drawable::invalidateOverlapped(void) {
 	// but since to do not buffer the image-data for all widgets a redraw of a
 	// widget as effect of another widget disappearing needs to redraw everything
 	// that widgett wass overlapping
-	Drawable* d = this;
+	Drawable* d = _parent;
 
-	while (d->_parent)
-		d = d->_parent;
+	if (!d) return;
 
-// 	d = d->_prev;
+	// traverse to the top
+	while (d->_parent) d = d->_parent;
+
 	while (d) {
 		struct Box box = intersection(*d);
 
@@ -257,6 +258,7 @@ void Drawable::invalidateOverlapped(void) {
 
 int Drawable::absx_deco(void) {
 	int x = _abs_xy.x;
+
 	if (_decoration)
 		x -= _decoration->_left;
 	return x;
@@ -264,13 +266,15 @@ int Drawable::absx_deco(void) {
 
 int Drawable::absy_deco(void) {
 	int y = _abs_xy.y;
+
 	if (_decoration)
 		y -= _decoration->_top;
 	return y;
 }
 
 int Drawable::width_deco(void) {
-	int width = /*_abs_xy.x +*/ _width;
+	int width = _width;
+
 	if (_decoration) {
 		width += _decoration->_right;
 		width += _decoration->_left;
@@ -279,7 +283,8 @@ int Drawable::width_deco(void) {
 }
 
 int Drawable::height_deco(void) {
-	int height = /*_abs_xy.y +*/ _height;
+	int height = _height;
+
 	if (_decoration) {
 		height += _decoration->_top;
 		height += _decoration->_bottom;
@@ -304,7 +309,6 @@ struct Box Drawable::intersection(Drawable& d) {
 		b.x = wh1;
 	else
 		b.x = wh2;
-
 	wh1 = d.absy_deco();
 	wh2 = absy_deco();
 

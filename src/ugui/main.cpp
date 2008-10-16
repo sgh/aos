@@ -16,8 +16,8 @@ class Cross : public Drawable {
 	void draw(void) {
 		ugui_line(0,0,20,20, 0xFFFF00);
 
-		aostk_putstring(0,0,"ABCDEFGHIJKLMNOPQRSTUVXYZÆØÅ");
-		aostk_putstring(0,12,"abcdefghijklmnopqrstuvxyzæøå");
+		aostk_putstring(0,0,"ABCDEFGHIJKLMNOPQRSTUVXYZï¿½ï¿½ï¿½");
+		aostk_putstring(0,12,"abcdefghijklmnopqrstuvxyzï¿½ï¿½ï¿½");
 	}
 };
 
@@ -95,7 +95,7 @@ int main(void) {
 
 	gui.addRoot(mainscreen);
 // 	gui.addRoot(menu);
-	gui.drawTraverseAll();
+	gui.eventLoop();
 
 	for (;;) {
 		int ch = getchar();
@@ -108,6 +108,6 @@ int main(void) {
 			case 'C': rotation.setBG(0x0000FF); break;
 			case 'c': rotation.setBG(0x000055); break;
 		}
-		gui.drawTraverseAll();
+		gui.eventLoop();
 	}
 }
