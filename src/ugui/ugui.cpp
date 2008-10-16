@@ -9,38 +9,6 @@ struct DrawingContext* current_context;
 UGui::UGui() : _root(NULL), _focus_drawable(NULL) {
 }
 
-// 	Drawable* d = this;
-// 	bool visible = true;
-// 
-// 
-// 	while (d->_prev)
-// 		d = d->_prev;
-// 
-// 	// Determine if drawable is visible and
-// 	// Invalidate other drawables overlapping if this widget is visible
-// 	while (d) {
-// 		int y;
-// 
-// 		printf(".");
-// 
-// 		if (d != this) {
-// 
-// 			// Check lower border
-// 			y = d->_abs_xy.y + d->_height;
-// 		 	if (y >= _abs_xy.y && y < _abs_xy.y + _height)
-// 				d->invalidate();
-// 		}
-// #warning must be O(n)
-// 
-// 		if (d->_next)
-// 			d = d->_next;
-// 		else
-// 			break;
-// 		
-// 	}
-// 
-// 	if (visible)
-
 
 void UGui::drawTraverse(Drawable* d) {
 	while (d) {
@@ -131,17 +99,17 @@ void UGui::removeRoot(Drawable& child) {
 		_root = NULL;
 }
 
-int UGui::drawTraverseAll(void) {
+int UGui::eventLoop(void) {
 	_draw_activity = 0;
 	_update_min.x = INT32_MAX;
 	_update_min.y = INT32_MAX;
 	_update_max.x = INT32_MIN;
 	_update_max.y = INT32_MIN;
 
-	ugui_lock();
+// 	ugui_lock();
 	pollTraverse(_root);
 	drawTraverse(_root);
-	ugui_unlock();
+// 	ugui_unlock();
 	
 	return _draw_activity;
 // 	printf("\n");
