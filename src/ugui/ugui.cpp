@@ -6,7 +6,25 @@
 
 struct DrawingContext* current_context;
 
+UGui* UGui::_instance;
+mutex_t UGui::_eventlock;
+mutex_t UGui::_drawlock;
+semaphore_t UGui::_process_sem;
+
 UGui::UGui() : _root(NULL), _focus_drawable(NULL) {
+	mutex_init(&_eventlock);
+	mutex_init(&_drawlock);
+	sem_init(&_process_sem, 0);
+}
+
+void UGui::pushEvent(void) {
+	sem_up(&_process_sem);
+}
+
+UGui* UGui::instance(void) {
+	if (!_instance)
+		_instance = new UGui();
+	return _instance;
 }
 
 
@@ -43,15 +61,24 @@ void UGui::key_event(struct extended_char* xchar) {
 }
 
 
-void UGui::pollTraverse(Drawable* d) {
+void UGui::processEvents(Drawable* d) {
 	while (d) {
+#warning if no screen activity is happening predraw functions will not be called FIX IT !!!!!!!!!!!!!!
+#warning if no screen activity is happening predraw functions will not be called FIX IT !!!!!!!!!!!!!!
+#warning if no screen activity is happening predraw functions will not be called FIX IT !!!!!!!!!!!!!!
+#warning if no screen activity is happening predraw functions will not be called FIX IT !!!!!!!!!!!!!!
+#warning if no screen activity is happening predraw functions will not be called FIX IT !!!!!!!!!!!!!!
 		d->predraw();
-		pollTraverse(d->_children);
+		eventLock();
+		d->processEvents();
+		eventUnlock();
+		processEvents(d->_children);
 		d = d->next();
 	}
 }
 
 void UGui::addRoot(Drawable& child) {
+	drawLock();
 	Drawable* d = _root;
 
 	while (d) {
@@ -79,9 +106,11 @@ void UGui::addRoot(Drawable& child) {
 
 	child.update();
 	child.invalidate();
+	drawUnlock();
 }
 
 void UGui::removeRoot(Drawable& child) {
+	drawLock();
 	child.invalidate();
 	child.invalidateOverlapped();
 
@@ -97,6 +126,7 @@ void UGui::removeRoot(Drawable& child) {
 
 	if (_root == &child)
 		_root = NULL;
+	drawUnlock();
 }
 
 int UGui::eventLoop(void) {
@@ -106,14 +136,34 @@ int UGui::eventLoop(void) {
 	_update_max.x = INT32_MIN;
 	_update_max.y = INT32_MIN;
 
-// 	ugui_lock();
-	pollTraverse(_root);
+	sem_timeout_down(&_process_sem, 100);
+
+	processEvents(_root);
+
+	drawLock();
 	drawTraverse(_root);
-// 	ugui_unlock();
+	drawUnlock();
 	
 	return _draw_activity;
 // 	printf("\n");
 }
+
+void UGui::eventLock(void) {
+	mutex_lock(&_eventlock);
+}
+
+void UGui::eventUnlock(void) {
+	mutex_unlock(&_eventlock);
+}
+
+void UGui::drawLock(void) {
+	mutex_lock(&_drawlock);
+}
+
+void UGui::drawUnlock(void) {
+	mutex_unlock(&_drawlock);
+}
+
 
 
 #warning add functionallity to invalidate everything.
