@@ -6,9 +6,12 @@
 #include "ugui/Drawable.h"
 #include "aos/aos.h"
 
+#define INVALIDATE_EVENT 1
+#define SHOW_EVENT       2
+#define HIDE_EVENT       4
 
 Drawable::Drawable(int x, int y, int width, int height)
-	: _parent(NULL), _children(NULL), _next(NULL), _prev(NULL), _last_update(0), _width(width), _height(height), _visible(true), _transparent(false), _modal(false), _dirty(0)  {
+	: _parent(NULL), _children(NULL), _next(NULL), _prev(NULL), _events(0), _last_update(0), _width(width), _height(height), _visible(true), _transparent(false), _modal(false), _dirty(0)  {
 	memset(&_ctx, 0, sizeof(_ctx));
 	setXY(x, y);
 	_decoration = NULL;//(class DrawableDecoration*)&testdecoration;
@@ -90,11 +93,11 @@ void Drawable::addChild(Drawable& child) {
 	}
 
 	child.update();
-	child.invalidate();
+	child.real_invalidate();
 }
 
 void Drawable::removeChild(Drawable& child) {
-	invalidate();
+	real_invalidate();
 	invalidateOverlapped();
 
 	// If we are the first child point parent to next child
@@ -120,7 +123,7 @@ void Drawable::setXY(int x, int y) {
 	_abs_xy.x = _rel_xy.x = x;
 	_abs_xy.y = _rel_xy.y = y;
 	update();
-	invalidate();
+	real_invalidate();
 }
 
 void Drawable::update(void) {
@@ -151,14 +154,14 @@ void Drawable::erase(void) {
 	ugui_fill(0, 0, _width, _height, _ctx.bg_color);
 }
 
-void Drawable::show(void) {
+void Drawable::real_show(void) {
 	if (!isVisible()) {
 		_visible = true;
-		invalidate();
+		real_invalidate();
 	}
 }
 
-void Drawable::hide(void) {
+void Drawable::real_hide(void) {
 	if (isVisible()) {
 		invalidateOverlapped();
 		_visible = false;
@@ -166,30 +169,58 @@ void Drawable::hide(void) {
 	}
 }
 
-void Drawable::focus(void) {
+void Drawable::postEvent(unsigned int event) {
+	UGui* g = UGui::instance();
+	g->eventLock();
+	_events |= event;
+	g->pushEvent();
+	g->eventUnlock();
 }
 
-bool Drawable::invalidate_elapsed(int ms) {
+void Drawable::focus(void) {
+#warning implement me
+#warning implement me
+#warning implement me
+#warning implement me
+#warning implement me
+}
+
+void Drawable::invalidate(void) {
+	postEvent(INVALIDATE_EVENT);
+}
+
+void Drawable::show(void) {
+	if (!isVisible())
+		postEvent(SHOW_EVENT);
+}
+
+void Drawable::hide(void) {
+	if (isVisible())
+		postEvent(HIDE_EVENT);
+}
+
+void Drawable::processEvents(void) {
+	if (_events & INVALIDATE_EVENT) real_invalidate();
+	if (_events & SHOW_EVENT)       real_show();
+	if (_events & HIDE_EVENT)       real_hide();
+	_events = 0;
+}
+
+void Drawable::invalidate_elapsed(int ms) {
+#warning FIX ME. It does not work with semaphore triggered eventloop
 	uint32_t now;
-	if (_dirty)
-		return true;
+	if (_dirty) return;
 	get_sysmtime(&now);
 	if (now - _last_update >= ms)
-		return invalidate();
+		invalidate();
 }
 
-#warning Implement a O(1) function instead of this and its  friends. And place the real work in the GUI-thread
-bool Drawable::invalidate(void) {
+void Drawable::real_invalidate(void) {
 	Drawable* d;
 
-	// Non-visible drawable must not be dirty, since it will result in a redraw
-	if (!isVisible()) {
-		return false;
-	}
-
 	// If already dirty just return
-	if (_dirty)
-		return true;
+	// Non-visible drawable must not be dirty, since it will result in a redraw
+	if (_dirty || !isVisible()) return;
 
 	_dirty = true;
 
@@ -200,16 +231,15 @@ bool Drawable::invalidate(void) {
 	d = _next;
 	while (d) {
 		struct Box box = intersection(*d);
-
 		if ( (box.width > 0 && box.height > 0))
-				d->invalidate();
+				d->real_invalidate();
 		d = d->_next;
 	}
 
 	// Now invalidate children
 	d = _children;
 	while (d) {
-		d->invalidate();
+		d->real_invalidate();
 		d = d->_next;
 	}
 
@@ -224,11 +254,15 @@ bool Drawable::invalidate(void) {
 		struct Box box = intersection(*d);
 
 		if ( (box.width > 0 && box.height > 0))
-			d->invalidate();
+			d->real_invalidate();
 		d = d->_next;
 	}
+}
 
-	return true;
+bool Drawable::isVisible(void) {
+	bool retval;
+	retval =  _visible;
+	return retval;
 }
 
 void Drawable::invalidateOverlapped(void) {
@@ -239,18 +273,16 @@ void Drawable::invalidateOverlapped(void) {
 	// but since to do not buffer the image-data for all widgets a redraw of a
 	// widget as effect of another widget disappearing needs to redraw everything
 	// that widgett wass overlapping
-	Drawable* d = _parent;
+	Drawable* d = this;
 
-	if (!d) return;
-
-	// traverse to the top
-	while (d->_parent) d = d->_parent;
+	while (d->_parent)
+		d = d->_parent;
 
 	while (d) {
 		struct Box box = intersection(*d);
 
 		if ( (box.width > 0 && box.height > 0))
-				d->invalidate();
+				d->real_invalidate();
 		d = d->_prev;
 	}
 

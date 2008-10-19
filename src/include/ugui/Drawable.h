@@ -40,13 +40,15 @@ extern class SimpleLineDecoration testdecoration;
 
 class Drawable {
 
-	class Drawable* _parent;   // Parent Drawable
-	class Drawable* _children; // list of child drawables
+	Drawable* _parent;   // Parent Drawable
+	Drawable* _children; // list of child drawables
 
-	class Drawable* _next; // Next Drawable is the parents child list
-	class Drawable* _prev; // Previous Drawable is the parents child list
+	Drawable* _next; // Next Drawable is the parents child list
+	Drawable* _prev; // Previous Drawable is the parents child list
+	unsigned int _events;
 
 	void invalidateOverlapped(void);
+	void postEvent(unsigned int event);
 
 protected:
 	bool             _visible;
@@ -62,6 +64,11 @@ protected:
 	int absy_deco(void);
 	int width_deco(void);
 	int height_deco(void);
+
+	// Real handlers for events
+	void real_invalidate(void);
+	void real_show();
+	void real_hide();
 
 public:
 	struct Point     _abs_xy; // Absolute position
@@ -83,9 +90,7 @@ public:
 
 	virtual void draw(void) {};
 
-	bool isVisible(void) {
-		return _visible;
-	}
+	bool isVisible(void);
 
 	void addChild(Drawable& child);
 
@@ -100,13 +105,13 @@ public:
 	/**
 	 * \brief Invalidate the drawable and scheduele it to be redrawn
 	 */
-	bool invalidate(void);
-
-	bool invalidate_elapsed(int ms);
-
+	void invalidate(void);
 	void show();
-
 	void hide();
+
+	void invalidate_elapsed(int ms);
+
+	void processEvents(void);
 
 	void focus(void);
 	virtual void focus_in(void) {};
@@ -114,16 +119,11 @@ public:
 
 	virtual void key_event(struct extended_char* xchar) {}
 
-	int width(void) { return _width; }
+	int width(void)  { return _width;  }
 	int height(void) { return _height; }
 
-	Drawable* next(void) {
-		return _next;
-	}
-
-	Drawable* prev(void)  {
-		return _prev;
-	}
+	Drawable* next(void) { return _next; }
+	Drawable* prev(void) { return _prev; }
 
 	struct Box intersection(Drawable& d);
 

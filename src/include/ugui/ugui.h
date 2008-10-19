@@ -5,35 +5,51 @@
 #ifdef __cplusplus
 
 #include "Drawable.h"
+#include <aos/mutex.h>
+#include <aos/semaphore.h>
 
 extern struct DrawingContext* current_context;
 
-void ugui_lock(void);
-void ugui_unlock(void);
+// void ugui_lock(void);
+// void ugui_unlock(void);
 
 class UGui {
 	int _draw_activity;
 	Drawable* _root;
+	static mutex_t _eventlock;
+	static mutex_t _drawlock;
+	static semaphore_t _process_sem;
+	static UGui* _instance;
+
+	UGui();
+
+	void processEvents(void);
 
 public:
 	Drawable* _focus_drawable;
 	struct Point _update_min;
 	struct Point _update_max;
 
-	void pollTraverse(Drawable* d);
+	static UGui* instance(void);
+
+	void processEvents(Drawable* d);
 
 	void drawTraverse(Drawable* d);
 
   void key_event(struct extended_char* xchar);
 
-	int drawTraverseAll(void);
+	int eventLoop(void);
+
+	void pushEvent(void);
 
 	void addRoot(Drawable& child);
 
 	void removeRoot(Drawable& child);
 	
-	UGui();
-
+	void eventLock(void);
+	void eventUnlock(void);
+	void drawLock(void);
+	void drawUnlock(void);
 };
 #endif
 

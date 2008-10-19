@@ -57,7 +57,7 @@ int main(void) {
 	float angle = 0;
 	int y;
 	y = 100;
-	UGui gui;
+	UGui& gui = *UGui::instance();
 	Drawable mainscreen(0 ,0, 320, 240);
 	Drawable statusbar(0 ,0, 320, 30);
 	Cross bladeview(0,30,320,120);
@@ -107,6 +107,7 @@ int main(void) {
 			case 'b': mast.setBG(0x005500); break;
 			case 'C': rotation.setBG(0x0000FF); break;
 			case 'c': rotation.setBG(0x000055); break;
+			case 'f': rotation.focus(); break;
 		}
 		gui.eventLoop();
 	}

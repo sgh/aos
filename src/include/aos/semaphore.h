@@ -1,6 +1,6 @@
 /*
 		AOS - ARM Operating System
-		Copyright (C) 2007  Søren Holm (sgh@sgh.dk)
+		Copyright (C) 2007  Sï¿½ren Holm (sgh@sgh.dk)
 
 		This library is free software; you can redistribute it and/or
 		modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
 #include <aos/list.h>
 
 #define DECLARE_SEMAPHORE(s,val) semaphore_t s = { .count = val, .waiting = LIST_HEAD_INIT(s.waiting) }
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 /**
  * \brief A semaphore
@@ -71,5 +75,10 @@ uint8_t sem_timeout_down(semaphore_t* s, uint32_t timeoutms);
  */
 void sem_up(semaphore_t* s);
 void sem_upn(semaphore_t* s, uint32_t n);
+
+
+#ifdef __cplusplus
+	}
+#endif
 
 #endif
