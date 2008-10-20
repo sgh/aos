@@ -67,6 +67,8 @@ bool Drawable::redraw(void) {
 
 
 void Drawable::addChild(Drawable& child) {
+	UGui::instance()->drawLock();
+	UGui::instance()->eventLock();
 	Drawable* d = _children;
 
 	while (d) {
@@ -94,9 +96,13 @@ void Drawable::addChild(Drawable& child) {
 
 	child.update();
 	child.real_invalidate();
+	UGui::instance()->eventUnlock();
+	UGui::instance()->drawUnlock();
 }
 
 void Drawable::removeChild(Drawable& child) {
+	UGui::instance()->drawLock();
+	UGui::instance()->eventLock();
 	real_invalidate();
 	invalidateOverlapped();
 
@@ -116,6 +122,8 @@ void Drawable::removeChild(Drawable& child) {
 	child._next = NULL;
 	child._prev = NULL;
 	child._parent = NULL;
+	UGui::instance()->eventUnlock();
+	UGui::instance()->drawUnlock();
 }
 
 void Drawable::setXY(int x, int y) {
