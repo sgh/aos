@@ -111,7 +111,8 @@ void UGui::addRoot(Drawable& child) {
 
 void UGui::removeRoot(Drawable& child) {
 	drawLock();
-	child.invalidate();
+	eventLock();
+	child.real_invalidate();
 	child.invalidateOverlapped();
 
 	// Setup links
@@ -126,6 +127,7 @@ void UGui::removeRoot(Drawable& child) {
 
 	if (_root == &child)
 		_root = NULL;
+	eventUnlock();
 	drawUnlock();
 }
 
