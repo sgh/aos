@@ -43,6 +43,13 @@ typedef struct {
 void sem_upn(semaphore_t* s, uint32_t n);
 uint32_t  sem_downn(semaphore_t* s, uint32_t n);
 
+/**
+ * \brief Initialize semaphore
+ * @param s The semaphore to initialixe
+ * @param count The semaphore-count to set
+ */
+void sem_init(semaphore_t* s, int32_t count);
+
 #else
 
 #include <pthread.h>
@@ -59,6 +66,8 @@ typedef struct {
   int cnt;
 } semaphore_t;
 
+void semaphore_init(semaphore_t *m, uint32_t n);
+
 #endif
 
 /**
@@ -66,13 +75,6 @@ typedef struct {
  * @param s The semaphore to increment
  */
 void sem_up(semaphore_t* s);
-
-/**
- * \brief Initialize semaphore
- * @param s The semaphore to initialixe
- * @param count The semaphore-count to set
- */
-void sem_init(semaphore_t* s, int32_t count);
 
 /**
  * \brief Count down the semaphore, and possibly block the process if count
