@@ -26,12 +26,14 @@
 	extern "C" {
 #endif
 
-struct taskt; // Forward declaration of struct task_t
+struct task_t; // Forward declaration of struct task_t
 
+#if defined (__arm__)
 #ifdef __cplusplus
 	#define DECLARE_MUTEX_LOCKED(m) mutex_t m = { lock : 1, waiting : LIST_HEAD_INIT(m.waiting), owner : (task_t* )0 }
 	#define DECLARE_MUTEX_UNLOCKED(m) mutex_t m = { lock : 0, waiting : LIST_HEAD_INIT(m.waiting), owner : (task_t*)0 }
 #else
+
 	#define DECLARE_MUTEX_LOCKED(m) mutex_t m = { .lock = 1, .waiting = LIST_HEAD_INIT(m.waiting) }
 	#define DECLARE_MUTEX_UNLOCKED(m) mutex_t m = { .lock = 0, .waiting = LIST_HEAD_INIT(m.waiting) }
 #endif
@@ -43,6 +45,24 @@ typedef struct {
 	struct list_head waiting;		/**< \brief List of waiting processes */
 	struct task_t* owner;				/**< \brief The owner of this mutex */
 } mutex_t;
+
+#else
+	#include <pthread.h>
+	#include <time.h>
+
+/**
+ *  * \brief A mutex
+ *   */
+typedef struct {
+  pthread_mutex_t lock;
+  pthread_cond_t cond;
+  int cnt;
+} mutex_t;
+
+#define DECLARE_MUTEX_UNLOCKED(m) mutex_t m = {PTHREAD_MUTEX_INITIALIZER, PTHREAD_COND_INITIALIZER,1}
+#define DECLARE_MUTEX_LOCKED(m) mutex_t m = {PTHREAD_MUTEX_INITIALIZER, PTHREAD_COND_INITIALIZER,0}
+
+#endif
 
 /**
  * \brief Lock mutex
