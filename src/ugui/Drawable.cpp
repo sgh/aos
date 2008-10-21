@@ -13,7 +13,9 @@
 Drawable::Drawable(int x, int y, int width, int height)
 	: _parent(NULL), _children(NULL), _next(NULL), _prev(NULL), _events(0), _last_update(0), _width(width), _height(height), _visible(true), _transparent(false), _modal(false), _dirty(0)  {
 	memset(&_ctx, 0, sizeof(_ctx));
-	setXY(x, y);
+	_abs_xy.x = _rel_xy.x = x;
+	_abs_xy.y = _rel_xy.y = y;
+// 	setXY(x, y);
 	_decoration = NULL;//(class DrawableDecoration*)&testdecoration;
 }
 

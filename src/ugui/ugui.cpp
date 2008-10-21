@@ -6,15 +6,18 @@
 
 struct DrawingContext* current_context;
 
-UGui* UGui::_instance;
-mutex_t UGui::_eventlock;
-mutex_t UGui::_drawlock;
+UGui*       UGui::_instance;
+mutex_t     UGui::_eventlock;
+mutex_t     UGui::_drawlock;
 semaphore_t UGui::_process_sem;
 
 UGui::UGui() : _root(NULL), _focus_drawable(NULL) {
+// 	fprintf(stdout,"UGui construction ... ");
+// 	fflush(stdout);
+	sem_init(&_process_sem, 0);
 	mutex_init(&_eventlock);
 	mutex_init(&_drawlock);
-	sem_init(&_process_sem, 0);
+// 	fprintf(stdout,"ok\n");
 }
 
 void UGui::pushEvent(void) {
@@ -139,7 +142,7 @@ int UGui::eventLoop(void) {
 	_update_max.y = INT32_MIN;
 
 	sem_timeout_down(&_process_sem, 100);
-
+	
 	processEvents(_root);
 
 	drawLock();
@@ -151,7 +154,10 @@ int UGui::eventLoop(void) {
 }
 
 void UGui::eventLock(void) {
+// 	fprintf(stdout,"Locking eventLock ...");
+// 	fflush(stdout);
 	mutex_lock(&_eventlock);
+// 	fprintf(stdout,"ok\n");
 }
 
 void UGui::eventUnlock(void) {
@@ -159,7 +165,10 @@ void UGui::eventUnlock(void) {
 }
 
 void UGui::drawLock(void) {
+// 	fprintf(stdout,"Locking eventLock ...");
+// 	fflush(stdout);
 	mutex_lock(&_drawlock);
+// 	fprintf(stdout,"ok\n");
 }
 
 void UGui::drawUnlock(void) {
