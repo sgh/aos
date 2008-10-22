@@ -279,7 +279,9 @@ void aos_input_init(const struct input_hooks* hooks) {
 	inputhooks = hooks;
 }
 
-void input_init(void) {
+void input_init(void);
+void input_init(void)
+{
 	sem_init(&getchar_ready_sem, 0);
 	sem_init(&scancode_ready_sem, 0);
 }

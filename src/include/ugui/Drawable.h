@@ -3,6 +3,7 @@
 
 #include "gtkfb.h"
 #include <stdint.h>
+#include <aos/macros.h>
 
 struct Point {
 	int x;
@@ -33,7 +34,7 @@ class DrawableDecoration {
 		
 		DrawableDecoration(void) {}
 
-		virtual void draw(class Drawable* d) {};
+		virtual void draw( UNUSED class Drawable* d) {};
 };
 
 extern class SimpleLineDecoration testdecoration;
@@ -117,7 +118,7 @@ public:
 	virtual void focus_in(void) {};
 	virtual void focus_out(void) {};
 
-	virtual void key_event(struct extended_char* xchar) {}
+	virtual void key_event( UNUSED struct extended_char* xchar) {}
 
 	int width(void)  { return _width;  }
 	int height(void) { return _height; }
