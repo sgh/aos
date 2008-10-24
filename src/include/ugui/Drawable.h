@@ -70,6 +70,10 @@ protected:
 	void real_invalidate(void);
 	void real_show();
 	void real_hide();
+	void real_focus();
+
+	virtual void focus_in(void);
+	virtual void focus_out(void);
 
 public:
 	struct Point     _abs_xy; // Absolute position
@@ -115,8 +119,6 @@ public:
 	void processEvents(void);
 
 	void focus(void);
-	virtual void focus_in(void) {};
-	virtual void focus_out(void) {};
 
 	virtual void key_event( UNUSED struct extended_char* xchar) {}
 

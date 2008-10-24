@@ -9,6 +9,7 @@
 #define INVALIDATE_EVENT 1
 #define SHOW_EVENT       2
 #define HIDE_EVENT       4
+#define FOCUS_EVENT      8
 
 Drawable::Drawable(int x, int y, int width, int height)
 	: _parent(NULL), _children(NULL), _next(NULL), _prev(NULL), _events(0), _last_update(0), _width(width), _height(height), _visible(true), _transparent(false), _modal(false), _dirty(0)  {
@@ -179,6 +180,17 @@ void Drawable::real_hide(void) {
 	}
 }
 
+void Drawable::real_focus() {
+	UGui* g = UGui::instance();
+
+	if (g->_focus_drawable)
+		g->_focus_drawable->focus_out();
+
+	focus_in();
+
+	g->_focus_drawable = this;
+}
+
 void Drawable::postEvent(unsigned int event) {
 	UGui* g = UGui::instance();
 	g->eventLock();
@@ -188,11 +200,13 @@ void Drawable::postEvent(unsigned int event) {
 }
 
 void Drawable::focus(void) {
-#warning implement me
-#warning implement me
-#warning implement me
-#warning implement me
-#warning implement me
+	postEvent(FOCUS_EVENT);
+}
+
+void Drawable::focus_in(void) {
+}
+
+void Drawable::focus_out(void) {
 }
 
 void Drawable::invalidate(void) {
@@ -213,6 +227,7 @@ void Drawable::processEvents(void) {
 	if (_events & INVALIDATE_EVENT) real_invalidate();
 	if (_events & SHOW_EVENT)       real_show();
 	if (_events & HIDE_EVENT)       real_hide();
+	if (_events & FOCUS_EVENT)      real_focus();
 	_events = 0;
 }
 
