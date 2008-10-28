@@ -151,13 +151,21 @@ void Drawable::update(void) {
 	}
 }
 
-void Drawable::setBG(int col) {
+void Drawable::real_setBG(int col) {
 	_ctx.bg_color = col;
+}
+
+void Drawable::setBG(int col) {
+	real_setBG(col);
 	invalidate();
 }
 
-void Drawable::setFG(int col) {
+void Drawable::real_setFG(int col) {
 	_ctx.fg_color = col;
+}
+
+void Drawable::setFG(int col) {
+	real_setFG(col);
 	invalidate();
 }
 
