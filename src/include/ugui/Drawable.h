@@ -71,6 +71,8 @@ protected:
 	void real_show();
 	void real_hide();
 	void real_focus();
+	void real_setBG(int col);
+	void real_setFG(int col);
 
 	virtual void focus_in(void);
 	virtual void focus_out(void);
@@ -104,7 +106,6 @@ public:
 	void setXY(int x, int y);
 
 	void setBG(int col);
-
 	void setFG(int col);
 
 	/**
