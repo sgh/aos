@@ -14,7 +14,7 @@ all: $(OBJS)
 	$(CXX) -o $(APP) $(OBJS) -L ../.. -lugui -lpthread `pkg-config --libs gtk+-2.0` `pkg-config --libs gthread-2.0`
 
 ttf2c: ttf2c.c
-	gcc  -o ttf2c -I include -I ../../include -I /usr/include/freetype2 -I .. -lfreetype ttf2c.c
+	gcc  -o ttf2c -I ../include -I /usr/include/freetype2 -I .. -lfreetype ttf2c.c
 
 %.o: %.c
 	$(CC) -I ../include `pkg-config --cflags gtk+-2.0` $(CFLAGS) -MD -c -ggdb -O0 -Wall -Wextra -o $@ $<
