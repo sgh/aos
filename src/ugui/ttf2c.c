@@ -16,7 +16,6 @@ struct aostk_font genfont = {
 };
 
 
-
 void my_draw_bitmap(const struct aostk_glyph* glyph) {
 	const char* r;
 	int rows = glyph->size.height;
@@ -131,12 +130,30 @@ int main(int argc, char* argv[]) {
 		printf("another error code means that the font file could not \nbe opened or read, or simply that it is broken...");
 	}
 	
-// 	error = FT_Select_CharMap( face, FT_ENCODING_ADOBE_LATIN_1);
-// 	if (error) {
-// 		printf("Error setting charmap\n");
-// 		exit(1);
-// 	}
+	FT_CharMap  found = 0;
+	FT_CharMap  charmap;
+	int n;
+	for (n = 0; n < face->num_charmaps; n++ ) {
+		charmap = face->charmaps[n];
+		printf("platform_id:%d  encoding_id:%d\n", charmap->platform_id, charmap->encoding_id);
+		if ( charmap->platform_id == 3/*my_platform_id*/ && charmap->encoding_id == 1/*my_encoding_id*/ ) {
+			found = charmap;
+			printf("found charmap\n");
+			break;
+		}
+	}
 
+	if ( !found ) {
+		printf("Encoding not found\n");
+		exit(1);
+	}
+
+	/* now, select the charmap for the face object */
+	error = FT_Set_Charmap( face, found );
+	if ( error ) {
+		printf("Error setting encoding\n");
+		exit(1);
+	}
 
 	int width  = atoi(argv[2]);
 	int height = atoi(argv[2]);
@@ -163,12 +180,15 @@ int main(int argc, char* argv[]) {
 
 
 // 	printf("EM size %d\n", 4 * 300/72);
-
-
-	for (i=0x0; i<=0xFF; i++) {
+//
+	for (i=0x0; i<=255; i++) {
 		int len;
 		glyph_index = FT_Get_Char_Index( face, i );
-		
+	
+		if (glyph_index == 0) {
+			printf("Glyph not found\n");
+// 			exit(1);
+		}	
 		
 		error = FT_Load_Glyph(
 													face,          /* handle to face object */
