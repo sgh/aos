@@ -2,6 +2,7 @@
 //#include <types.h>
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "ugui/ugui_fontrenderer.h"
 #include "ugui/ugui.h"
@@ -10,9 +11,9 @@ void aostk_bitmap_raster(struct aostk_font* f, unsigned int posx, unsigned int p
 
 static void my_draw_bitmap(const struct aostk_glyph* glyph, int x, int y) {
 	const char* r;
-	uint_fast8_t rows = glyph->size.height;
-	uint_fast8_t pixel;
-	uint_fast8_t bit;
+	unsigned int rows = glyph->size.height;
+	int pixel;
+	unsigned int bit;
 	const char* ptr;
 	int line = 0;
 
@@ -51,8 +52,10 @@ const struct aostk_glyph* aostk_get_glyph(struct aostk_font* f, unsigned int c) 
 		else
 		if (f->glyphs[pivot].i < c)
 			low = pivot + 1;
-		else
+		else {
+// 			printf("%c = %d\n", c, f->glyphs[pivot].i);
 			return &f->glyphs[pivot];
+		}
 	}
 	return &f->glyphs[0];
 }

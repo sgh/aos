@@ -9,7 +9,7 @@ ifeq ($(TARGET),arm-elf-)
 CPPFLAGS += -mcpu=arm7tdmi  -mthumb-interwork -mthumb
 endif
 
-SOURCES = Drawable.cpp ugui.cpp ugui_fontrenderer.cpp
+SOURCES = Drawable.cpp ugui.cpp ugui_fontrenderer.cpp testfont.cpp
 OBJS = $(patsubst %.cpp, %.o, $(SOURCES))
 
 #-fno-default-inline
