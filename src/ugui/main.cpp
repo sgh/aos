@@ -8,6 +8,8 @@
 #include "ugui/ugui_font.h"
 #include "ugui/gtkfb.h"
 
+extern struct aostk_font VeraMoBd;
+
 class Cross : public Drawable {
 	public:
 
@@ -16,8 +18,8 @@ class Cross : public Drawable {
 	void draw(void) {
 		ugui_line(0,0,20,20, 0xFFFF00);
 
-		aostk_putstring(0,0,"ABCDEFGHIJKLMNOPQRSTUVXYZï¿½ï¿½ï¿½");
-		aostk_putstring(0,12,"abcdefghijklmnopqrstuvxyzï¿½ï¿½ï¿½");
+		aostk_putstring(&VeraMoBd, 0, 0, "ABCDEFGHIJKLMNOPQRSTUVXYZÆØÅ");
+		aostk_putstring(&VeraMoBd, 0, 12,"abcdefghijklmnopqrstuvxyzæøå");
 	}
 };
 

@@ -135,10 +135,14 @@ int main(int argc, char* argv[]) {
 	int n;
 	for (n = 0; n < face->num_charmaps; n++ ) {
 		charmap = face->charmaps[n];
+#ifndef TTF2C
 		printf("platform_id:%d  encoding_id:%d\n", charmap->platform_id, charmap->encoding_id);
+#endif
 		if ( charmap->platform_id == 3/*my_platform_id*/ && charmap->encoding_id == 1/*my_encoding_id*/ ) {
 			found = charmap;
+#ifndef TTF2C
 			printf("found charmap\n");
+#endif
 			break;
 		}
 	}
@@ -185,8 +189,11 @@ int main(int argc, char* argv[]) {
 		int len;
 		glyph_index = FT_Get_Char_Index( face, i );
 	
-		if (glyph_index == 0) {
+		if ((glyph_index == 0) && (i != 0)) {
+#ifndef TTF2C
 			printf("Glyph not found\n");
+#endif
+			continue;
 // 			exit(1);
 		}	
 		
@@ -218,7 +225,7 @@ int main(int argc, char* argv[]) {
 		genglyphs[genfont.numglyphs].advance.y    = face->glyph->advance.y >> 6;
 		genglyphs[genfont.numglyphs].pitch        = face->glyph->bitmap.pitch;
 
-		len = genglyphs[i].size.height * genglyphs[i].pitch;
+		len = genglyphs[genfont.numglyphs].size.height * genglyphs[genfont.numglyphs].pitch;
 		genglyphs[genfont.numglyphs].data      = malloc(len);
 		
 		memcpy((uint8_t*)genglyphs[genfont.numglyphs].data, face->glyph->bitmap.buffer, len);
