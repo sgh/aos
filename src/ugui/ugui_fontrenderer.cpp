@@ -54,7 +54,7 @@ const struct aostk_glyph* aostk_get_glyph(struct aostk_font* f, unsigned int c) 
 		else
 			return &f->glyphs[pivot];
 	}
-	return NULL;
+	return &f->glyphs[0];
 }
 
 
@@ -103,21 +103,18 @@ unsigned int aostk_font_strwidth(struct aostk_font* f, const char* str) {
 	aostk_ttf_raster(g, posx, posy);
 }
 
-extern struct aostk_font VeraMoBd;
-
-void aostk_putstring(int x, int y, const char* str) {
-  struct aostk_font* f = &VeraMoBd;
+void aostk_putstring(struct aostk_font* font, int x, int y, const char* str) {
   const struct aostk_glyph* g;
   assert(f != NULL);
   /**
    * Y-position is default not the baseline, but the topmost pixel of the font
    * So calculate the baseline by adding the font height
    */
-  y += f->height;
+  y += font->height;
 
 
   while ((*str) != 0) {
-    g = aostk_get_glyph(f, (uint8_t)*str);
+    g = aostk_get_glyph(font, (uint8_t)*str);
     aostk_putglyph(g, x, y, (uint8_t)*str);
     x += g->advance.x;
     str++;
