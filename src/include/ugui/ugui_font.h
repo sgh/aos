@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct aostk_point {
   unsigned int x;
   unsigned int y;
@@ -20,7 +24,7 @@ struct aostk_glyph {
 	struct aostk_point advance;
 	uint8_t pitch;
 	const char* data;
-	uint8_t left;
+	int8_t left;
 };
 
 
@@ -30,9 +34,6 @@ struct aostk_font {
 	const struct aostk_glyph* glyphs;
 };
 
-extern struct aostk_font verafont;
-extern struct aostk_font verafontlarge;
-
 static inline uint8_t aostk_font_height(struct aostk_font* f) {
 	return f->height;
 }
@@ -41,6 +42,10 @@ unsigned int aostk_font_strwidth(struct aostk_font* f, const char* str);
 
 unsigned int aostk_font_charwidth(struct aostk_font* f, char c);
 
-void aostk_putstring(int x, int y, const char* str);
+void aostk_putstring(struct aostk_font* font, int x, int y, const char* str);
+
+#ifdef __cplusplus
+	}
+#endif
 
 #endif
