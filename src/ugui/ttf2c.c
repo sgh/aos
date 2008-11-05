@@ -6,7 +6,7 @@
 
 #include "ugui/ugui_font.h"
 
-// #define TTF2C
+#define TTF2C
 
 struct aostk_glyph genglyphs[1000];
 
@@ -24,6 +24,9 @@ void my_draw_bitmap(const struct aostk_glyph* glyph) {
 	unsigned int bit;
 	int i;
 	int row_empty = 1;
+
+	int rle_count = 0;
+	int rle_last_bit = 0;
 	
 	r = glyph->data;
 	while (rows--) {
@@ -32,15 +35,29 @@ void my_draw_bitmap(const struct aostk_glyph* glyph) {
 			for (offset=0; offset < glyph->pitch; offset++)
 				if (r[offset])
 					row_empty = 0;
-			
-			
 		}
 		
 		if (!row_empty) {
 			offset = 0;
 			bit = 128;
 			for (pixel=0; pixel<glyph->size.width; pixel++) {
-				printf("%c", ((*(r+offset)) & bit) ? '%' : '.');
+				if (((*(r+offset)) & bit)) {
+					if (rle_last_bit == 0) {
+						printf("%d", rle_count);
+						rle_last_bit = 1;
+						rle_count = 0;
+					}
+					printf("%%");
+				} else {
+					
+					if (rle_last_bit == 1) {
+						printf("%d", rle_count);
+						rle_last_bit = 0;
+						rle_count = 0;
+					}
+					printf(".");
+				}
+				rle_count++;
 				bit >>= 1;
 				if (bit == 0) {
 					bit = 128;
@@ -160,7 +177,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	int width  = atoi(argv[2]);
-	int height = atoi(argv[2]);
+	int height = 0;
 	
 	error = FT_Set_Char_Size(
 		face,    /* handle to face object           */
@@ -187,7 +204,7 @@ int main(int argc, char* argv[]) {
 //
 	for (i=0x0; i<=255; i++) {
 		int len;
-		glyph_index = FT_Get_Char_Index( face, i );
+		glyph_index = FT_Get_Char_Index( face, /*i=='%' ? 0x2030 :*/ i );
 	
 		if ((glyph_index == 0) && (i != 0)) {
 #ifndef TTF2C
@@ -225,13 +242,18 @@ int main(int argc, char* argv[]) {
 		genglyphs[genfont.numglyphs].advance.y    = face->glyph->advance.y >> 6;
 		genglyphs[genfont.numglyphs].pitch        = face->glyph->bitmap.pitch;
 
+		if (height < genglyphs[genfont.numglyphs].top)
+			height = genglyphs[genfont.numglyphs].top;
+
 		len = genglyphs[genfont.numglyphs].size.height * genglyphs[genfont.numglyphs].pitch;
 		genglyphs[genfont.numglyphs].data      = malloc(len);
 		
 		memcpy((uint8_t*)genglyphs[genfont.numglyphs].data, face->glyph->bitmap.buffer, len);
 	
 		#warning  optimize 8x16 font output
+		#warning  fix baseline and top-left coordinate mixup
 #ifndef TTF2C
+		printf("Symbol #%d\n", genglyphs[genfont.numglyphs].i);
 		my_draw_bitmap(&genglyphs[genfont.numglyphs]); 
 #endif
 
@@ -244,7 +266,7 @@ int main(int argc, char* argv[]) {
 
 	for (i=0; i<genfont.numglyphs; i++) {
 #ifdef TTF2C
-		printf("static const char sym_%d[] = {", i);
+		printf("static const char sym_%d[] = {", genglyphs[i].i);
 #endif
 		for (j=0; j<genglyphs[i].size.height * genglyphs[i].pitch; j++) {
 #ifdef TTF2C
@@ -268,7 +290,7 @@ int main(int argc, char* argv[]) {
 #ifdef TTF2C
 		if (i>0)
 			printf(",\n");
-		printf("{ /* %d */  i: %d, size: {  width: %d, height: %d} ,top: %d, advance: { x: %d, y: %d },  pitch: %d, data: sym_%d, left: %d}", genglyphs[i].i, genglyphs[i].i, genglyphs[i].size.width, genglyphs[i].size.height, genglyphs[i].top, genglyphs[i].advance.x, genglyphs[i].advance.y, genglyphs[i].pitch, i, genglyphs[i].left);
+		printf("{ /* %d */  i: %d, size: {  width: %d, height: %d} ,top: %d, advance: { x: %d, y: %d },  pitch: %d, data: sym_%d, left: %d}", genglyphs[i].i, genglyphs[i].i, genglyphs[i].size.width, genglyphs[i].size.height, genglyphs[i].top, genglyphs[i].advance.x, genglyphs[i].advance.y, genglyphs[i].pitch, genglyphs[i].i, genglyphs[i].left);
 #endif
 	}
 
