@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "ugui/ugui.h"
 
+#ifdef NO_AOS
 #ifndef __arm__
 void sem_init(semaphore_t* sem, int count) {
 }
@@ -19,6 +20,7 @@ void mutex_lock(mutex_t* m) {
 }
 void mutex_unlock(mutex_t* m) {
 }
+#endif
 #endif
 
 struct DrawingContext* current_context;
