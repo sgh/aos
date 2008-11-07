@@ -4,25 +4,6 @@
 #include <stdio.h>
 #include "ugui/ugui.h"
 
-#ifdef NO_AOS
-#ifndef __arm__
-void sem_init(semaphore_t* sem, int count) {
-}
-void sem_up(semaphore_t* sem) {
-}
-void sem_down(semaphore_t* sem) {
-}
-void sem_timeout_down(semaphore_t* sem, int timeout) {
-}
-void mutex_init(mutex_t* m) {
-}
-void mutex_lock(mutex_t* m) {
-}
-void mutex_unlock(mutex_t* m) {
-}
-#endif
-#endif
-
 struct DrawingContext* current_context;
 
 UGui*       UGui::_instance;

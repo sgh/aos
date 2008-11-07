@@ -8,6 +8,26 @@
 #include "ugui/ugui_font.h"
 #include "ugui/gtkfb.h"
 
+#ifndef __arm__
+extern "C" {
+void sem_init(semaphore_t* sem, uint32_t count) {
+}
+void sem_up(semaphore_t* sem) {
+}
+void sem_down(semaphore_t* sem) {
+}
+uint8_t sem_timeout_down(semaphore_t* sem, uint32_t timeout) {
+}
+void mutex_init(mutex_t* m) {
+}
+void mutex_lock(mutex_t* m) {
+}
+void mutex_unlock(mutex_t* m) {
+}
+}
+#endif
+
+
 extern struct aostk_font VeraMoBd;
 
 class Cross : public Drawable {
