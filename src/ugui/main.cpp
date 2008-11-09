@@ -30,16 +30,20 @@ void mutex_unlock(mutex_t* m) {
 
 extern struct aostk_font VeraMoBd;
 
+#define PERMILLE \xE2\x80\xb0
+
 class Cross : public Drawable {
 	public:
 
 	Cross(int x, int y, int width, int height) : Drawable(x,y,width,height) {}
 	
 	void draw(void) {
+		/*unsigned */char buf[4] = { 	0x80+0x40+0x20 + 0x2, 0x80, 0x80+0x30, 0x00};
 		ugui_line(0,0,20,20, 0xFFFF00);
 
-		aostk_putstring(&VeraMoBd, 0, 0, "ABCDEFGHIJKLMNOPQRSTUVXYZÆØÅ");
-		aostk_putstring(&VeraMoBd, 0, 12,"abcdefghijklmnopqrstuvxyzæøå");
+		aostk_putstring(&VeraMoBd, 0, 0,  "ABCDEFGHIJKLMNOPQRSTUVXYZÃ†Ã˜Ã…");
+		aostk_putstring(&VeraMoBd, 0, 12, "abcdefghijklmnopqrstuvxyzÃ¦Ã¸Ã¥\xE2\x80\xb0");
+// 		aostk_putstring(&VeraMoBd, 0, 24, buf);
 	}
 };
 

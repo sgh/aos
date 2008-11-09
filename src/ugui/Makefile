@@ -4,8 +4,8 @@ CXX = $(TARGET)g++
 CC = $(TARGET)gcc
 AR = $(TARGET)ar
 
-FLAGS =  -fno-exceptions -I ../include -Os -I .. -DNDEBUG -D__STDC_LIMIT_MACROS
-CPPFLAGS =  -fno-rtti $(FLAGS)
+FLAGS =  -I ../include -Os -I .. -DNDEBUG -D__STDC_LIMIT_MACROS
+CPPFLAGS =  -fno-rtti -fno-exceptions $(FLAGS)
 CFLAGS = $(FLAGS)
 
 ifeq ($(TARGET),arm-elf-)

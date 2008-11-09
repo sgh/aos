@@ -8,7 +8,9 @@
 
 #define TTF2C
 
-struct aostk_glyph genglyphs[1000];
+#define MAX_GLYPHS 1000
+
+struct aostk_glyph genglyphs[MAX_GLYPHS];
 
 struct aostk_font genfont = {
 	.numglyphs = 0,
@@ -43,7 +45,7 @@ void my_draw_bitmap(const struct aostk_glyph* glyph) {
 			for (pixel=0; pixel<glyph->size.width; pixel++) {
 				if (((*(r+offset)) & bit)) {
 					if (rle_last_bit == 0) {
-						printf("%d", rle_count);
+// 						printf("%d", rle_count);
 						rle_last_bit = 1;
 						rle_count = 0;
 					}
@@ -51,7 +53,7 @@ void my_draw_bitmap(const struct aostk_glyph* glyph) {
 				} else {
 					
 					if (rle_last_bit == 1) {
-						printf("%d", rle_count);
+// 						printf("%d", rle_count);
 						rle_last_bit = 0;
 						rle_count = 0;
 					}
@@ -202,11 +204,16 @@ int main(int argc, char* argv[]) {
 
 // 	printf("EM size %d\n", 4 * 300/72);
 //
-	for (i=0x0; i<=255; i++) {
+	int idx;
+	unsigned int glyph_list[] = {0x2030, 0};
+	for (idx=0x0; idx<=MAX_GLYPHS; idx++) {
 		int len;
-		glyph_index = FT_Get_Char_Index( face, /*i=='%' ? 0x2030 :*/ i );
+		int unicode = idx>=256 ? glyph_list[idx - 256] : idx;
+		if (idx > 0 && unicode ==0)
+			break;
+		glyph_index = FT_Get_Char_Index( face, unicode);
 	
-		if ((glyph_index == 0) && (i != 0)) {
+		if ((glyph_index == 0) && (unicode != 0)) {
 #ifndef TTF2C
 			printf("Glyph not found\n");
 #endif
@@ -228,12 +235,12 @@ int main(int argc, char* argv[]) {
 														/*render_mode*/FT_RENDER_MODE_MONO ); /* render mode */
 		
 		if (error) {
-			printf("Error rendering %d\n", i);
+			printf("Error rendering %d\n", unicode);
  			exit(0);
 			continue;
 		}
 		
-		genglyphs[genfont.numglyphs].i            = i;
+		genglyphs[genfont.numglyphs].i            = unicode;
 		genglyphs[genfont.numglyphs].size.width   = face->glyph->bitmap.width;
 		genglyphs[genfont.numglyphs].size.height  = face->glyph->bitmap.rows;
 		genglyphs[genfont.numglyphs].top          = face->glyph->bitmap_top;
@@ -253,7 +260,7 @@ int main(int argc, char* argv[]) {
 		#warning  optimize 8x16 font output
 		#warning  fix baseline and top-left coordinate mixup
 #ifndef TTF2C
-		printf("Symbol #%d\n", genglyphs[genfont.numglyphs].i);
+		printf("Symbol #%d\n", genglyphs[genfont.numglyphs].unicode);
 		my_draw_bitmap(&genglyphs[genfont.numglyphs]); 
 #endif
 
