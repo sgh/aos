@@ -117,9 +117,9 @@ void aostk_putstring(struct aostk_font* font, int x, int y, const char* str) {
 
 
   while ((*str) != 0) {
-    g = aostk_get_glyph(font, (uint8_t)*str);
-    aostk_putglyph(g, x, y, (uint8_t)*str);
+    g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str));
+    aostk_putglyph(g, x, y, 0);
     x += g->advance.x;
-    str++;
+//     str++;
   }
 }

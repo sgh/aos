@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <ugui/ugui_font.h> 
 
-int decode_utf8(unsigned char** pptr) {
+int decode_utf8(const unsigned char** pptr) {
 	unsigned char* ptr = *pptr;
 	unsigned char c;
 	int code_length = 0;
 	unsigned int value = 0;
 
+	printf("%s:",__FUNCTION__);
 	// Wind over UTF-part
 	while ((*ptr & 0xC0) == 0x80)
 		ptr++;
@@ -16,17 +17,19 @@ int decode_utf8(unsigned char** pptr) {
 		c <<= 1;
 		code_length++;
 	}
-	
+
 	if (code_length > 1) {
 		value = *ptr << code_length;
 		value &= 0xFF;
 		value >>= code_length;
-// 		printf("UTF code length: %d\n", code_length);
+		printf("UTF code length: %d\n", code_length);
 
 		while (--code_length) {
 			ptr++;
-			if (*ptr == 0)
-				return 0;
+			if (*ptr == 0) {
+				*pptr = ptr;
+				return *ptr;
+			}
 			value <<= 6;
 			value |= *ptr & 0x3F;
 		}
@@ -35,7 +38,7 @@ int decode_utf8(unsigned char** pptr) {
 // 		printf("Ascii: \n");
 	}
 
-// 	printf("0x%02X\n", value);
+	printf("0x%02X\n", value);
 	*pptr = ptr+1;
 	return value;
 }
