@@ -41,8 +41,8 @@ class Cross : public Drawable {
 		/*unsigned */char buf[4] = { 	0x80+0x40+0x20 + 0x2, 0x80, 0x80+0x30, 0x00};
 		ugui_line(0,0,20,20, 0xFFFF00);
 
-		aostk_putstring(&VeraMoBd, 0, 0,  "ABCDEFGHIJKLMNOPQRSTUVXYZÆØÅ");
-		aostk_putstring(&VeraMoBd, 0, 12, "abcdefghijklmnopqrstuvxyzæøå\xE2\x80\xb0");
+// 		aostk_putstring(&VeraMoBd, 0, 0,  "ABCDEFGHIJKLMNOPQRSTUVXYZÆØÅ");
+		aostk_putstring(&VeraMoBd, 0, 12, "abcdefghijklmnopqrstuvxyzæøå\xE2\x80\xB0\xD0\x89\xCF\x80");
 // 		aostk_putstring(&VeraMoBd, 0, 24, buf);
 	}
 };

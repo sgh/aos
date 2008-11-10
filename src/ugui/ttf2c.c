@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
 // 	printf("EM size %d\n", 4 * 300/72);
 //
 	int idx;
-	unsigned int glyph_list[] = {0x2030, 0};
+	unsigned int glyph_list[] = {0x3C0, 0x409, 0x2030, 0};
 	for (idx=0x0; idx<=MAX_GLYPHS; idx++) {
 		int len;
 		int unicode = idx>=256 ? glyph_list[idx - 256] : idx;
@@ -260,7 +260,7 @@ int main(int argc, char* argv[]) {
 		#warning  optimize 8x16 font output
 		#warning  fix baseline and top-left coordinate mixup
 #ifndef TTF2C
-		printf("Symbol #%d\n", genglyphs[genfont.numglyphs].unicode);
+		printf("Symbol #%d\n", genglyphs[genfont.numglyphs].i);
 		my_draw_bitmap(&genglyphs[genfont.numglyphs]); 
 #endif
 
