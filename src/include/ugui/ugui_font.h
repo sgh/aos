@@ -38,6 +38,9 @@ static inline uint8_t aostk_font_height(struct aostk_font* f) {
 	return f->height;
 }
 
+
+int decode_utf8(const unsigned char** pptr);
+
 unsigned int aostk_font_strwidth(struct aostk_font* f, const char* str);
 
 unsigned int aostk_font_charwidth(struct aostk_font* f, char c);
