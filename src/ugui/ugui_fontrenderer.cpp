@@ -98,14 +98,6 @@ unsigned int aostk_font_strwidth(struct aostk_font* f, const char* str) {
 	return width;
 }
 
-
- void aostk_putglyph(const struct aostk_glyph* g, unsigned int posx, unsigned int posy, unsigned int c) {
-	assert(g != NULL);
-	
-// 	f->raster(f, posx, posy, c, scanlines);
-	aostk_ttf_raster(g, posx, posy);
-}
-
 void aostk_putstring(struct aostk_font* font, int x, int y, const char* str) {
   const struct aostk_glyph* g;
   assert(f != NULL);
@@ -118,7 +110,7 @@ void aostk_putstring(struct aostk_font* font, int x, int y, const char* str) {
 
   while ((*str) != 0) {
     g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str));
-    aostk_putglyph(g, x, y, 0);
+    aostk_ttf_raster(g, x, y);
     x += g->advance.x;
 //     str++;
   }

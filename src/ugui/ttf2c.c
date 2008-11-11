@@ -205,17 +205,17 @@ int main(int argc, char* argv[]) {
 // 	printf("EM size %d\n", 4 * 300/72);
 //
 	int idx;
-	unsigned int glyph_list[] = {0x3C0, 0x409, 0x2030, 0};
+	unsigned int glyph_list[] = {0x3C0, 0x409, 0x508, 0x2030/*, 0x2070*/, 0};
 	for (idx=0x0; idx<=MAX_GLYPHS; idx++) {
 		int len;
-		int unicode = idx>=256 ? glyph_list[idx - 256] : idx;
+		unsigned int unicode = idx>=256 ? glyph_list[idx - 256] : idx;
 		if (idx > 0 && unicode ==0)
 			break;
 		glyph_index = FT_Get_Char_Index( face, unicode);
 	
-		if ((glyph_index == 0) && (unicode != 0)) {
+		if ((unicode != 0) && (glyph_index == 0)) {
 #ifndef TTF2C
-			printf("Glyph not found\n");
+			printf("Glyph not found (%d)\n", unicode);
 #endif
 			continue;
 // 			exit(1);
