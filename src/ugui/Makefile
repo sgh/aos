@@ -19,6 +19,7 @@ OBJS := $(patsubst %.c, %.o, $(OBJS))
 #-fno-default-inline
 
 $APP): $(OBJS)
+	$(MAKE) -f Makefile.pc ttf2c
 	$(AR) rcs $(APP) $(OBJS)
 #arm-elf-size -t $(APP)
 
