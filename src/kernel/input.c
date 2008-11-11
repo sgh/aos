@@ -48,8 +48,8 @@ static void pressedlist_remove(uint32_t scancode) {
 		}
 	}
 	
-	// Fill 0 entries
-	for (i=0; i<TOTAL_CONCURRENT_KEYS-1; i++) {
+	// Fill 0 entries (except the first one because it indicates the current active key)
+	for (i=1; i<TOTAL_CONCURRENT_KEYS-1; i++) {
 		if (current_keys[i] == 0) {
 			current_keys[i] = current_keys[i+1];
 			current_times[i] = current_times[i+1];
