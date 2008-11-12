@@ -6,7 +6,7 @@
 
 #include "ugui/ugui_font.h"
 
-#define TTF2C
+// #define TTF2C
 
 #define MAX_GLYPHS 1000
 
@@ -178,25 +178,27 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	int width  = atoi(argv[2]);
-	int height = 0;
+	int width  = 0;
+	int height = atoi(argv[2]);
 	
 	error = FT_Set_Char_Size(
 		face,    /* handle to face object           */
-		width*64,   /* char_width in 1/64th of points  */
+		0,   /* char_width in 1/64th of points  */
 		height*64,   /* char_height in 1/64th of points */
 		72,     /* horizontal device resolution    */
 		72 );   /* vertical device resolution      */
 	
-// 	error = FT_Set_Pixel_Sizes(
-// 		face,   /* handle to face object */
-// 		30,      /* pixel_width           */
-// 		20 );   /* pixel_height          */
+	error = FT_Set_Pixel_Sizes(
+		face,   /* handle to face object */
+		0,      /* pixel_width           */
+		height );   /* pixel_height          */
 	
 	if (error) {
 		//printf("Error setting char size\n");
 		//exit(0);
 	}
+
+	height = 0;
 	
 // 	printf("max_advanc_height %d\n", face->max_advance_height);
 // 	printf("units_per_EM %d\n", face->units_per_EM);

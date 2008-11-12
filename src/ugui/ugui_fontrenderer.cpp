@@ -39,7 +39,7 @@ static void my_draw_bitmap(const struct aostk_glyph* glyph, int x, int y) {
 	}
 }
 
-const struct aostk_glyph* aostk_get_glyph(struct aostk_font* f, unsigned int c) {
+const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned int c) {
 	unsigned int high = f->numglyphs - 1;
 	unsigned int low = 0;
 	unsigned int pivot;
@@ -75,14 +75,14 @@ static void aostk_ttf_raster(const struct aostk_glyph* g, unsigned int posx, uns
 }
 
 
-unsigned int aostk_font_charwidth(struct aostk_font* f, char c) {
+unsigned int aostk_font_charwidth(const struct aostk_font* f, char c) {
 	const struct aostk_glyph* g;
 		g = aostk_get_glyph(f, c);
 		assert(g);
 		return g->advance.x;
 }
 
-unsigned int aostk_font_strwidth(struct aostk_font* f, const char* str) {
+unsigned int aostk_font_strwidth(const struct aostk_font* f, const char* str) {
 	unsigned int width = 0;
 	const struct aostk_glyph* g;
 
@@ -98,7 +98,7 @@ unsigned int aostk_font_strwidth(struct aostk_font* f, const char* str) {
 	return width;
 }
 
-void aostk_putstring(struct aostk_font* font, int x, int y, const char* str) {
+void aostk_putstring(const struct aostk_font* font, int x, int y, const char* str) {
   const struct aostk_glyph* g;
   assert(f != NULL);
   /**
