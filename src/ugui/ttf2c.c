@@ -207,10 +207,11 @@ int main(int argc, char* argv[]) {
 // 	printf("EM size %d\n", 4 * 300/72);
 //
 	int idx;
-	unsigned int glyph_list[] = {0x3C0, 0x409, 0x508, 0x2030/*, 0x2070*/, 0};
+	unsigned int glyph_list[] = {/*0x3C0, 0x409, 0x508,*/ 0x2030/*, 0x2070*/, 0};
 	for (idx=0x0; idx<=MAX_GLYPHS; idx++) {
 		int len;
 		unsigned int unicode = idx>=256 ? glyph_list[idx - 256] : idx;
+// 		unicode = glyph_list[idx];
 		if (idx > 0 && unicode ==0)
 			break;
 		glyph_index = FT_Get_Char_Index( face, unicode);
@@ -226,7 +227,7 @@ int main(int argc, char* argv[]) {
 		error = FT_Load_Glyph(
 													face,          /* handle to face object */
 							glyph_index,   /* glyph index           */
-				/*load_flags*/ FT_LOAD_DEFAULT);  /* load flags, see below */
+				/*load_flags*/ FT_LOAD_DEFAULT|FT_LOAD_FORCE_AUTOHINT|FT_LOAD_TARGET_MONO);  /* load flags, see below */
 		
 		if (error) {
 			printf("Error loading\n");
