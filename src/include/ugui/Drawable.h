@@ -31,6 +31,7 @@ class DrawableDecoration {
 		int _bottom;
 		int _left;
 		int _right;
+		struct DrawingContext _ctx;
 		
 		DrawableDecoration(void) {}
 
