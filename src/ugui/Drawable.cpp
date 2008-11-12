@@ -39,7 +39,7 @@ bool Drawable::redraw(void) {
 		y1 = absy_deco();
 		x2 = x1 + width_deco() - 1;
 		y2 = y1 + height_deco() -1;
-		current_context = &_ctx;
+		current_context = &_decoration->_ctx;
 		#warning we must obey parent boundaries too
 		ugui_set_bounds(x1, y1, x2, y2);
 		_decoration->draw(this);
