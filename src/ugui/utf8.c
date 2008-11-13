@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <ugui/ugui_font.h>
 
-#define UTF8_DEBUG
+//#define UTF8_DEBUG
 
 int decode_utf8(const unsigned char** pptr) {
 	unsigned char* ptr = *pptr;

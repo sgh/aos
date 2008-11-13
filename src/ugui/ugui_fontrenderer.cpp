@@ -4,46 +4,42 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "ugui/ugui_fontrenderer.h"
+#include "ugui/ugui_font.h"
 #include "ugui/ugui.h"
 
 void aostk_bitmap_raster(struct aostk_font* f, unsigned int posx, unsigned int posy, unsigned char c, int scanlines);
 
-static void my_draw_bitmap(const struct aostk_glyph* glyph, int x, int y) {
+static inline void aostk_raster(const struct aostk_glyph* glyph, unsigned int x, unsigned int y) {
 	const char* r;
 	unsigned int rows = glyph->size.height;
 	int pixel;
-	unsigned int bit;
 	const char* ptr;
 	int line = 0;
+	register unsigned char data = *ptr;
 
 	x += glyph->left;
 	y -= glyph->top;
 	
 	r = glyph->data;
 	while (rows--) {
-		bit = 128;
 		ptr = r;
-		for (pixel=0; pixel<glyph->size.width; pixel++) {
-			if (*ptr & bit)
-				ugui_putpixel(x + pixel, y + line, current_context->text_color);
-			#warning place at least one line in a temporary buffer before drawing pixel
-			bit >>= 1;
-			if (bit == 0) {
-				bit = 128;
-				ptr++;
-			}
+		data = *ptr;
+		pixel = 0;
+		while (pixel<glyph->size.width) {
+			ugui_putpixel8(x + pixel, y + line, current_context->text_color, data);
+			ptr++;
+			pixel += 8;
+			data = *ptr;
 		}
 		r += glyph->pitch;
 		line++;
 	}
 }
 
-const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned int c) {
+static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned int c) {
 	unsigned int high = f->numglyphs - 1;
 	unsigned int low = 0;
 	unsigned int pivot;
-
 	while (high >= low) {
 		pivot = (high + low) >> 1;
 		
@@ -52,28 +48,11 @@ const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned i
 		else
 		if (f->glyphs[pivot].i < c)
 			low = pivot + 1;
-		else {
-// 			printf("%c = %d\n", c, f->glyphs[pivot].i);
+		else
 			return &f->glyphs[pivot];
-		}
 	}
 	return &f->glyphs[0];
 }
-
-
-static void aostk_ttf_raster(const struct aostk_glyph* g, unsigned int posx, unsigned int posy) {
-	struct aostk_point p;
-// 	unsigned int x;
-// 	unsigned int y;
-
-	if (g == NULL)
-		return;
-
-// 	p.x = posx + g->left;
-// 	p.y = posy - g->top;
-	my_draw_bitmap(g, posx, posy);
-}
-
 
 unsigned int aostk_font_charwidth(const struct aostk_font* f, char c) {
 	const struct aostk_glyph* g;
@@ -110,8 +89,7 @@ void aostk_putstring(const struct aostk_font* font, int x, int y, const char* st
 
   while ((*str) != 0) {
     g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str));
-    aostk_ttf_raster(g, x, y);
+    aostk_raster(g, x, y);
     x += g->advance.x;
-//     str++;
   }
 }
