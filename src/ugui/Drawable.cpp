@@ -189,14 +189,7 @@ void Drawable::real_hide(void) {
 }
 
 void Drawable::real_focus() {
-	UGui* g = UGui::instance();
-
-	if (g->_focus_drawable)
-		g->_focus_drawable->focus_out();
-
-	focus_in();
-
-	g->_focus_drawable = this;
+	UGui::instance()->_focus_drawable = this;
 }
 
 void Drawable::postEvent(unsigned int event) {
@@ -208,6 +201,12 @@ void Drawable::postEvent(unsigned int event) {
 }
 
 void Drawable::focus(void) {
+	UGui* g = UGui::instance();
+
+	if (g->_focus_drawable)
+		g->_focus_drawable->focus_out();
+
+	focus_in();
 	postEvent(FOCUS_EVENT);
 }
 
