@@ -4,7 +4,7 @@ CXX = $(TARGET)g++
 CC = $(TARGET)gcc
 AR = $(TARGET)ar
 
-FLAGS =  -I ../include -Os -I .. -DNDEBUG -D__STDC_LIMIT_MACROS
+FLAGS =  -I ../include -O3 -I .. -DNDEBUG -D__STDC_LIMIT_MACROS
 CPPFLAGS =  -fno-rtti -fno-exceptions $(FLAGS)
 CFLAGS = $(FLAGS)
 

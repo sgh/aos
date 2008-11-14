@@ -57,12 +57,21 @@ public:
 	extern "C" {
 #endif
 
+struct ppix8_native {
+	unsigned int color;
+	int x;
+	int y;
+	unsigned char bitmap;
+};
+
 void ugui_line(int x1, int y1, int x2, int y2, unsigned int color);
 void ugui_putpixel(int x, int y, unsigned int color);
-void ugui_putpixel8(int x, int y, unsigned int color, unsigned char bitmap);
 void ugui_fill(int x1, int y1, int width, int height, unsigned int color);
 void ugui_set_bounds(int x1, int y1, int x2, int y2);
 unsigned int ugui_alloc_color(unsigned int rgb);
+
+// Native callbacks
+void ugui_putpixel8_native(struct ppix8_native* ppix8);
 
 #ifdef __cplusplus
 	}
