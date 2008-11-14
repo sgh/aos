@@ -8,13 +8,15 @@ int decode_utf8(const unsigned char** pptr) {
 	unsigned char c;
 	int code_length = 0;
 	unsigned int value = 0;
+
 #ifdef UTF8_DEBUG
 	printf("%s:\n",__FUNCTION__);
 	printf("::0x%02X\n", *ptr);
 #endif
-	// Wind over UTF-part
+	// Wind over UTF-parts
 	while ((*ptr & 0xC0) == 0x80) {
 		ptr++;
+
 #ifdef UTF8_DEBUG
 		printf("::0x%02X\n", *ptr);
 #endif

@@ -7,32 +7,30 @@
 #include "ugui/ugui_font.h"
 #include "ugui/ugui.h"
 
-void aostk_bitmap_raster(struct aostk_font* f, unsigned int posx, unsigned int posy, unsigned char c, int scanlines);
+//void aostk_bitmap_raster(struct aostk_font* f, unsigned int posx, unsigned int posy, unsigned char c, int scanlines);
 
-static inline void aostk_raster(const struct aostk_glyph* glyph, unsigned int x, unsigned int y) {
+struct ppix8_native raster_ppix8;
+static inline void aostk_raster(const struct aostk_glyph* glyph, int x, int y) {
 	const char* r;
 	unsigned int rows = glyph->size.height;
-	int pixel;
+	int gwidth;
 	const char* ptr;
-	int line = 0;
-	register unsigned char data = *ptr;
 
+	raster_ppix8.y = y - glyph->top;
 	x += glyph->left;
-	y -= glyph->top;
-	
 	r = glyph->data;
+	gwidth = glyph->size.width + x;
+
 	while (rows--) {
 		ptr = r;
-		data = *ptr;
-		pixel = 0;
-		while (pixel<glyph->size.width) {
-			ugui_putpixel8(x + pixel, y + line, current_context->text_color, data);
+		raster_ppix8.bitmap = *r;
+		for (raster_ppix8.x=x; raster_ppix8.x<gwidth; raster_ppix8.x+=8) {
+			ugui_putpixel8_native(&raster_ppix8);
 			ptr++;
-			pixel += 8;
-			data = *ptr;
+			raster_ppix8.bitmap = *ptr;
 		}
 		r += glyph->pitch;
-		line++;
+		raster_ppix8.y++;
 	}
 }
 
@@ -86,7 +84,7 @@ void aostk_putstring(const struct aostk_font* font, int x, int y, const char* st
    */
   y += font->height;
 
-
+	raster_ppix8.color = ugui_alloc_color(current_context->text_color);
   while ((*str) != 0) {
     g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str));
     aostk_raster(g, x, y);
