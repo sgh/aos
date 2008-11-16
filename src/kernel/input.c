@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+
+// #define NEW_INPUT
+
+#ifndef NEW_INPUT
+
 #define AOS_KERNEL_MODULE
 #include <aos/kernel.h>
 #include <aos/aos.h>
@@ -287,3 +292,39 @@ void input_init(void)
 }
 
 AOS_MODULE_INIT(input_init);
+#else
+
+static void dispatch_keyscan(uint32_t keyscan) {
+	static uint32_t last_keyscan;
+	uint32_t keypress = keyscan & ~last_keyscan;
+	uint32_t keyrelease = last_keyscan & ~keyscan;
+	uint32_t scancode;
+	
+	if (keyscan == last_keyscan)
+		return;
+
+	for (scancode = 1; keyrelease ; keyrelease >>= 1) {
+		if (keyrelease & 1)
+			printf("Keyrelease %d\n", scancode);
+		scancode++;
+	}
+
+	for (scancode = 1; keypress ; keypress >>= 1) {
+		if (keypress & 1)
+			printf("Keypress %d\n", scancode);
+		scancode++;
+	}
+
+	last_keyscan = keyscan;
+}
+
+int main() {
+	dispatch_keyscan(0x00000000);
+	dispatch_keyscan(0x00000001);
+	dispatch_keyscan(0x00000003);
+	dispatch_keyscan(0x00000002);
+	dispatch_keyscan(0x00000000);
+	dispatch_keyscan(0x00000000);
+}
+
+#endif
