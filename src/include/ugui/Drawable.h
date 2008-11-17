@@ -49,7 +49,6 @@ class Drawable {
 	Drawable* _prev; // Previous Drawable is the parents child list
 	unsigned int _events;
 
-	void invalidateOverlapped(void);
 	void postEvent(unsigned int event);
 
 protected:
@@ -57,6 +56,7 @@ protected:
 	bool             _transparent;
 	bool             _modal;
 
+	void invalidateOverlapped(void);
 	void update(void);
 	virtual void erase(void);
 	uint32_t _last_update;
