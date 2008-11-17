@@ -294,7 +294,10 @@ void input_init(void)
 AOS_MODULE_INIT(input_init);
 #else
 
-static void dispatch_keyscan(uint32_t keyscan) {
+void dispatch_keypress(int scancode);
+void dispatch_keyrelease(int scancode);
+
+static void generic_register_keyscan(uint32_t keyscan, uint8_t irq) {
 	static uint32_t last_keyscan;
 	uint32_t keypress = keyscan & ~last_keyscan;
 	uint32_t keyrelease = last_keyscan & ~keyscan;
@@ -305,26 +308,31 @@ static void dispatch_keyscan(uint32_t keyscan) {
 
 	for (scancode = 1; keyrelease ; keyrelease >>= 1) {
 		if (keyrelease & 1)
-			printf("Keyrelease %d\n", scancode);
+			dispatch_keyrelease(scancode);
 		scancode++;
 	}
 
 	for (scancode = 1; keypress ; keypress >>= 1) {
 		if (keypress & 1)
-			printf("Keypress %d\n", scancode);
+			dispatch_keypress(scancode);
 		scancode++;
 	}
 
 	last_keyscan = keyscan;
 }
 
+aos_register_keypress(uint32_t scancode) {
+	dispatch_keypress(scancode);
+	dispatch_keyrelease(scancode);
+}
+
 int main() {
-	dispatch_keyscan(0x00000000);
-	dispatch_keyscan(0x00000001);
-	dispatch_keyscan(0x00000003);
-	dispatch_keyscan(0x00000002);
-	dispatch_keyscan(0x00000000);
-	dispatch_keyscan(0x00000000);
+	generic_register_keyscan(0x00000000, 0);
+	generic_register_keyscan(0x00000001, 0);
+	generic_register_keyscan(0x00000003, 0);
+	generic_register_keyscan(0x00000002, 0);
+	generic_register_keyscan(0x00000000, 0);
+	generic_register_keyscan(0x00000000, 0);
 }
 
 #endif
