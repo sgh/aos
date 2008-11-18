@@ -321,15 +321,19 @@ static void generic_register_keyscan(uint32_t keyscan, uint8_t irq) {
 	last_keyscan = keyscan;
 }
 
-aos_register_keypress(uint32_t scancode) {
+void aos_register_keypress(uint32_t scancode) {
 	dispatch_keypress(scancode);
 	dispatch_keyrelease(scancode);
+}
+
+void aos_key_management_task(void* arg) {
 }
 
 int main() {
 	generic_register_keyscan(0x00000000, 0);
 	generic_register_keyscan(0x00000001, 0);
 	generic_register_keyscan(0x00000003, 0);
+	aos_register_keypress(5);
 	generic_register_keyscan(0x00000002, 0);
 	generic_register_keyscan(0x00000000, 0);
 	generic_register_keyscan(0x00000000, 0);
