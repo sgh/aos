@@ -59,7 +59,7 @@ protected:
 	void invalidateOverlapped(void);
 	void update(void);
 	virtual void erase(void);
-	uint32_t _last_update;
+	uint32_t _next_update;
 
 	// Decoration aware functions
 	int absx_deco(void);
