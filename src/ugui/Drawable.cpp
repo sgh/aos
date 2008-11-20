@@ -311,7 +311,7 @@ void Drawable::invalidateOverlapped(void) {
 	// Basically we only check to toplevel widgets, it could be improved
 	// but since to do not buffer the image-data for all widgets a redraw of a
 	// widget as effect of another widget disappearing needs to redraw everything
-	// that widgett wass overlapping
+	// that widget was overlapping
 	Drawable* d = this;
 
 	while (d->_parent)

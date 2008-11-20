@@ -150,11 +150,9 @@ int UGui::eventLoop(void) {
 
 	sem_timeout_down(&_process_sem, 100);
 	
-	//eventLock();
 	get_sysmtime(&startTime);
 	processEvents(_root);
 	get_sysmtime(&endTime);
-	//eventUnlock();
 
 	_event_time = endTime - startTime;
 
