@@ -29,6 +29,8 @@ public:
 	Drawable* _focus_drawable;
 	struct Point _update_min;
 	struct Point _update_max;
+	static int    _event_time;
+	static int    _draw_time;
 
 	static UGui* instance(void);
 
