@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "ugui/ugui.h"
+#include <aos/aos.h>
 
 struct DrawingContext* current_context;
 
@@ -10,6 +11,8 @@ UGui*       UGui::_instance;
 mutex_t     UGui::_eventlock;
 mutex_t     UGui::_drawlock;
 semaphore_t UGui::_process_sem;
+int         UGui::_event_time;
+int         UGui::_draw_time;
 
 UGui::UGui() : _root(NULL), _focus_drawable(NULL) {
 // 	fprintf(stdout,"UGui construction ... ");
@@ -82,6 +85,7 @@ void UGui::processEvents(Drawable* d) {
 
 void UGui::addRoot(Drawable& child) {
 	drawLock();
+	eventLock();
 	Drawable* d = _root;
 
 	while (d) {
@@ -108,7 +112,8 @@ void UGui::addRoot(Drawable& child) {
 	}
 
 	child.update();
-	child.invalidate();
+	child.real_invalidate();
+	eventUnlock();
 	drawUnlock();
 }
 
@@ -135,6 +140,8 @@ void UGui::removeRoot(Drawable& child) {
 }
 
 int UGui::eventLoop(void) {
+	uint32_t startTime;
+	uint32_t endTime;
 	_draw_activity = 0;
 	_update_min.x = INT32_MAX;
 	_update_min.y = INT32_MAX;
@@ -143,11 +150,21 @@ int UGui::eventLoop(void) {
 
 	sem_timeout_down(&_process_sem, 100);
 	
+	//eventLock();
+	get_sysmtime(&startTime);
 	processEvents(_root);
+	get_sysmtime(&endTime);
+	//eventUnlock();
+
+	_event_time = endTime - startTime;
 
 	drawLock();
+	get_sysmtime(&startTime);
 	drawTraverse(_root);
+	get_sysmtime(&endTime);
 	drawUnlock();
+
+	_draw_time = endTime - startTime;
 	
 	return _draw_activity;
 // 	printf("\n");
