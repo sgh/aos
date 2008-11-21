@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 
-// #define NEW_INPUT
+#define NEW_INPUT
 
 #ifndef NEW_INPUT
 
@@ -327,6 +327,41 @@ void aos_register_keypress(uint32_t scancode) {
 }
 
 void aos_key_management_task(void* arg) {
+	int i;
+	unsigned int active_scancode;
+	unsigned int timedwait = 0;
+
+	while (1) {
+		timedwait = 0;
+
+		if ( != 0) {
+			if (repeatcount == 0)
+					timedwait = 500; // Pre repeation delay
+				else
+					timedwait = 50; // Repeation delay
+		}
+
+		if (sem_timeout_down(&event_sem, timedwait) == ETIMEOUT) {
+			repeatcount++; // Key is repeated
+		} else { // New event
+				#warning fetch event from store (not fifo - just one variable)
+				#warning Maybe it should just be the keybitmap. It would be more simple to let keymanager handle the processing.
+				if (inputhooks && inputhooks->beep) inputhooks->beep(); 
+				repeatcount = 0;
+			}
+		}
+
+		// Call key-filter for global accessible keyhandling
+// 		if (inputhooks && inputhooks->keyfilter)
+// 			inputhooks->keyfilter(&char_buffer[buffer_put_idx]);
+
+		#warning put event in queue - either the actual press/release-event or the repeation event
+		//dispatch_keypress
+		//dispatch_keyrelease
+		//dispatch_keyrepeat
+		//...
+		//...
+	}
 }
 
 void testfifo();
