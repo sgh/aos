@@ -329,7 +329,11 @@ void aos_register_keypress(uint32_t scancode) {
 void aos_key_management_task(void* arg) {
 }
 
+void testfifo();
+
 int main() {
+	testfifo();
+	return;
 	generic_register_keyscan(0x00000000, 0);
 	generic_register_keyscan(0x00000001, 0);
 	generic_register_keyscan(0x00000003, 0);
