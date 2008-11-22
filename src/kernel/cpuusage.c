@@ -16,7 +16,7 @@
 	License along with this library; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-#include <types.h>
+#include <stdint.h>
 
 /**
  * \brief Timer-value when usage stats where last recorded
@@ -32,4 +32,15 @@ void cpuusage_user() {
 }
 
 void cpuusage_idle() {
+}
+
+int main() {
+	int i;
+	float usage;
+
+	for (i=0; i<10; i++) {
+		usage = usage * 0.9 +  (i&1)*0.1;
+		printf("%f\n", usage);
+	}
+
 }
