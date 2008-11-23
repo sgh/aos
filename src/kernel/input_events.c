@@ -90,7 +90,7 @@ int aos_fifo_write(struct aos_fifo* fifo, void* src, int len) {
 }
 
 
-static uint8_t queuedata[sizeof(AosEvent)*16];
+static uint8_t queuedata[sizeof(AosEvent)*8 + 1];
 static struct aos_fifo eventqueue;
 static semaphore_t eventqueue_sem;
 
