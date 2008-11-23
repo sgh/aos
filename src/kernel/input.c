@@ -2,10 +2,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#define NEW_INPUT
-
-#ifndef NEW_INPUT
-
 #define AOS_KERNEL_MODULE
 #include <aos/kernel.h>
 #include <aos/aos.h>
@@ -24,86 +20,30 @@ static DECLARE_MUTEX_UNLOCKED(char_buffer_lock);
 static uint32_t current_keys[TOTAL_CONCURRENT_KEYS];
 static uint32_t current_times[TOTAL_CONCURRENT_KEYS];
 
-static semaphore_t scancode_ready_sem;
+static semaphore_t keyscan_ready_sem;
 
 static semaphore_t getchar_ready_sem;
 static unsigned int repeatcount = 0;
 
 static const struct input_hooks* inputhooks;
 
-static void pressedlist_add(uint32_t time, uint32_t scancode) {
-	int i;
-// Move all keypresses a step right
-	for (i=TOTAL_CONCURRENT_KEYS-1; i>0; i--) {
-		current_keys[i]  = current_keys[i-1];
-		current_times[i] = current_times[i-1];
-	}
-
-	current_keys[0]  = scancode;
-	current_times[0] = time;
-}
-
-
-static void pressedlist_remove(uint32_t scancode) {
-	int i;
-	for (i=0; i<TOTAL_CONCURRENT_KEYS; i++) {
-		if (current_keys[i] == scancode) {
-			current_keys[i] = 0;
-			current_times[i] = 0;
-		}
-	}
-	
-	// Fill 0 entries (except the first one because it indicates the current active key)
-	for (i=1; i<TOTAL_CONCURRENT_KEYS-1; i++) {
-		if (current_keys[i] == 0) {
-			current_keys[i] = current_keys[i+1];
-			current_times[i] = current_times[i+1];
-			current_keys[i+1] = 0;
-			current_times[i+1] = 0;
-		}
-	}
-
-}
-
+static uint32_t current_keyscan;
 
 static void generic_register_keyscan(uint32_t keyscan, uint8_t irq) {
-	static uint32_t last_keyscan;
 	uint32_t now = 0;
 	uint32_t scancode;
-	uint32_t press = keyscan & ~last_keyscan;
-	uint32_t release = last_keyscan & ~keyscan;
-	uint8_t scancode_change = 0;
-	last_keyscan = keyscan;
 
-	if ((press != 0) || (release |= 0))
-		scancode_change = 1;
+	if (current_keyscan == keyscan)
+		return;
 
 	if (!irq) irq_lock();
 
-	// Run through released keys
-	for (scancode = 1; release ; release >>= 1) {
-		if (release & 1)
-			pressedlist_remove(scancode);
-		scancode++;
-	}
-
-/*	if (irq) 
-		sys_get_sysmtime(&now);
-	else*/
-		get_sysmtime(&now);
-
-	for (scancode = 1; press ; press >>= 1) {
-		if (press & 1)
-			pressedlist_add(now, scancode);
-		scancode++;
-	}
+	current_keyscan = keyscan;
 	
-	if (scancode_change) {
-		if (irq)
-			sys_sem_up(&scancode_ready_sem);
-		else
-			sem_up(&scancode_ready_sem);
-	}
+	if (irq)
+		sys_sem_up(&keyscan_ready_sem);
+	else
+		sem_up(&keyscan_ready_sem);
 	
 	if (!irq) irq_unlock();
 }
@@ -141,8 +81,44 @@ void aos_register_keypress(uint32_t scancode) {
 	mutex_unlock(&char_buffer_lock);
 }
 
+static uint32_t active_scancode;
+
+void dispatch_keypress(int scancode);
+void dispatch_keyrelease(int scancode);
+
+static void process_keyscan(uint32_t keyscan) {
+	static uint32_t last_keyscan = 0;
+	uint32_t scancode;
+	uint32_t pressed  = keyscan & (~last_keyscan);
+	uint32_t released = (~keyscan) & last_keyscan;
+
+	last_keyscan = keyscan;
+
+	for (scancode=1; scancode<32; scancode++) {
+		if (released & 1) {
+			dispatch_keyrelease(scancode);
+
+			// If the released key is the active key
+			if (scancode == active_scancode)
+				active_scancode = 0;
+		}
+		released >>= 1;
+	}
+
+	for (scancode=1; scancode<32; scancode++) {
+		if (pressed & 1) {
+
+			// Set the active key to be the highest bit
+			active_scancode = scancode;
+			
+			dispatch_keypress(scancode);
+		}
+		pressed >>= 1;
+	}
+}
 
 void aos_key_management_task(UNUSED void* arg) {
+	
 	int i;
 	struct extended_char last_scancode;
 	unsigned int timedwait = 0;
@@ -152,7 +128,7 @@ void aos_key_management_task(UNUSED void* arg) {
 	while (1) {
 		timedwait = 0;
 		
-		if (last_scancode.keys[0] != 0) {
+		if (active_scancode != 0) {
 			if (repeatcount == 0)
 					timedwait = 500; // Pre repeation delay
 				else
@@ -160,16 +136,17 @@ void aos_key_management_task(UNUSED void* arg) {
 		}
 		
 
-		if (sem_timeout_down(&scancode_ready_sem, timedwait) == ETIMEOUT) {
+		if (sem_timeout_down(&keyscan_ready_sem, timedwait) == ETIMEOUT) {
 			repeatcount++; // Key is repeated
 		} else {
-			if (last_scancode.keys[0] != current_keys[0] && current_keys[0] != 0) { // New active key
-				if (inputhooks && inputhooks->beep) inputhooks->beep();
 				repeatcount = 0;
-			}
+				process_keyscan(current_keyscan);
+				if (active_scancode)
+					if (inputhooks && inputhooks->beep) inputhooks->beep();
 		}
 
-		
+
+		current_keys[0] = active_scancode;
 		mutex_lock(&char_buffer_lock);
 		
 		buffer_put_idx++;
@@ -284,98 +261,14 @@ void aos_input_init(const struct input_hooks* hooks) {
 	inputhooks = hooks;
 }
 
+void eventqueue_init(void);
+
 void input_init(void);
 void input_init(void)
 {
 	sem_init(&getchar_ready_sem, 0);
-	sem_init(&scancode_ready_sem, 0);
+	sem_init(&keyscan_ready_sem, 0);
+	eventqueue_init();
 }
 
 AOS_MODULE_INIT(input_init);
-#else
-
-void dispatch_keypress(int scancode);
-void dispatch_keyrelease(int scancode);
-
-static void generic_register_keyscan(uint32_t keyscan, uint8_t irq) {
-	static uint32_t last_keyscan;
-	uint32_t keypress = keyscan & ~last_keyscan;
-	uint32_t keyrelease = last_keyscan & ~keyscan;
-	uint32_t scancode;
-	
-	if (keyscan == last_keyscan)
-		return;
-
-	for (scancode = 1; keyrelease ; keyrelease >>= 1) {
-		if (keyrelease & 1)
-			dispatch_keyrelease(scancode);
-		scancode++;
-	}
-
-	for (scancode = 1; keypress ; keypress >>= 1) {
-		if (keypress & 1)
-			dispatch_keypress(scancode);
-		scancode++;
-	}
-
-	last_keyscan = keyscan;
-}
-
-void aos_register_keypress(uint32_t scancode) {
-	dispatch_keypress(scancode);
-	dispatch_keyrelease(scancode);
-}
-
-void aos_key_management_task(void* arg) {
-	int i;
-	unsigned int active_scancode;
-	unsigned int timedwait = 0;
-
-	while (1) {
-		timedwait = 0;
-
-		if ( != 0) {
-			if (repeatcount == 0)
-					timedwait = 500; // Pre repeation delay
-				else
-					timedwait = 50; // Repeation delay
-		}
-
-		if (sem_timeout_down(&event_sem, timedwait) == ETIMEOUT) {
-			repeatcount++; // Key is repeated
-		} else { // New event
-				#warning fetch event from store (not fifo - just one variable)
-				#warning Maybe it should just be the keybitmap. It would be more simple to let keymanager handle the processing.
-				if (inputhooks && inputhooks->beep) inputhooks->beep(); 
-				repeatcount = 0;
-			}
-		}
-
-		// Call key-filter for global accessible keyhandling
-// 		if (inputhooks && inputhooks->keyfilter)
-// 			inputhooks->keyfilter(&char_buffer[buffer_put_idx]);
-
-		#warning put event in queue - either the actual press/release-event or the repeation event
-		//dispatch_keypress
-		//dispatch_keyrelease
-		//dispatch_keyrepeat
-		//...
-		//...
-	}
-}
-
-void testfifo();
-
-int main() {
-	testfifo();
-	return;
-	generic_register_keyscan(0x00000000, 0);
-	generic_register_keyscan(0x00000001, 0);
-	generic_register_keyscan(0x00000003, 0);
-	aos_register_keypress(5);
-	generic_register_keyscan(0x00000002, 0);
-	generic_register_keyscan(0x00000000, 0);
-	generic_register_keyscan(0x00000000, 0);
-}
-
-#endif
