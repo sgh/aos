@@ -21,6 +21,9 @@ int aos_fifo_init(struct aos_fifo* fifo, void* data, int len) {
 	fifo->getidx = 0;
 	fifo->size = len;
 	fifo->data = data;
+#ifdef DEBUG_INPUT
+	printf("len:%d\n", len);
+#endif
 }
 
 int aos_fifo_read(struct aos_fifo* fifo, void* dst, int len) {
@@ -28,17 +31,23 @@ int aos_fifo_read(struct aos_fifo* fifo, void* dst, int len) {
 	uint8_t *ucsrc = (uint8_t*)fifo->data;
 	unsigned int getidx = fifo->getidx;
 
-// 	printf("Reading %d bytes ...", len);
-
+#ifdef DEBUG_INPUT
+	printf("Reading %d bytes ...", len);
+#endif
 	while (len-- && getidx != fifo->putidx) {
-// 	printf("[%d]=0x%02X ", getidx, ucsrc[getidx]);
+		getidx++;
+#ifdef DEBUG_INPUT
+		printf("[%d]=0x%02X ", getidx, ucsrc[getidx]);
+#endif
 		*ucdst = ucsrc[getidx];
 		ucdst++;
-		getidx++;
 		if (getidx >= fifo->size)
 			getidx = 0;
 	}
-// 	printf("\n");
+	fifo->getidx = getidx;
+#ifdef DEBUG_INPUT
+	printf("\n");
+#endif
 
 	return 0;
 }
@@ -49,7 +58,9 @@ int aos_fifo_write(struct aos_fifo* fifo, void* src, int len) {
 	unsigned int putidx = fifo->putidx;
 	int count = len;
 
-// 	printf("Adding %d bytes ...", len);
+#ifdef DEBUG_INPUT
+	printf("Adding %d bytes ...", len);
+#endif
 	while (count--) {
 		putidx++;
 		if (putidx == fifo->size)
@@ -63,32 +74,21 @@ int aos_fifo_write(struct aos_fifo* fifo, void* src, int len) {
 			break;
 		}
 
-// 		printf("[%d]=0x%02X ", putidx, *ucsrc);
+#ifdef DEBUG_INPUT
+		printf("[%d]=0x%02X ", putidx, *ucsrc);
+#endif
 		
 		ucdst[putidx] = *ucsrc;
 		ucsrc++;
-		
 	}
-// 	printf(" :: %d bytes\n", (len - (count + 1)));
+#ifdef DEBUG_INPUT
+	printf(" :: %d bytes\n", (len - (count + 1)));
+#endif
 	fifo->putidx = putidx;
 
 	return (len - count);
 }
 
-#define KeyPress   0
-#define KeyRelease 1
-
-struct KeyEvent {
-	int type;
-	unsigned int keycode;
-};
-
-union _AosEvent {
-	int type;
-	struct KeyEvent keyEvent;
-};
-
-typedef union _AosEvent AosEvent;
 
 static uint8_t queuedata[sizeof(AosEvent)*16];
 static struct aos_fifo eventqueue;
@@ -110,9 +110,28 @@ void dispatch_keyrelease(int scancode) {
 	sem_up(&eventqueue_sem);
 }
 
+void get_event(AosEvent* e) {
+	sem_down(&eventqueue_sem);
+	aos_fifo_read(&eventqueue, e, sizeof(AosEvent));
+
+#ifdef DEBUG_INPUT
+	printf("type:%d keycode:%d\n", e->type, e->keyEvent.keycode);
+#endif
+}
+
 void eventqueue_init(void);
 void eventqueue_init(void)
 {
 	sem_init(&eventqueue_sem, 0);
 	aos_fifo_init(&eventqueue, queuedata, sizeof(queuedata));
 }
+
+#ifdef DEBUG_INPUT
+int main() {
+	AosEvent e;
+	eventqueue_init();
+
+	dispatch_keypress(5);
+	get_event(&e);
+}
+#endif
