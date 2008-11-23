@@ -7,6 +7,26 @@
 	extern "C" {
 #endif
 
+#define KeyPress   1
+#define KeyRelease 2
+
+struct KeyEvent {
+	int type;
+	unsigned int keycode;
+};
+
+union _AosEvent {
+	int type;
+	struct KeyEvent keyEvent;
+};
+
+typedef union _AosEvent AosEvent;
+
+void get_event(AosEvent* e);
+
+void dispatch_keypress(int scancode);
+void dispatch_keyrelease(int scancode);
+
 /** @todo refine this */
 struct extended_char {
 	uint32_t keys[MAX_CONCURRENT_KEYS];   // The keys
