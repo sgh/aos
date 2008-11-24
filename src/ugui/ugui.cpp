@@ -61,9 +61,9 @@ void UGui::drawTraverse(Drawable* d) {
 	}
 }
 
-void UGui::key_event(struct extended_char* xchar) {
+void UGui::key_event(const AosEvent* event) {
 	if (_focus_drawable)
-		_focus_drawable->key_event(xchar);
+		_focus_drawable->key_event(event);
 }
 
 

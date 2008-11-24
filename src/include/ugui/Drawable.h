@@ -4,6 +4,7 @@
 #include "gtkfb.h"
 #include <stdint.h>
 #include <aos/macros.h>
+#include <aos/input.h>
 
 struct Point {
 	int x;
@@ -122,7 +123,7 @@ public:
 
 	void focus(void);
 
-	virtual void key_event( UNUSED struct extended_char* xchar) {}
+	virtual bool key_event( UNUSED const AosEvent* event) { return false; }
 
 	int width(void)  { return _width;  }
 	int height(void) { return _height; }

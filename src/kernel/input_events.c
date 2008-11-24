@@ -110,7 +110,7 @@ void dispatch_keyrelease(int scancode) {
 	sem_up(&eventqueue_sem);
 }
 
-void get_event(AosEvent* e) {
+void aos_get_event(AosEvent* e) {
 	sem_down(&eventqueue_sem);
 	aos_fifo_read(&eventqueue, e, sizeof(AosEvent));
 

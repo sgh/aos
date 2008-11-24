@@ -22,7 +22,7 @@ union _AosEvent {
 
 typedef union _AosEvent AosEvent;
 
-void get_event(AosEvent* e);
+void aos_get_event(AosEvent* e);
 
 void dispatch_keypress(int scancode);
 void dispatch_keyrelease(int scancode);

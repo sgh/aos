@@ -123,7 +123,7 @@ static void process_keyscan(uint32_t keyscan) {
 	static uint32_t last_keyscan = 0;
 	uint32_t scancode;
 	uint32_t pressed  = keyscan & (~last_keyscan);
-	uint32_t released = (~keyscan) & last_keyscan;
+	uint32_t released = last_keyscan & (~keyscan);
 
 	last_keyscan = keyscan;
 
@@ -176,23 +176,27 @@ void aos_key_management_task(UNUSED void* arg) {
 			process_keyscan(current_keyscan);
 		}
 
-		buffer_put_idx++;
-		if (buffer_put_idx == BUFFER_SIZE)
-			buffer_put_idx = 0;
+		if (active_keycode && repeatcount) {
+			dispatch_keypress(active_keycode);
 
-		for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
-			char_buffer[buffer_put_idx].keys[i] = current_keys[i];
-			char_buffer[buffer_put_idx].times[i] = current_times[i];
+			buffer_put_idx++;
+			if (buffer_put_idx == BUFFER_SIZE)
+				buffer_put_idx = 0;
+
+			for (i=0; i<MAX_CONCURRENT_KEYS; i++) {
+				char_buffer[buffer_put_idx].keys[i] = current_keys[i];
+				char_buffer[buffer_put_idx].times[i] = current_times[i];
+			}
+			char_buffer[buffer_put_idx].repeatcount = repeatcount;
+	
+			if (inputhooks && inputhooks->keyfilter)
+				inputhooks->keyfilter(&char_buffer[buffer_put_idx]);
+
+			sem_up(&getchar_ready_sem);
+			mutex_unlock(&char_buffer_lock);
+
+			last_scancode.keys[0] = current_keys[0];
 		}
-		char_buffer[buffer_put_idx].repeatcount = repeatcount;
-
-		if (inputhooks && inputhooks->keyfilter)
-			inputhooks->keyfilter(&char_buffer[buffer_put_idx]);
-
-		sem_up(&getchar_ready_sem);
-		mutex_unlock(&char_buffer_lock);
-
-		last_scancode.keys[0] = current_keys[0];
 	}
 }
 
