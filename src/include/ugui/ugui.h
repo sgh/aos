@@ -38,7 +38,7 @@ public:
 
 	void drawTraverse(Drawable* d);
 
-  void key_event(struct extended_char* xchar);
+  void key_event(const AosEvent* event);
 
 	int eventLoop(void);
 
