@@ -13,6 +13,7 @@
 struct KeyEvent {
 	int type;
 	unsigned int keycode;
+	unsigned int repeatcount;
 };
 
 union _AosEvent {
@@ -24,8 +25,8 @@ typedef union _AosEvent AosEvent;
 
 void aos_get_event(AosEvent* e);
 
-void dispatch_keypress(int scancode);
-void dispatch_keyrelease(int scancode);
+void dispatch_keypress(unsigned int scancode, unsigned int repeatcount);
+void dispatch_keyrelease(unsigned int scancode);
 
 /** @todo refine this */
 struct extended_char {
