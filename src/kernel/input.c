@@ -117,7 +117,7 @@ static void pressedlist_remove(uint32_t scancode) {
 }
 
 
-uint32_t active_keycode = 0;
+static uint32_t active_keycode = 0;
 
 static void process_keyscan(uint32_t keyscan) {
 	static uint32_t last_keyscan = 0;
@@ -143,7 +143,7 @@ static void process_keyscan(uint32_t keyscan) {
 	get_sysmtime(&now);
 	for (scancode=1; (pressed && scancode<32); scancode++) {
 		if (pressed & 1) {
-			dispatch_keypress(scancode);
+			dispatch_keypress(scancode, 0);
 			pressedlist_add(now,scancode);
 			active_keycode = scancode;
 			repeatcount = 0;
@@ -177,7 +177,7 @@ void aos_key_management_task(UNUSED void* arg) {
 		}
 
 		if (active_keycode && repeatcount) {
-			dispatch_keypress(active_keycode);
+			dispatch_keypress(active_keycode, repeatcount);
 
 			buffer_put_idx++;
 			if (buffer_put_idx == BUFFER_SIZE)
