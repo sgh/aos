@@ -94,15 +94,16 @@ static uint8_t queuedata[sizeof(AosEvent)*8 + 1];
 static struct aos_fifo eventqueue;
 static semaphore_t eventqueue_sem;
 
-void dispatch_keypress(int scancode) {
+void dispatch_keypress(unsigned int scancode, unsigned int repeatcount) {
 	AosEvent e;
 	e.type = KeyPress;
 	e.keyEvent.keycode = scancode;
+	e.keyEvent.repeatcount = repeatcount;
 	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
 	sem_up(&eventqueue_sem);
 }
 
-void dispatch_keyrelease(int scancode) {
+void dispatch_keyrelease(unsigned int scancode) {
 	AosEvent e;
 	e.type = KeyRelease;
 	e.keyEvent.keycode = scancode;
