@@ -2,12 +2,18 @@
 #include <stdio.h>
 #include <string.h>
 
+// #define DEBUG_INPUT
+
+#include <aos/input.h>
+
+#ifndef DEBUG_INPUT
 #define AOS_KERNEL_MODULE
 #include <aos/kernel.h>
 #include <aos/aos.h>
 #include <aos/mutex.h>
-#include <aos/input.h>
 #include <aos/irq.h>
+#endif
+
 
 struct aos_fifo {
 	unsigned int putidx;
@@ -36,17 +42,17 @@ int aos_fifo_read(struct aos_fifo* fifo, void* dst, int len) {
 #endif
 	while (len-- && getidx != fifo->putidx) {
 		getidx++;
+		if (getidx >= fifo->size)
+			getidx = 0;
 #ifdef DEBUG_INPUT
 		printf("[%d]=0x%02X ", getidx, ucsrc[getidx]);
 #endif
 		*ucdst = ucsrc[getidx];
 		ucdst++;
-		if (getidx >= fifo->size)
-			getidx = 0;
 	}
 	fifo->getidx = getidx;
 #ifdef DEBUG_INPUT
-	printf("\n");
+	//printf("\n");
 #endif
 
 	return 0;
@@ -92,7 +98,9 @@ int aos_fifo_write(struct aos_fifo* fifo, void* src, int len) {
 
 static uint8_t queuedata[sizeof(AosEvent)*8 + 1];
 static struct aos_fifo eventqueue;
+#ifndef DEBUG_INPUT
 static semaphore_t eventqueue_sem;
+#endif
 
 void dispatch_keypress(unsigned int scancode, unsigned int repeatcount) {
 	AosEvent e;
@@ -100,7 +108,9 @@ void dispatch_keypress(unsigned int scancode, unsigned int repeatcount) {
 	e.keyEvent.keycode = scancode;
 	e.keyEvent.repeatcount = repeatcount;
 	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
+#ifndef DEBUG_INPUT
 	sem_up(&eventqueue_sem);
+#endif
 }
 
 void dispatch_keyrelease(unsigned int scancode) {
@@ -108,11 +118,15 @@ void dispatch_keyrelease(unsigned int scancode) {
 	e.type = KeyRelease;
 	e.keyEvent.keycode = scancode;
 	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
+#ifndef DEBUG_INPUT
 	sem_up(&eventqueue_sem);
+#endif
 }
 
 void aos_get_event(AosEvent* e) {
+#ifndef DEBUG_INPUT
 	sem_down(&eventqueue_sem);
+#endif
 	aos_fifo_read(&eventqueue, e, sizeof(AosEvent));
 
 #ifdef DEBUG_INPUT
@@ -123,7 +137,9 @@ void aos_get_event(AosEvent* e) {
 void eventqueue_init(void);
 void eventqueue_init(void)
 {
+#ifndef DEBUG_INPUT
 	sem_init(&eventqueue_sem, 0);
+#endif
 	aos_fifo_init(&eventqueue, queuedata, sizeof(queuedata));
 }
 
@@ -132,7 +148,11 @@ int main() {
 	AosEvent e;
 	eventqueue_init();
 
-	dispatch_keypress(5);
-	get_event(&e);
+	while (1) {
+		dispatch_keypress(5, 0);
+		aos_get_event(&e);
+		if (e.type == 0)
+			break;
+	}
 }
 #endif
