@@ -117,6 +117,7 @@ void dispatch_keyrelease(unsigned int scancode) {
 	AosEvent e;
 	e.type = KeyRelease;
 	e.keyEvent.keycode = scancode;
+	e.keyEvent.repeatcount = 0;
 	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
 #ifndef DEBUG_INPUT
 	sem_up(&eventqueue_sem);
