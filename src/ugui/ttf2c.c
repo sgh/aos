@@ -6,7 +6,7 @@
 
 #include "ugui/ugui_font.h"
 
-// #define TTF2C
+#define TTF2C
 
 #define MAX_GLYPHS 1000
 
