@@ -18,6 +18,75 @@ struct aostk_font genfont = {
 };
 
 
+void optimize_glyph(struct aostk_glyph* glyph, uint8_t* data) {
+	int pre_empty_bytes = 0;
+	int pre_empty_rows = 0;
+	int post_empty_rows = 0;
+	int post_empty_bytes = 0;
+	int i=0;
+#ifndef TTF2C
+	printf("Top: %d\n",glyph->top);
+	printf("Height: %d pixels\n",glyph->size.height);
+	printf("Width: %d pixels\n",glyph->size.width);
+	printf("Unoptimized pitch: %d bytes\n",glyph->pitch);
+	printf("Unoptimized size: %d bytes\n",glyph->size.height * glyph->pitch);
+#endif
+// 	printf("Optimal pitch: %d bytes\n", (glyph->pitch+7) / 8);
+	if (glyph->size.height == 0)
+		return;
+
+	// Find preceeding empty rows
+	for (i=0; i<glyph->size.height * glyph->pitch; i++) {
+		if (data[i] == 0)
+			pre_empty_bytes++;
+		else
+			break;
+	}
+
+	pre_empty_rows = pre_empty_bytes/glyph->pitch;
+#ifndef TTF2C
+	printf("Pre empty bytes: %d\n", pre_empty_bytes);
+	printf("Pre empty rows: %d\n", pre_empty_rows);
+#endif
+
+	for (i=glyph->size.height * glyph->pitch - 1; i>=0; i--) {
+			if (data[i] == 0)
+			post_empty_bytes++;
+		else
+			break;
+	}
+	
+	post_empty_rows = post_empty_bytes/glyph->pitch;
+#ifndef TTF2C
+	printf("Post empty bytes: %d\n", post_empty_bytes);
+	printf("Post empty rows: %d\n", post_empty_rows);
+#endif
+
+	// Special for complete empty glyph
+	if (pre_empty_rows + post_empty_rows > glyph->size.height) {
+		post_empty_rows = glyph->size.height - 1;
+		pre_empty_rows = 0;
+	}
+		
+
+	// Move rows
+	for (i=0; i<glyph->pitch * (glyph->size.height-pre_empty_rows); i++) {
+		data[i] = data[glyph->pitch*pre_empty_rows + i];
+	}
+
+#ifndef TTF2C
+	printf("New top should be: %d\n", pre_empty_rows);
+#endif
+	glyph->top -= pre_empty_bytes/glyph->pitch;
+	glyph->size.height -= pre_empty_rows;
+	glyph->size.height -= post_empty_rows;
+
+// 	if (glyph->size.height<= 0)
+// 		exit(0);
+// 	if (glyph->size.height > 50)
+// 		exit(0);
+}
+
 void my_draw_bitmap(const struct aostk_glyph* glyph) {
 	const char* r;
 	int rows = glyph->size.height;
@@ -25,46 +94,36 @@ void my_draw_bitmap(const struct aostk_glyph* glyph) {
 	int offset;
 	unsigned int bit;
 	int i;
-	int row_empty = 1;
 
 	int rle_count = 0;
 	int rle_last_bit = 0;
 	
 	r = glyph->data;
 	while (rows--) {
-		
-		if (row_empty) {
-			for (offset=0; offset < glyph->pitch; offset++)
-				if (r[offset])
-					row_empty = 0;
-		}
-		
-		if (!row_empty) {
-			offset = 0;
-			bit = 128;
-			for (pixel=0; pixel<glyph->size.width; pixel++) {
-				if (((*(r+offset)) & bit)) {
-					if (rle_last_bit == 0) {
+		offset = 0;
+		bit = 128;
+		for (pixel=0; pixel<glyph->size.width; pixel++) {
+			if (((*(r+offset)) & bit)) {
+				if (rle_last_bit == 0) {
 // 						printf("%d", rle_count);
-						rle_last_bit = 1;
-						rle_count = 0;
-					}
-					printf("%%");
-				} else {
-					
-					if (rle_last_bit == 1) {
+					rle_last_bit = 1;
+					rle_count = 0;
+				}
+				printf("%%");
+			} else {
+
+				if (rle_last_bit == 1) {
 // 						printf("%d", rle_count);
-						rle_last_bit = 0;
-						rle_count = 0;
-					}
-					printf(".");
+					rle_last_bit = 0;
+					rle_count = 0;
 				}
-				rle_count++;
-				bit >>= 1;
-				if (bit == 0) {
-					bit = 128;
-					offset ++;
-				}
+				printf(".");
+			}
+			rle_count++;
+			bit >>= 1;
+			if (bit == 0) {
+				bit = 128;
+				offset ++;
 			}
 		}
 
@@ -72,50 +131,8 @@ void my_draw_bitmap(const struct aostk_glyph* glyph) {
 		printf("\n");
 	}
 	printf("\n");
-
-/*	printf("static const char const glyph_%d_data[] = {", ch);
-	for (i=0; i<(bitmap->pitch*bitmap->rows); i++) {
-		if (i!=0) printf(",");
-		printf("0x%0X", bitmap->buffer[i]);
-	}
-	printf("};\n");
-
-	printf("static struct aostk_ttffont glyph_%d = {.ch = %d, .height = %d, .width = %d, .pitch = %d, .left = %d, .top = %d, .data = glyph_%d_data};\n", ch, ch, bitmap->rows, bitmap->width, bitmap->pitch, left, top, ch);
-// 	printf(" .data = {");*/
-	
 }
 
-
-void aostk_ttf_raster(struct aostk_font* f, unsigned int posx, unsigned int posy, unsigned char c, int scanlines) {
-	unsigned int x;
-	unsigned int y;
-	unsigned int i;
-	const struct aostk_glyph* sym = NULL;
-
-	for (i=0; i<f->numglyphs; i++) {
-		if (f->glyphs[i].i == c) {
-			sym = &f->glyphs[i];
-			break;
-		}
-	}
-	
-	if (sym == NULL)
-		return;
-
-	my_draw_bitmap(sym);
-// 	for (y=0; y<f->height; y++) {
-// 		if (scanlines < 1)
-// 			break;
-// 		
-// 		for (x=0; x<f->width; x++) {
-// 			if (sym->data[y] & (1<<x))
-// 				aostk_putpixel(posx+x,posy+y,0xf);
-// 		}
-// 		scanlines--;
-// 	}
-}
-
-struct aostk_font verafont;
 
 int main(int argc, char* argv[]) {
 	int error;
@@ -214,6 +231,9 @@ int main(int argc, char* argv[]) {
 		0};
 	for (idx=0x0; idx<=MAX_GLYPHS; idx++) {
 		int len;
+// 		if (idx == '_'+1)
+// 			break;
+// 		idx = '_';
 		unsigned int unicode = idx>=256 ? glyph_list[idx - 256] : idx;
 // 		unicode = glyph_list[idx];
 		if (idx > 0 && unicode ==0)
@@ -266,8 +286,12 @@ int main(int argc, char* argv[]) {
 	
 		#warning  optimize 8x16 font output
 		#warning  fix baseline and top-left coordinate mixup
+		
 #ifndef TTF2C
 		printf("Symbol #%d\n", genglyphs[genfont.numglyphs].i);
+#endif
+		optimize_glyph(&genglyphs[genfont.numglyphs], genglyphs[genfont.numglyphs].data);
+#ifndef TTF2C
 		my_draw_bitmap(&genglyphs[genfont.numglyphs]); 
 #endif
 
@@ -316,8 +340,8 @@ int main(int argc, char* argv[]) {
 #ifdef TTF2C
 	printf("/*const*/ struct aostk_font %s = { numglyphs : %d, height : %d, glyphs };\n", argv[3], genfont.numglyphs, height);
 #endif
-		for (i=0; i<verafont.numglyphs; i++) {
-			aostk_ttf_raster(&verafont, 0, 0, verafont.glyphs[i].i, 0);
-		}
+// 		for (i=0; i<verafont.numglyphs; i++) {
+// 			aostk_ttf_raster(&verafont, 0, 0, verafont.glyphs[i].i, 0);
+// 		}
 
 }

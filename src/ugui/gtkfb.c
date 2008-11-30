@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "ugui/gtkfb.h"
+#include "ugui/ugui.h"
 // struct aostk_device gtkfb_device;
 
 #define UNUSED
@@ -197,6 +198,24 @@ void ugui_fill(int x, int y, int width, int height, unsigned int color) {
 	int i;
  	for (i = 0; i<height ; i++)
 		ugui_line(x, y + i, x + width - 1, y  + i, color);
+}
+
+unsigned int ugui_alloc_color(unsigned int rgb) {
+	return rgb;
+}
+
+void __attribute__((hot)) ugui_putpixel8_native(struct ppix8_native* ppix) {
+  register unsigned int color = ppix->color;
+  register unsigned char bitmap = ppix->bitmap;
+
+  if (bitmap & 0x80) ugui_putpixel(ppix->x, ppix->y, color);
+  if (bitmap & 0x40) ugui_putpixel(ppix->x+1, ppix->y, color);
+  if (bitmap & 0x20) ugui_putpixel(ppix->x+2, ppix->y, color);
+  if (bitmap & 0x10) ugui_putpixel(ppix->x+3, ppix->y, color);
+  if (bitmap & 0x08) ugui_putpixel(ppix->x+4, ppix->y, color);
+  if (bitmap & 0x04) ugui_putpixel(ppix->x+5, ppix->y, color);
+  if (bitmap & 0x02) ugui_putpixel(ppix->x+6, ppix->y, color);
+  if (bitmap & 0x01) ugui_putpixel(ppix->x+7, ppix->y, color);
 }
 
 void ugui_putpixel(int x, int y, unsigned int color) {

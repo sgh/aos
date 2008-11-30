@@ -12,16 +12,26 @@ struct aostk_point {
   unsigned int y;
 };
 
+struct aostk_point_u8 {
+  uint8_t x;
+  uint8_t y;
+};
+
 struct aostk_size {
   unsigned int width;
   unsigned int height;
 };
 
+struct aostk_size_u8 {
+  uint8_t width;
+  uint8_t height;
+};
+
 struct aostk_glyph {
 	uint16_t i;
-	struct aostk_size size;
+	struct aostk_size_u8 size;
 	int8_t top;
-	struct aostk_point advance;
+	struct aostk_point_u8 advance;
 	uint8_t pitch;
 	const char* data;
 	int8_t left;
