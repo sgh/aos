@@ -3,7 +3,7 @@ APP = main
 #CXX = arm-elf-g++
 #AR = arm-elf-ar
 
-SOURCES = main.cpp gtkfb.c testfont.c
+SOURCES = main.cpp gtkfb.c testfont.cpp
 OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
 OBJS := $(patsubst %.c, %.o, $(OBJS))
 
