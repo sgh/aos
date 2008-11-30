@@ -6,7 +6,7 @@
 
 #include "ugui/ugui_font.h"
 
-#define TTF2C
+// #define TTF2C
 
 #define MAX_GLYPHS 1000
 
@@ -23,6 +23,7 @@ void optimize_glyph(struct aostk_glyph* glyph, uint8_t* data) {
 	int pre_empty_rows = 0;
 	int post_empty_rows = 0;
 	int post_empty_bytes = 0;
+	int pitch_optimal = (glyph->pitch+7) / 8;
 	int i=0;
 #ifndef TTF2C
 	printf("Top: %d\n",glyph->top);
@@ -30,8 +31,8 @@ void optimize_glyph(struct aostk_glyph* glyph, uint8_t* data) {
 	printf("Width: %d pixels\n",glyph->size.width);
 	printf("Unoptimized pitch: %d bytes\n",glyph->pitch);
 	printf("Unoptimized size: %d bytes\n",glyph->size.height * glyph->pitch);
+	printf("Optimal pitch: %d bytes\n", pitch_optimal);
 #endif
-// 	printf("Optimal pitch: %d bytes\n", (glyph->pitch+7) / 8);
 	if (glyph->size.height == 0)
 		return;
 
@@ -49,6 +50,7 @@ void optimize_glyph(struct aostk_glyph* glyph, uint8_t* data) {
 	printf("Pre empty rows: %d\n", pre_empty_rows);
 #endif
 
+	// Count ending empty rows
 	for (i=glyph->size.height * glyph->pitch - 1; i>=0; i--) {
 			if (data[i] == 0)
 			post_empty_bytes++;
@@ -67,12 +69,13 @@ void optimize_glyph(struct aostk_glyph* glyph, uint8_t* data) {
 		post_empty_rows = glyph->size.height - 1;
 		pre_empty_rows = 0;
 	}
-		
 
 	// Move rows
 	for (i=0; i<glyph->pitch * (glyph->size.height-pre_empty_rows); i++) {
 		data[i] = data[glyph->pitch*pre_empty_rows + i];
 	}
+
+	#warning optimize pitch here
 
 #ifndef TTF2C
 	printf("New top should be: %d\n", pre_empty_rows);
@@ -283,10 +286,7 @@ int main(int argc, char* argv[]) {
 		genglyphs[genfont.numglyphs].data      = malloc(len);
 		
 		memcpy((uint8_t*)genglyphs[genfont.numglyphs].data, face->glyph->bitmap.buffer, len);
-	
-		#warning  optimize 8x16 font output
-		#warning  fix baseline and top-left coordinate mixup
-		
+
 #ifndef TTF2C
 		printf("Symbol #%d\n", genglyphs[genfont.numglyphs].i);
 #endif
