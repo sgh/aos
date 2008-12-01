@@ -298,8 +298,12 @@ int main(int argc, char* argv[]) {
 		genfont.numglyphs++;
 	}
 
+	printf("// ");
+	for (i=0; i<argc; i++)
+		printf("%s ",argv[i]);
+	printf("\n");
 #ifdef TTF2C
-	printf(" #include \"ugui/ugui_font.h\"\n" );
+	printf("#include \"ugui/ugui_font.h\"\n" );
 #endif
 
 	for (i=0; i<genfont.numglyphs; i++) {
