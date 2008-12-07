@@ -2,6 +2,7 @@
 #define AOSTK_FONT_H
 
 #include <stdint.h>
+#include <aos/macros.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,22 +13,22 @@ struct aostk_point {
   unsigned int y;
 };
 
-struct aostk_point_u8 {
+struct PACKED aostk_point_u8 {
   uint8_t x;
   uint8_t y;
 };
 
-struct aostk_size {
+struct PACKED aostk_size {
   unsigned int width;
   unsigned int height;
 };
 
-struct aostk_size_u8 {
+struct PACKED aostk_size_u8 {
   uint8_t width;
   uint8_t height;
 };
 
-struct aostk_glyph {
+struct PACKED aostk_glyph {
 	uint16_t i;
 	struct aostk_size_u8 size;
 	int8_t top;
@@ -38,7 +39,7 @@ struct aostk_glyph {
 };
 
 
-struct aostk_font {
+struct PACKED aostk_font {
 	uint16_t numglyphs;
 	uint8_t height;
 	const struct aostk_glyph* glyphs;

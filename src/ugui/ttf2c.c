@@ -342,7 +342,8 @@ int main(int argc, char* argv[]) {
 
 // 	printf("struct aostk_font %s = { .numglyphs = %d, .height = %d, .glyphs = glyphs };\n", argv[3], genfont.numglyphs, height);
 #ifdef TTF2C
-	printf("/*const*/ struct aostk_font %s = { numglyphs : %d, height : %d, glyphs };\n", argv[3], genfont.numglyphs, height);
+	printf("extern const struct aostk_font %s;\n", argv[3]);
+	printf("const struct aostk_font %s = { numglyphs : %d, height : %d, glyphs };\n", argv[3], genfont.numglyphs, height);
 #endif
 // 		for (i=0; i<verafont.numglyphs; i++) {
 // 			aostk_ttf_raster(&verafont, 0, 0, verafont.glyphs[i].i, 0);
