@@ -20,7 +20,7 @@ static DECLARE_MUTEX_UNLOCKED(char_buffer_lock);
 static uint32_t current_keys[TOTAL_CONCURRENT_KEYS];
 static uint32_t current_times[TOTAL_CONCURRENT_KEYS];
 
-static semaphore_t keyscan_ready_sem;
+static mutex_t keyscan_ready_lock;
 
 static semaphore_t getchar_ready_sem;
 static unsigned int repeatcount = 0;
@@ -41,9 +41,10 @@ static void generic_register_keyscan(uint32_t keyscan, uint8_t irq) {
 	current_keyscan = keyscan;
 	
 	if (irq)
-		sys_sem_up(&keyscan_ready_sem);
+		//sys_sem_up(&keyscan_ready_sem);
+		sys_mutex_unlock(&keyscan_ready_lock);
 	else
-		sem_up(&keyscan_ready_sem);
+		mutex_unlock(&keyscan_ready_lock);
 	
 	if (!irq) irq_unlock();
 }
@@ -170,7 +171,8 @@ void aos_key_management_task(UNUSED void* arg) {
 		}
 		
 
-		if (sem_timeout_down(&keyscan_ready_sem, timedwait) == ETIMEOUT) {
+		//if (sem_timeout_down(&keyscan_ready_sem, timedwait) == ETIMEOUT) {
+		if (mutex_timeout_lock(&keyscan_ready_lock, timedwait) == ETIMEOUT) {
 			repeatcount++; // Key is repeated
 		} else {
 			process_keyscan(current_keyscan);
@@ -297,7 +299,9 @@ void input_init(void);
 void input_init(void)
 {
 	sem_init(&getchar_ready_sem, 0);
-	sem_init(&keyscan_ready_sem, 0);
+	//sem_init(&keyscan_ready_sem, 0);
+	mutex_init(&keyscan_ready_lock);
+	mutex_lock(&keyscan_ready_lock);
 	eventqueue_init();
 }
 
