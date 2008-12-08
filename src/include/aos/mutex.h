@@ -98,6 +98,17 @@ uint8_t mutex_trylock(mutex_t* m);
  */
 void mutex_init(mutex_t* m);
 
+#if defined(__linux__)
+static inline void mutex_lock(mutex_t* m) {
+	mutex_lock(m);
+}
+
+static inline void mutex_unlock(mutex_t* m) {
+	mutex_unlock(m);
+}
+#endif
+
+
 #ifdef __cplusplus
 	}
 #endif
