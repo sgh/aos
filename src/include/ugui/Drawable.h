@@ -15,6 +15,7 @@ struct DrawingContext {
 	unsigned int fg_color;
 	unsigned int bg_color;
 	unsigned int text_color;
+	unsigned int text_outline;
 	bool alphablend;
 };
 
