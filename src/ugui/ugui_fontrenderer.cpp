@@ -76,6 +76,8 @@ unsigned int aostk_font_strwidth(const struct aostk_font* f, const char* str) {
 }
 
 void aostk_putstring(const struct aostk_font* font, int x, int y, const char* str) {
+	unsigned int color;
+	unsigned int outline;
   const struct aostk_glyph* g;
   assert(f != NULL);
   /**
@@ -84,9 +86,20 @@ void aostk_putstring(const struct aostk_font* font, int x, int y, const char* st
    */
   y += font->height;
 
-	raster_ppix8.color = ugui_alloc_color(current_context->text_color);
+	color = ugui_alloc_color(current_context->text_color);
+	outline  = ugui_alloc_color(current_context->text_outline);
   while ((*str) != 0) {
     g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str));
+
+		if (color != outline) {
+			raster_ppix8.color = outline;
+  	  aostk_raster(g, x+1, y);
+  	  aostk_raster(g, x-1, y);
+  	  aostk_raster(g, x, y+1);
+  	  aostk_raster(g, x, y-1);
+		}
+
+		raster_ppix8.color = color;
     aostk_raster(g, x, y);
     x += g->advance.x;
   }
