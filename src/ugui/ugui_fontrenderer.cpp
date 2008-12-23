@@ -23,13 +23,12 @@ static inline void aostk_raster(const struct aostk_glyph* glyph, int x, int y) {
 
 	while (rows--) {
 		ptr = r;
-		raster_ppix8.bitmap = *r;
-		for (raster_ppix8.x=x; raster_ppix8.x<gwidth; raster_ppix8.x+=8) {
-			ugui_putpixel8_native(&raster_ppix8);
-			ptr++;
-			raster_ppix8.bitmap = *ptr;
-		}
 		r += glyph->pitch;
+		for (raster_ppix8.x=x; raster_ppix8.x<gwidth; raster_ppix8.x+=8) {
+			raster_ppix8.bitmap = *ptr;
+			ptr++;
+			ugui_putpixel8_native(&raster_ppix8);
+		}
 		raster_ppix8.y++;
 	}
 }
@@ -86,20 +85,21 @@ void aostk_putstring(const struct aostk_font* font, int x, int y, const char* st
    */
   y += font->height;
 
-	color = ugui_alloc_color(current_context->text_color);
+	raster_ppix8.color = color = ugui_alloc_color(current_context->text_color);
 	outline  = ugui_alloc_color(current_context->text_outline);
+	bool draw_outline = (color != outline);
   while ((*str) != 0) {
     g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str));
 
-		if (color != outline) {
+		if (draw_outline) {
 			raster_ppix8.color = outline;
   	  aostk_raster(g, x+1, y);
   	  aostk_raster(g, x-1, y);
   	  aostk_raster(g, x, y+1);
   	  aostk_raster(g, x, y-1);
+			raster_ppix8.color = color;
 		}
 
-		raster_ppix8.color = color;
     aostk_raster(g, x, y);
     x += g->advance.x;
   }

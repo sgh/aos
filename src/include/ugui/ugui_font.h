@@ -58,6 +58,8 @@ unsigned int aostk_font_charwidth(const struct aostk_font* f, char c);
 
 void aostk_putstring(const struct aostk_font* font, int x, int y, const char* str);
 
+void aostk_putstringhc(const struct aostk_font* font, int x, int y, const char* str);
+
 #ifdef __cplusplus
 	}
 #endif
