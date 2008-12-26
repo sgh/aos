@@ -7,16 +7,12 @@
 #include "ugui/ugui_font.h"
 #include "ugui/ugui.h"
 
-//void aostk_bitmap_raster(struct aostk_font* f, unsigned int posx, unsigned int posy, unsigned char c, int scanlines);
-
-struct ppix8_native raster_ppix8;
-static inline void aostk_raster(const struct aostk_glyph* glyph, int x, int y) {
+void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned char color) {
 	const char* r;
 	unsigned int rows = glyph->size.height;
 	int gwidth;
 	const char* ptr;
-
-	raster_ppix8.y = y - glyph->top;
+	int _y = y - glyph->top;
 	x += glyph->left;
 	r = glyph->data;
 	gwidth = glyph->size.width + x;
@@ -24,12 +20,17 @@ static inline void aostk_raster(const struct aostk_glyph* glyph, int x, int y) {
 	while (rows--) {
 		ptr = r;
 		r += glyph->pitch;
-		for (raster_ppix8.x=x; raster_ppix8.x<gwidth; raster_ppix8.x+=8) {
-			raster_ppix8.bitmap = *ptr;
-			ptr++;
-			ugui_putpixel8_native(&raster_ppix8);
+		for (int _x=x; _x<gwidth; _x+=16) {
+			uint16_t bitmap = *ptr;
+			if (likely((_x+8)<gwidth)) {
+				ptr++;
+				bitmap |= (*ptr) << 8;
+				ptr++;
+			} else
+				ptr++;
+			ugui_putpixel16_native(bitmap, _x, _y, color);
 		}
-		raster_ppix8.y++;
+		_y++;
 	}
 }
 
@@ -85,22 +86,20 @@ void aostk_putstring(const struct aostk_font* font, int x, int y, const char* st
    */
   y += font->height;
 
-	raster_ppix8.color = color = ugui_alloc_color(current_context->text_color);
+	color = ugui_alloc_color(current_context->text_color);
 	outline  = ugui_alloc_color(current_context->text_outline);
 	bool draw_outline = (color != outline);
   while ((*str) != 0) {
     g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str));
 
 		if (draw_outline) {
-			raster_ppix8.color = outline;
-  	  aostk_raster(g, x+1, y);
-  	  aostk_raster(g, x-1, y);
-  	  aostk_raster(g, x, y+1);
-  	  aostk_raster(g, x, y-1);
-			raster_ppix8.color = color;
+  	  ugui_raster(g, x+1, y, outline);
+  	  ugui_raster(g, x-1, y, outline);
+  	  ugui_raster(g, x, y+1, outline);
+  	  ugui_raster(g, x, y-1, outline);
 		}
 
-    aostk_raster(g, x, y);
+    ugui_raster(g, x, y, color);
     x += g->advance.x;
   }
 }
