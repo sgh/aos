@@ -73,7 +73,7 @@ void ugui_set_bounds(int x1, int y1, int x2, int y2);
 unsigned int ugui_alloc_color(unsigned int rgb);
 
 // Native callbacks
-void ugui_putpixel8_native(struct ppix8_native* ppix8);
+void ugui_putpixel16_native(uint16_t bitmap, int x, int y, unsigned char color);
 
 #ifdef __cplusplus
 	}
