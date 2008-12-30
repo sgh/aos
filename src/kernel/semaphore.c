@@ -22,7 +22,7 @@
 #include <aos/kernel.h>
 #include <aos/semaphore.h>
 #include <aos/syscalls.h>
-#include <aos/assert.h>
+//#include <aos/assert.h>
 #include <aos/irq.h>
 #include <aos/interrupt.h>
 
@@ -53,27 +53,26 @@ static void semaphore_timeout(void* arg) {
 }
 
 
-uint8_t sys_sem_timeout_down(semaphore_t* s, uint32_t timeoutms) {
+uint8_t HOT sys_sem_timeout_down(semaphore_t* s, uint32_t timeoutms) {
 	sched_lock();
-
-	current->sleep_result = ESUCCESS; // Default we return EESUCCESS
 	
+	current->sleep_result = ESUCCESS; // Default we return EESUCCESS
 	s->count--;
 
 	// Assert on underflows
-	sys_assert(s->count != INT32_MAX);
+	//sys_assert(s->count != INT32_MAX);
 
 	if (s->count < 0) {
 		sys_block(&s->waiting);
 		current->wait_semaphore = s;
-		// Setup timeout for lock timeout
-		if (timeoutms > 0)
-			timer_timeout(&current->timeout_timer, (void*) semaphore_timeout, current, ms2ticks(timeoutms));
-	}
 
-	sched_unlock();
-	
-	current->wait_semaphore = NULL;
+		// Setup timeout for lock timeout
+		if (unlikely(timeoutms > 0))
+			timer_timeout(&current->timeout_timer, (void*) semaphore_timeout, current, ms2ticks(timeoutms));
+		sched_unlock();
+		current->wait_semaphore = NULL;
+	} else
+		sched_unlock();
 
 	return current->sleep_result;
 }
@@ -109,10 +108,8 @@ uint32_t sys_sem_downn(semaphore_t* s, uint32_t n) {
 	} else
 		s->count--;
 
-	
-
 	// Assert on underflows
-	sys_assert(s->count != INT32_MAX);
+	//sys_assert(s->count != INT32_MAX);
 
 	if (blocknow) {
 		sys_block(&s->waiting);
@@ -130,37 +127,35 @@ uint32_t sys_sem_downn(semaphore_t* s, uint32_t n) {
 }
 
 uint8_t sys_sem_trydown(semaphore_t* s) {
-	uint8_t retval = 0;
-	
 	sched_lock();
 
-
 	if (s->count > 0) {
-		retval = 1;
 		s->count--;
-			// Assert on underflows
-		sys_assert(s->count != INT32_MAX);
+		// Assert on underflows
+		//sys_assert(s->count != INT32_MAX);
+
+		sched_unlock();
+		return 1;
 	}
 
 	sched_unlock();
-	
-	return retval;
+	return 0;
 }
 
 
 
 void sys_sem_up(semaphore_t* s) {
 	sched_lock();
-// 	assert(current->lock_count == 1);
+ 	//assert(current->lock_count == 1);
 
 	s->count++;
 
 	// Assert on overflows
-	sys_assert(s->count != INT32_MIN);
+	//sys_assert(s->count != INT32_MIN);
 	
 	if (s->count <= 0) {
 		struct task_t* task;
-		sys_assert(!list_isempty(&s->waiting));
+		//sys_assert(!list_isempty(&s->waiting));
 		task = get_struct_task(list_get_front(&s->waiting));
 		sys_unblock(task);
 	}
@@ -172,19 +167,19 @@ void sys_sem_up(semaphore_t* s) {
 void sys_sem_upn(semaphore_t* s, uint32_t n) {
 	int32_t old;
 	sched_lock();
-// 	assert(current->lock_count == 1);
+	//assert(current->lock_count == 1);
 
 	old = s->count;
 
 	s->count += n;
 
 	// Assert on overflows
-	sys_assert(s->count != INT32_MIN);
+	//sys_assert(s->count != INT32_MIN);
 	
 	while ((old < 0) && (n > 0)) {
 		struct task_t* task;
 
-		sys_assert(!list_isempty(&s->waiting));
+		//sys_assert(!list_isempty(&s->waiting));
 		task = get_struct_task(list_get_front(&s->waiting));
 		sys_unblock(task);
 		n--;
