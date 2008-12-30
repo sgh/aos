@@ -21,7 +21,7 @@ ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
 
 ASMLIST = -Wa,-alhmsd
 
-FLAGS = -mcpu=arm7tdmi -O2 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -mthumb-interwork
+FLAGS = -mcpu=arm7tdmi -Os -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -mthumb-interwork
 
 CFLAGS = $(FLAGS) -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes
 CPPFLAGS = $(FLAGS)
@@ -30,8 +30,7 @@ CPPFLAGS = $(FLAGS)
 #-ffreestanding
 #-ffunction-sections -fdata-sections
 
-THUMB =
-#-mthumb
+THUMB = -mthumb
 
 LDFLAGS = -mthumb-interwork
 
@@ -87,13 +86,22 @@ lint:
 	@echo "Compiling (C++) $< ..."
 	@$(CC) -MD $(THUMB) $(CPPFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
 
+kernel/timer_interrupt.o:  kernel/timer_interrupt.c
+	@echo "Compiling (ARM) $<  ..."
+	@$(CC) -MD $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
+
+kernel/sched.o:  kernel/sched.c
+	@echo "Compiling (ARM) $<  ..."
+	@$(CC) -MD $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
+
+kernel/irq.o:  kernel/irq.c
+	@echo "Compiling (ARM) $<  ..."
+	@$(CC) -MD $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
+
 %.o: %.c
 	@echo "Compiling (C) $< ..."
 	@$(CC) -MD $(THUMB) $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
 
-kernel/timer_interrupt.o:  kernel/timer_interrupt.c
-	@echo "Compiling (ARM) $<  ..."
-	@$(CC) -MD $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
 
 %.o: %.s
 	@echo "Assembling (ARM) $< ..."
