@@ -51,7 +51,7 @@ void sched_clock(void) {
 		current->time_left--;
 }
 
-void HOT sched_lock(void) {
+void sched_lock(void) {
 	current->lock_count++;
 }
 
@@ -68,7 +68,7 @@ void HOT sched_unlock(void) {
 	interrupt_save(&stat);
 	interrupt_disable();
 	
-	assert(current->lock_count > 0);
+	//assert(current->lock_count > 0);
 
 	if (current->lock_count == 1) {
 		if (current->resched) {

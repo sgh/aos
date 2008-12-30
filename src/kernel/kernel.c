@@ -113,7 +113,6 @@ void aos_context_init(uint32_t timer_refclk) {
 
 
 void sys_yield(void) {
-
 	sched_lock();
 	
 	// Only do context-switch if some else want CPU-time
