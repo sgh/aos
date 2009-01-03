@@ -41,17 +41,19 @@ void UGui::drawTraverse(Drawable* d) {
 		if (d->redraw()) {
 			_draw_activity++;
 
-			if (d->_abs_xy.x < _update_min.x)
-				_update_min.x = d->_abs_xy.x;
+			tmp = d->absx_deco();
+			if (tmp < _update_min.x)
+				_update_min.x = tmp;
 
-			if (d->_abs_xy.y < _update_min.y)
-				_update_min.y = d->_abs_xy.y;
+			tmp = d->absy_deco();
+			if (tmp < _update_min.y)
+				_update_min.y = tmp;
 
-			tmp = d->_abs_xy.x + d->_width - 1;
+    	tmp = d->absx_deco() + d->width_deco();
 			if (tmp > _update_max.x)
 				_update_max.x = tmp;
 
-			tmp = d->_abs_xy.y + d->_height - 1;
+    	tmp = d->absy_deco() + d->height_deco();
 			if (tmp > _update_max.y)
 				_update_max.y = tmp;
 		}
