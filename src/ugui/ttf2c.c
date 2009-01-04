@@ -136,6 +136,71 @@ void my_draw_bitmap(const struct aostk_glyph* glyph) {
 	printf("\n");
 }
 
+unsigned int unicode2iso8859_5(unsigned int unicode) {
+	if (unicode >= 0x401 && unicode <= 0x045F)
+		return unicode - 0x0360;
+
+	return unicode;
+}
+
+void generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
+	int idx;
+	int glyph_index;
+	int error;
+	glyph_index = FT_Get_Char_Index( (*face), unicode);
+
+	if ((unicode != 0) && (glyph_index == 0)) {
+#ifndef TTF2C
+		printf("Glyph not found (%d)\n", unicode);
+#endif
+		return;
+	}
+
+	error = FT_Load_Glyph(
+												(*face),          /* handle to face object */
+						glyph_index,   /* glyph index           */
+			/*load_flags*/ FT_LOAD_DEFAULT|FT_LOAD_RENDER|FT_LOAD_FORCE_AUTOHINT|FT_LOAD_TARGET_MONO);  /* load flags, see below */
+
+	if (error) {
+		printf("Error loading\n");
+		exit(0);
+	}
+
+	error = FT_Render_Glyph( (*face)->glyph,   /* glyph slot  */
+													/*render_mode*/FT_RENDER_MODE_MONO ); /* render mode */
+
+	if (error) {
+		printf("Error rendering %d\n", unicode);
+		exit(0);
+	}
+
+	genglyphs[genfont.numglyphs].i            = unicode;
+	genglyphs[genfont.numglyphs].size.width   = (*face)->glyph->bitmap.width;
+	genglyphs[genfont.numglyphs].size.height  = (*face)->glyph->bitmap.rows;
+	genglyphs[genfont.numglyphs].top          = (*face)->glyph->bitmap_top;
+	genglyphs[genfont.numglyphs].left         = (*face)->glyph->bitmap_left;
+	genglyphs[genfont.numglyphs].advance.x    = (*face)->glyph->advance.x >> 6;
+	genglyphs[genfont.numglyphs].advance.y    = (*face)->glyph->advance.y >> 6;
+	genglyphs[genfont.numglyphs].pitch        = (*face)->glyph->bitmap.pitch;
+
+	if (*height < genglyphs[genfont.numglyphs].top)
+		*height = genglyphs[genfont.numglyphs].top;
+
+	int len = genglyphs[genfont.numglyphs].size.height * genglyphs[genfont.numglyphs].pitch;
+	genglyphs[genfont.numglyphs].data      = malloc(len);
+
+	memcpy((uint8_t*)genglyphs[genfont.numglyphs].data, (*face)->glyph->bitmap.buffer, len);
+
+#ifndef TTF2C
+	printf("Symbol #%d\n", genglyphs[genfont.numglyphs].i);
+#endif
+	optimize_glyph(&genglyphs[genfont.numglyphs], genglyphs[genfont.numglyphs].data);
+#ifndef TTF2C
+	my_draw_bitmap(&genglyphs[genfont.numglyphs]);
+#endif
+
+	genfont.numglyphs++;
+}
 
 int main(int argc, char* argv[]) {
 	int error;
@@ -143,7 +208,6 @@ int main(int argc, char* argv[]) {
 		int j;
 	FT_Library  library;
 	FT_Face     face;
-	int glyph_index;
 
 	if (argc < 4) {
 		printf("ttf2c <file.ttf> <point-size> <name>\n");
@@ -168,7 +232,7 @@ int main(int argc, char* argv[]) {
 	if ( error ) {
 		printf("another error code means that the font file could not \nbe opened or read, or simply that it is broken...");
 	}
-	
+
 	FT_CharMap  found = 0;
 	FT_CharMap  charmap;
 	int n;
@@ -177,8 +241,8 @@ int main(int argc, char* argv[]) {
 #ifndef TTF2C
 		printf("platform_id:%d  encoding_id:%d\n", charmap->platform_id, charmap->encoding_id);
 #endif
+		found = charmap;
 		if ( charmap->platform_id == 3/*my_platform_id*/ && charmap->encoding_id == 1/*my_encoding_id*/ ) {
-			found = charmap;
 #ifndef TTF2C
 			printf("found charmap\n");
 #endif
@@ -226,77 +290,24 @@ int main(int argc, char* argv[]) {
 
 // 	printf("EM size %d\n", 4 * 300/72);
 //
-	int idx;
-	unsigned int glyph_list[] = {
-		0x3C0,  // Pi
-		0x2030, // Permille
-		0x2070, // Degree
-		0};
-	for (idx=0x0; idx<=MAX_GLYPHS; idx++) {
-		int len;
-// 		if (idx == '_'+1)
-// 			break;
-// 		idx = '_';
-		unsigned int unicode = idx>=256 ? glyph_list[idx - 256] : idx;
-// 		unicode = glyph_list[idx];
-		if (idx > 0 && unicode ==0)
-			break;
-		glyph_index = FT_Get_Char_Index( face, unicode);
-	
-		if ((unicode != 0) && (glyph_index == 0)) {
-#ifndef TTF2C
-			printf("Glyph not found (%d)\n", unicode);
-#endif
-			continue;
-// 			exit(1);
-		}	
-		
-		error = FT_Load_Glyph(
-													face,          /* handle to face object */
-							glyph_index,   /* glyph index           */
-				/*load_flags*/ FT_LOAD_DEFAULT|FT_LOAD_RENDER|FT_LOAD_FORCE_AUTOHINT|FT_LOAD_TARGET_MONO);  /* load flags, see below */
-		
-		if (error) {
-			printf("Error loading\n");
-			exit(0);
-		}
-		
-		error = FT_Render_Glyph( face->glyph,   /* glyph slot  */
-														/*render_mode*/FT_RENDER_MODE_MONO ); /* render mode */
-		
-		if (error) {
-			printf("Error rendering %d\n", unicode);
- 			exit(0);
-			continue;
-		}
-		
-		genglyphs[genfont.numglyphs].i            = unicode;
-		genglyphs[genfont.numglyphs].size.width   = face->glyph->bitmap.width;
-		genglyphs[genfont.numglyphs].size.height  = face->glyph->bitmap.rows;
-		genglyphs[genfont.numglyphs].top          = face->glyph->bitmap_top;
-		genglyphs[genfont.numglyphs].left         = face->glyph->bitmap_left;
-		genglyphs[genfont.numglyphs].advance.x    = face->glyph->advance.x >> 6;
-		genglyphs[genfont.numglyphs].advance.y    = face->glyph->advance.y >> 6;
-		genglyphs[genfont.numglyphs].pitch        = face->glyph->bitmap.pitch;
+	unsigned int unicode;
 
-		if (height < genglyphs[genfont.numglyphs].top)
-			height = genglyphs[genfont.numglyphs].top;
+	// Standard ASCII
+	for (unicode = 0x0000; unicode<=0x00FF; unicode++)
+		generate_glyph(&face, &height, unicode);
 
-		len = genglyphs[genfont.numglyphs].size.height * genglyphs[genfont.numglyphs].pitch;
-		genglyphs[genfont.numglyphs].data      = malloc(len);
-		
-		memcpy((uint8_t*)genglyphs[genfont.numglyphs].data, face->glyph->bitmap.buffer, len);
+	// Pi
+	generate_glyph(&face, &height, 0x03C0);
 
-#ifndef TTF2C
-		printf("Symbol #%d\n", genglyphs[genfont.numglyphs].i);
-#endif
-		optimize_glyph(&genglyphs[genfont.numglyphs], genglyphs[genfont.numglyphs].data);
-#ifndef TTF2C
-		my_draw_bitmap(&genglyphs[genfont.numglyphs]); 
-#endif
+	// Cyrillic glyphs
+	for (unicode = 0x0400; unicode<=0x04FF; unicode++)
+		generate_glyph(&face, &height, unicode);
 
-		genfont.numglyphs++;
-	}
+	// Permille
+	generate_glyph(&face, &height, 0x2030);
+
+	// Degree
+	generate_glyph(&face, &height, 0x2070);
 
 	printf("// ");
 	for (i=0; i<argc; i++)
