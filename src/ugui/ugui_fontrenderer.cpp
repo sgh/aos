@@ -8,10 +8,10 @@
 #include "ugui/ugui.h"
 
 void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned char color) {
-	const char* r;
+	const unsigned char* r;
 	unsigned int rows = glyph->size.height;
 	int gwidth;
-	const char* ptr;
+	const unsigned char* ptr;
 	int _y = y - glyph->top;
 	x += glyph->left;
 	r = glyph->data;
