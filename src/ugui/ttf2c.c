@@ -319,7 +319,7 @@ int main(int argc, char* argv[]) {
 
 	for (i=0; i<genfont.numglyphs; i++) {
 #ifdef TTF2C
-		printf("static const char sym_%d[] = {", genglyphs[i].i);
+		printf("static const unsigned char sym_%d[] = {", genglyphs[i].i);
 #endif
 		for (j=0; j<genglyphs[i].size.height * genglyphs[i].pitch; j++) {
 #ifdef TTF2C

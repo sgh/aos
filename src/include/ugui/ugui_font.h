@@ -34,7 +34,7 @@ struct PACKED aostk_glyph {
 	int8_t top;
 	struct aostk_point_u8 advance;
 	uint8_t pitch;
-	const char* data;
+	const unsigned char* data;
 	int8_t left;
 };
 
