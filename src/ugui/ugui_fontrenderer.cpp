@@ -22,12 +22,11 @@ void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned char co
 		r += glyph->pitch;
 		for (int _x=x; _x<gwidth; _x+=16) {
 			uint16_t bitmap = *ptr;
+			ptr++;
 			if (likely((_x+8)<gwidth)) {
-				ptr++;
 				bitmap |= (*ptr) << 8;
 				ptr++;
-			} else
-				ptr++;
+			}
 			ugui_putpixel16_native(bitmap, _x, _y, color);
 		}
 		_y++;
