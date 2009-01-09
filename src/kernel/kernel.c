@@ -194,10 +194,10 @@ struct task_t* sys_create_task(taskFuncPtr entrypoint, const char* name, void* a
   t = sys_malloc(sizeof(struct task_t));
   init_task(t, entrypoint, arg, priority);
 	t->name = name;
-	sched_lock();
+	//sched_lock();
   list_push_back(&readyQ, &t->q);
 	list_push_back(&process_list, &t->glist);
-	sched_unlock();
+	//sched_unlock();
   return t;
 }
 
