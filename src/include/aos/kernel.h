@@ -33,6 +33,7 @@
 
 void context_init(struct context* ctx, void* kstack);
 void context_set(struct context* ctx, uint8_t type, uint32_t val);
+void context_destroy(struct context* ctx);
 #define USER_STACK 0
 #define USER_ENTRY 1
 #define USER_ARG   2
@@ -87,6 +88,7 @@ extern struct list_head usleepQ;
 extern struct list_head process_list;
 
 void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priority);
+void destroy_task(struct task_t* t);
 
 
 /**
