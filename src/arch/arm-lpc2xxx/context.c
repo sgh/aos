@@ -45,6 +45,11 @@ void context_init(struct context* ctx, void* kstack) {
 
 }
 
+void context_destroy(struct context* ctx) {
+	void* ptr = ((void*)ctx->uregs) + sizeof(struct cpu_regs);
+	free(ptr);
+}
+
 void context_set(struct context* ctx, uint8_t type, uint32_t val) {
 	struct kern_regs* k;
 	struct cpu_regs* u;

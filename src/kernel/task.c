@@ -64,3 +64,6 @@ void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priorit
 	task->state = READY;
 }
 
+void destroy_task(struct task_t* t) {
+	context_destroy(&t->ctx);
+}
