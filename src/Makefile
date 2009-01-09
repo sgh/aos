@@ -21,7 +21,7 @@ ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
 
 ASMLIST = -Wa,-alhmsd
 
-FLAGS = -mcpu=arm7tdmi -Os -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -mthumb-interwork
+FLAGS = -mcpu=arm7tdmi -O3 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -mthumb-interwork
 
 CFLAGS = $(FLAGS) -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes
 CPPFLAGS = $(FLAGS)
