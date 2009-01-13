@@ -18,7 +18,7 @@ class UGui {
 	Drawable* _root;
 	static mutex_t _eventlock;
 	static mutex_t _drawlock;
-	static semaphore_t _process_sem;
+	static mutex_t _process_lock;
 	static UGui* _instance;
 
 	UGui();
