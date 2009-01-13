@@ -4,7 +4,7 @@ CXX = $(TARGET)g++
 CC = $(TARGET)gcc
 AR = $(TARGET)ar
 
-FLAGS =  -I ../include -O3 -I .. -DNDEBUG -D__STDC_LIMIT_MACROS
+FLAGS =  -I ../include -O2 -I .. -DNDEBUG -D__STDC_LIMIT_MACROS
 CPPFLAGS =  -fno-rtti -fno-exceptions $(FLAGS)
 CFLAGS = $(FLAGS)
 
@@ -16,7 +16,6 @@ SOURCES = Drawable.cpp ugui.cpp ugui_fontrenderer.cpp utf8.cpp
 OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
 OBJS := $(patsubst %.c, %.o, $(OBJS))
 
-#-fno-default-inline
 
 $APP): $(OBJS)
 	$(AR) rcs $(APP) $(OBJS)
