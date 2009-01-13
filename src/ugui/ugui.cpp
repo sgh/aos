@@ -6,25 +6,24 @@
 #include <aos/aos.h>
 
 struct DrawingContext* current_context;
-
 UGui*       UGui::_instance;
 mutex_t     UGui::_eventlock;
 mutex_t     UGui::_drawlock;
-semaphore_t UGui::_process_sem;
+mutex_t     UGui::_process_lock;
 int         UGui::_event_time;
 int         UGui::_draw_time;
 
 UGui::UGui() : _root(NULL), _focus_drawable(NULL) {
 // 	fprintf(stdout,"UGui construction ... ");
 // 	fflush(stdout);
-	sem_init(&_process_sem, 0);
+	mutex_init(&_process_lock);
 	mutex_init(&_eventlock);
 	mutex_init(&_drawlock);
 // 	fprintf(stdout,"ok\n");
 }
 
 void UGui::pushEvent(void) {
-	sem_up(&_process_sem);
+	mutex_unlock(&_process_lock);
 }
 
 UGui* UGui::instance(void) {
@@ -71,11 +70,6 @@ void UGui::key_event(const AosEvent* event) {
 
 void UGui::processEvents(Drawable* d) {
 	while (d) {
-#warning if no screen activity is happening predraw functions will not be called FIX IT !!!!!!!!!!!!!!
-#warning if no screen activity is happening predraw functions will not be called FIX IT !!!!!!!!!!!!!!
-#warning if no screen activity is happening predraw functions will not be called FIX IT !!!!!!!!!!!!!!
-#warning if no screen activity is happening predraw functions will not be called FIX IT !!!!!!!!!!!!!!
-#warning if no screen activity is happening predraw functions will not be called FIX IT !!!!!!!!!!!!!!
 		d->predraw();
 		eventLock();
 		d->processEvents();
@@ -150,7 +144,7 @@ int UGui::eventLoop(void) {
 	_update_max.x = INT32_MIN;
 	_update_max.y = INT32_MIN;
 
-	sem_timeout_down(&_process_sem, 100);
+	mutex_timeout_lock(&_process_lock, 100);
 	
 	get_sysmtime(&startTime);
 	processEvents(_root);
@@ -165,7 +159,7 @@ int UGui::eventLoop(void) {
 	drawUnlock();
 
 	_draw_time = endTime - startTime;
-	
+
 	return _draw_activity;
 // 	printf("\n");
 }
