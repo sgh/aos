@@ -142,7 +142,7 @@ static void process_keyscan(uint32_t keyscan) {
 
 	uint32_t now;
 	get_sysmtime(&now);
-	for (scancode=1; (pressed && scancode<32); scancode++) {
+	for (scancode=1; (pressed && scancode<=32); scancode++) {
 		if (pressed & 1) {
 			dispatch_keypress(scancode, 0);
 			pressedlist_add(now,scancode);
