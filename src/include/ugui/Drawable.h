@@ -101,6 +101,7 @@ public:
 	virtual void draw(void) {};
 
 	bool isVisible(void);
+	bool isFocus();
 
 	void addChild(Drawable& child);
 
