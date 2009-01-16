@@ -206,7 +206,17 @@ bool Drawable::isFocus() {
 void Drawable::postEvent(unsigned int event) {
 	UGui* g = UGui::instance();
 	g->eventLock();
+
+	// if already "shown" and a rapid hide-show sequence occurs, before the first hide event has been processed,
+	// then remove the first event to make sure we end up with "shown".
+	if ( (event & SHOW_EVENT) && (_events & HIDE_EVENT) )
+		_events &= ~HIDE_EVENT;
+	else // if already "hidden", handle rapid show-hide event correctly 
+		if ( (event & HIDE_EVENT) && (_events & SHOW_EVENT) )
+			_events  &= ~SHOW_EVENT;
+
 	_events |= event;
+
 	g->pushEvent();
 	g->eventUnlock();
 }
@@ -232,12 +242,10 @@ void Drawable::invalidate(void) {
 }
 
 void Drawable::show(void) {
-	if (!isVisible())
 		postEvent(SHOW_EVENT);
 }
 
 void Drawable::hide(void) {
-	if (isVisible())
 		postEvent(HIDE_EVENT);
 }
 
