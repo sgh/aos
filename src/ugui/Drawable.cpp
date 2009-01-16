@@ -199,6 +199,10 @@ void Drawable::real_focus() {
 	UGui::instance()->_focus_drawable = this;
 }
 
+bool Drawable::isFocus() {
+	return (UGui::instance()->_focus_drawable == this);
+}
+
 void Drawable::postEvent(unsigned int event) {
 	UGui* g = UGui::instance();
 	g->eventLock();
