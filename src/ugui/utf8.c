@@ -4,7 +4,7 @@
 //#define UTF8_DEBUG
 
 int decode_utf8(const unsigned char** pptr) {
-	unsigned char* ptr = *pptr;
+	const unsigned char* ptr = *pptr;
 	unsigned char c;
 	int code_length = 0;
 	unsigned int value = 0;
