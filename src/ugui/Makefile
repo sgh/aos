@@ -5,11 +5,11 @@ CC = $(TARGET)gcc
 AR = $(TARGET)ar
 
 FLAGS =  -I ../include -O2 -I .. -DNDEBUG -D__STDC_LIMIT_MACROS
-CPPFLAGS =  -fno-rtti -fno-exceptions $(FLAGS)
+CXXFLAGS = $(FLAGS) -fno-rtti -fno-exceptions -fno-default-inline
 CFLAGS = $(FLAGS)
 
 ifeq ($(TARGET),arm-elf-)
-CPPFLAGS += -mcpu=arm7tdmi  -mthumb-interwork -mthumb
+CXXFLAGS += -mcpu=arm7tdmi  -mthumb-interwork -mthumb
 endif
 
 SOURCES = Drawable.cpp ugui.cpp ugui_fontrenderer.cpp utf8.cpp
