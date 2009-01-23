@@ -23,6 +23,11 @@ union _AosEvent {
 
 typedef union _AosEvent AosEvent;
 
+static inline uint8_t is_event_first_keypress(const AosEvent* e) {
+	return (e && (e->type == KeyPress) && (e->keyEvent.repeatcount == 0));
+}
+
+
 void aos_get_event(AosEvent* e);
 
 void dispatch_keypress(unsigned int scancode, unsigned int repeatcount);
