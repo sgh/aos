@@ -169,7 +169,6 @@ void aos_key_management_task(UNUSED void* arg) {
 				else
 					timedwait = 50; // Repeation delay
 		}
-		
 
 		//if (sem_timeout_down(&keyscan_ready_sem, timedwait) == ETIMEOUT) {
 		if (mutex_timeout_lock(&keyscan_ready_lock, timedwait) == ETIMEOUT) {
@@ -178,8 +177,9 @@ void aos_key_management_task(UNUSED void* arg) {
 			process_keyscan(current_keyscan);
 		}
 
-		if (active_keycode && repeatcount) {
-			dispatch_keypress(active_keycode, repeatcount);
+		if (active_keycode) {
+			if (repeatcount)
+				dispatch_keypress(active_keycode, repeatcount);
 
 			buffer_put_idx++;
 			if (buffer_put_idx == BUFFER_SIZE)

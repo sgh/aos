@@ -124,15 +124,21 @@ void dispatch_keyrelease(unsigned int scancode) {
 #endif
 }
 
-void aos_get_event(AosEvent* e) {
+int aos_get_event(AosEvent* e, int timeout) {
+	int result = ESUCCESS;	
 #ifndef DEBUG_INPUT
-	sem_down(&eventqueue_sem);
+	if (timeout >= 0)
+		result = sem_timeout_down(&eventqueue_sem, timeout);
+	else
+		sem_down(&eventqueue_sem);
 #endif
-	aos_fifo_read(&eventqueue, e, sizeof(AosEvent));
+	if (result == ESUCCESS)
+		aos_fifo_read(&eventqueue, e, sizeof(AosEvent));
 
 #ifdef DEBUG_INPUT
 	printf("type:%d keycode:%d\n", e->type, e->keyEvent.keycode);
 #endif
+	return result;
 }
 
 void eventqueue_init(void);
