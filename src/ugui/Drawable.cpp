@@ -196,7 +196,7 @@ void Drawable::real_hide(void) {
 }
 
 void Drawable::real_focus() {
-	UGui::instance()->_focus_drawable = this;
+	//UGui::instance()->_focus_drawable = this;
 }
 
 bool Drawable::isFocus() {
@@ -237,8 +237,9 @@ void Drawable::focus(void) {
 	if (g->_focus_drawable)
 		g->_focus_drawable->focus_out();
 
+	g->_focus_drawable = this;
 	focus_in();
-	postEvent(FOCUS_EVENT);
+	//postEvent(FOCUS_EVENT);
 }
 
 void Drawable::focus_in(void) {
