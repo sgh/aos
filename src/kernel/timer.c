@@ -12,8 +12,11 @@
 
 #define EVENT_INIT(var,_name) { .waitq = LIST_HEAD_INIT(var.waitq), .name = _name }
 
-#define time_after_eq(a,b) ((long)(a) - (long)(b) >= 0)
-#define time_before(a,b) ((long)(a) - (long)(b) < 0)
+// #define time_after_eq(a,b) ((long)(a) - (long)(b) >= 0)
+// #define time_before(a,b) ((long)(a) - (long)(b) < 0)
+
+#define time_after_eq(a,b) ((long)(a) >= (long)(b))
+#define time_before(a,b) ((long)(a) < (long)(b))
 
 struct event {
 	char* name;
@@ -41,9 +44,11 @@ void timer_stop(struct timer* tmr) {
 	list_erase(&tmr->node);
 	tmr->type = TMR_STOP;
 	
-	if (!list_isempty(&timer_list))
-		next_expire = get_struct_timer(list_get_front(&timer_list))->expire;
-	else
+	if (!list_isempty(&timer_list)) {
+		struct timer* t = get_struct_timer(list_get_front(&timer_list));
+
+		next_expire = t->expire;
+	} else
 		timer_active = 0;
 	
 // 	if (timer_active)
@@ -53,16 +58,31 @@ void timer_stop(struct timer* tmr) {
 
 static void timer_setup(struct timer* tmr, uint32_t ticks) {
 	struct list_head* it;
-	uint32_t expire = ticks + system_ticks;
+	uint32_t tmp_system_ticks = system_ticks;
+	uint32_t expire;
+	uint8_t overflow = 0;
 	struct timer* t;
-	
+
 	if (tmr->type != TMR_STOP)
 		timer_stop(tmr);
-	
+
+	// Detect overflow
+	if (ticks >= (UINT32_MAX - tmp_system_ticks))
+		overflow = 1;
+
+	expire = tmp_system_ticks + ticks;
+
 	list_for_each(it, &timer_list) {
 		t = get_struct_timer(it);
-		if (time_before(expire, t->expire))
-			break;
+
+		// If we have an expiretime that lies in the future but AFTER the timer overflow
+		// We must take care of it compare the time opposite.
+		if (likely(overflow==0)) {
+			if (time_before(expire, t->expire)) break;
+		} else {
+			if (time_before(t->expire,expire)) break;
+		}
+
 	}
 	
 	list_push_back(it, &tmr->node);
@@ -101,16 +121,17 @@ static void handle_timer_event(void) {
 void timer_clock(void);
 	
 void timer_clock(void) {
-	if (timer_active) {
+#warning NEED TO DO SOMETHING HERE TO AVOID HANDLING TIMEREVENTS WITH AND EXPIRE-TIME < SYSTEM_TICKS
+	if (likely(timer_active)) {
 		if (time_after_eq(system_ticks, next_expire))
 			handle_timer_event();
 	}
 }
 
-void timer_timeout(struct timer* tmr, void (*func)(void*), void* arg, uint32_t expire) {
+void timer_timeout(struct timer* tmr, void (*func)(void*), void* arg, uint32_t ticks) {
 	tmr->func = func;
 	tmr->arg = arg;
-	timer_setup(tmr, expire);
+	timer_setup(tmr, ticks);
 	tmr->type = TMR_TIMEOUT;
 }
 
