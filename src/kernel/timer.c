@@ -4,6 +4,12 @@
 #include <aos/macros.h>
 #include <aos/irq.h>
 
+// #define DEBUG
+
+#ifdef DEBUG
+#include <stdio.h>
+#endif
+
 /**
  * Timer types
  * 1. Periodic timer
@@ -23,8 +29,8 @@ struct event {
 	struct list_head waitq;	
 };
 
-
 static volatile uint32_t next_expire;
+// static volatile uint8_t next_expire_overflow;
 static volatile uint8_t  timer_active;
 
 volatile uint32_t system_ticks;
@@ -48,6 +54,7 @@ void timer_stop(struct timer* tmr) {
 		struct timer* t = get_struct_timer(list_get_front(&timer_list));
 
 		next_expire = t->expire;
+// 		next_expire_overflow = t->overflow;
 	} else
 		timer_active = 0;
 	
@@ -71,6 +78,9 @@ static void timer_setup(struct timer* tmr, uint32_t ticks) {
 		overflow = 1;
 
 	expire = tmp_system_ticks + ticks;
+#ifdef DEBUG
+	printf("sys:%d ticks:%d %d ",tmp_system_ticks, ticks, expire);
+#endif
 
 	list_for_each(it, &timer_list) {
 		t = get_struct_timer(it);
@@ -80,31 +90,42 @@ static void timer_setup(struct timer* tmr, uint32_t ticks) {
 		if (likely(overflow==0)) {
 			if (time_before(expire, t->expire)) break;
 		} else {
-			if (time_before(t->expire,expire)) break;
+			if (time_before(t->expire, expire)) break;
 		}
-
 	}
 	
 	list_push_back(it, &tmr->node);
 	
-	tmr->expire = expire;
-	
-	next_expire = get_struct_timer(list_get_front(&timer_list))->expire;
-	
-// 	printf("expire @ tick %d\n", next_expire);
+	tmr->expire   = expire;
+	tmr->overflow = overflow;
+
+	t = get_struct_timer(list_get_front(&timer_list));
+	next_expire = t->expire;
+// 	next_expire_overflow = t->overflow;
+
+#ifdef DEBUG
+	printf("expire @ tick %d %s\n", next_expire, overflow ? "OVR" : "");
+#endif
 	
 	timer_active = 1;
 }
 
 static void handle_timer_event(void) {
+#ifndef DEBUG
 	irq_lock();
+#endif
 	struct timer* tmr = get_struct_timer(list_get_front(&timer_list));
+#ifndef DEBUG
 	irq_unlock();
-// 	printf("EXPIRE\n");
+#else
+	printf("EXPIRE\n");
+#endif
 
 	switch (tmr->type) {
 		case TMR_TIMEOUT :
-// 			printf("Timeout\n");
+#ifdef DEBUG
+ 			printf("Timeout\n");
+#endif
 			tmr->func(tmr->arg);
 			timer_stop(tmr);
 			break;
@@ -121,9 +142,8 @@ static void handle_timer_event(void) {
 void timer_clock(void);
 	
 void timer_clock(void) {
-#warning NEED TO DO SOMETHING HERE TO AVOID HANDLING TIMEREVENTS WITH AND EXPIRE-TIME < SYSTEM_TICKS
 	if (likely(timer_active)) {
-		if (time_after_eq(system_ticks, next_expire))
+		if ( time_after_eq(system_ticks, next_expire))
 			handle_timer_event();
 	}
 }
@@ -136,19 +156,35 @@ void timer_timeout(struct timer* tmr, void (*func)(void*), void* arg, uint32_t t
 }
 
 
-// int main(void) {
-// 	struct timer tmr1;
-// 	struct timer tmr2;
-// 	
-// 	tmr1.type = TMR_STOP;
-// 	tmr2.type = TMR_STOP;
-// 	
-// 	while (1) {
-// 		usleep(100000);
-// 		timer_clock();
+#ifdef DEBUG
+
+void test_hook(void* argh) {
+	printf("Handler\n");
+}
+
+void invalid_test_hook(void* argh) {
+	printf("Msut not be called\n");
+}
+
+int main(void) {
+	struct timer tmr1;
+	struct timer tmr2;
+
+	tmr1.type = TMR_STOP;
+	tmr2.type = TMR_STOP;
+
+	while (1) {
+		printf(".");
+		fflush(0);
+		usleep(500000);
+		system_ticks++;
+		timer_clock();
 // 		if (system_ticks == 2)
-// 			timer_timeout(&tmr1, sleep_timeout, NULL, 10);
-// 		if (system_ticks == 4)
-// 			timer_timeout(&tmr2, sleep_timeout, NULL, 2);
-// 	}
-// }
+// 			timer_timeout(&tmr2, &test_hook, NULL, 2);
+		if (system_ticks == 4)
+			timer_timeout(&tmr1, &invalid_test_hook, NULL, UINT32_MAX-1);
+		if (system_ticks == 10)
+			timer_timeout(&tmr2, &test_hook, NULL, 2);
+	}
+}
+#endif

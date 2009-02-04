@@ -30,6 +30,7 @@ struct timer {
 	uint32_t expire;
 	void (*func)(void*);
 	void* arg;
+	uint8_t overflow;
 	struct list_head node;
 };
 
