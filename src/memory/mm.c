@@ -110,19 +110,29 @@ void sys_mmstat(struct mm_stat* stat) {
 
 void sys_aos_mm_init(void* start, void* end) {
 	struct mm_header* head;
+	uint32_t addr;
 	
+	addr = (uint32_t)start;
+	if (addr&0x3) {
+		addr += 4;
+		addr -= addr&0x3;
+	}
+	start = (void*)addr;
+
+	addr = (uint32_t)end;
+	addr -= addr&0x3;
+	end = (void*)addr;
+
 	boundary4_assert(start);
 	boundary4_assert(end);
 	
 	mm_start =  start;
 	mm_end = end;
 	memset(mm_start, 0x0, end-start);
-// 	memory_size = len;
 
 	head = (struct mm_header*)mm_start;
 	head->free = 1;
 	head->size = (end-start) - sizeof(mm_header_t);
-// 	mm_status();
 }
 
 void* sys_malloc(size_t size)
