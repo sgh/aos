@@ -177,7 +177,7 @@ static FLATTEN HOT void sched_switch(void) {
 void process_wakeup(struct task_t* task) {
 	struct list_head* it;
 
-	// Higher priority task is placed in front of tje queue
+	// Higher priority task is placed in front of the queue
 	if (task->prio < current->prio) {
 		list_push_front(&readyQ , &task->q);
 		current->resched = 1;
@@ -191,7 +191,7 @@ void process_wakeup(struct task_t* task) {
 				break;
 			}
 		}
-		list_push_back(insertion_point ? insertion_point: &readyQ , &task->q);
+		list_push_front(insertion_point ? insertion_point: &readyQ , &task->q);
 	}
 
 	task->state = READY;
