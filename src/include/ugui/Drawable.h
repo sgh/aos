@@ -6,6 +6,8 @@
 #include <aos/macros.h>
 #include <aos/input.h>
 
+typedef enum {UGUI_VERTICAL, UGUI_HORIZONTAL} ugui_orientation_e;
+
 struct Point {
 	int x;
 	int y;
@@ -71,9 +73,9 @@ protected:
 
 	// Real handlers for events
 	void real_invalidate(void);
-	void real_show();
-	void real_hide();
-	void real_focus();
+	void real_show(void);
+	void real_hide(void);
+	void real_focus(void);
 	void real_setBG(int col);
 	void real_setFG(int col);
 
@@ -101,7 +103,7 @@ public:
 	virtual void draw(void) {};
 
 	bool isVisible(void);
-	bool isFocus();
+	bool isFocus(void);
 
 	void addChild(Drawable& child);
 
@@ -116,8 +118,8 @@ public:
 	 * \brief Invalidate the drawable and scheduele it to be redrawn
 	 */
 	void invalidate(void);
-	void show();
-	void hide();
+	void show(void);
+	void hide(void);
 
 	void invalidate_elapsed(int ms);
 
@@ -132,6 +134,8 @@ public:
 
 	Drawable* next(void) { return _next; }
 	Drawable* prev(void) { return _prev; }
+
+	virtual ~Drawable(void);
 
 	struct Box intersection(Drawable& d);
 

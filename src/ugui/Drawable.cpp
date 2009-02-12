@@ -111,9 +111,13 @@ void Drawable::addChild(Drawable& child) {
 }
 
 void Drawable::removeChild(Drawable& child) {
+	if (!child._next && !child._prev && !child._parent)
+		return;
+
 	UGui::instance()->drawLock();
 	UGui::instance()->eventLock();
-	real_invalidate();
+
+	//real_invalidate();
 	invalidateOverlapped();
 
 	// If we are the first child point parent to next child
@@ -195,11 +199,11 @@ void Drawable::real_hide(void) {
 	}
 }
 
-void Drawable::real_focus() {
+void Drawable::real_focus(void) {
 	//UGui::instance()->_focus_drawable = this;
 }
 
-bool Drawable::isFocus() {
+bool Drawable::isFocus(void) {
 	return (UGui::instance()->_focus_drawable == this);
 }
 
@@ -432,4 +436,9 @@ struct Box Drawable::intersection(Drawable& d) {
 	b.height -= b.y;
 	
 	return b;
+}
+
+
+Drawable::~Drawable(void) {
+	removeChild(*this);
 }
