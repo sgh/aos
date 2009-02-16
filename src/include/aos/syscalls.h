@@ -59,6 +59,8 @@
 #define _NR_sem_trydown            24
 #define _NR_sem_upn                25
 #define _NR_sem_downn              26
+#define _NR_aos_set_preemptive     27
+#define _NR_aos_default_preemptive 28
 
 /* Syscall declarations */
 struct list_head* sys_get_process_list( void ); // for getting process list to display cpu% of each process on display.
@@ -80,6 +82,8 @@ void sys_free(void* segment);
 void sys_mmstat(struct mm_stat* stat);
 struct task_t* sys_create_task(taskFuncPtr entrypoint, const char* name, void* arg, int8_t priority);
 void sys_aos_hooks(struct aos_hooks* hooks);
+void sys_aos_set_preemptive(uint8_t preemptive);
+void sys_aos_default_preemptive(uint8_t preemptive);
 
 void sys_sem_init(semaphore_t* s, int32_t count);
 void sys_sem_down(semaphore_t* s);

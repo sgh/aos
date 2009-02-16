@@ -67,6 +67,11 @@ extern void __stack_irq_bottom__;
 extern struct task_t idle_task;
 
 /**
+ * \brief The default preemptiveness of the system
+ */
+extern uint8_t default_preemption;
+
+/**
  * \brief The aos hooks
  */
 extern struct aos_hooks* _aos_hooks;
