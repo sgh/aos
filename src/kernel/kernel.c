@@ -43,6 +43,7 @@ struct aos_hooks* _aos_hooks = NULL;
 struct aos_status _aos_status;
 
 struct task_t idle_task;
+uint8_t default_preemptive = 1;
 
 
 /**
@@ -115,13 +116,25 @@ void aos_context_init(uint32_t timer_refclk) {
 void sys_yield(void) {
 	sched_lock();
 	
-	// Only do context-switch if some else want CPU-time
+	// Only do context-switch if someone else want CPU-time
 	if (!list_isempty(&readyQ)) {
-		current->resched = 1;
-		if (!is_background())
-			list_push_back(&readyQ,&current->q);
+		if (!is_background()) {
+			current->resched = 1;
+			current->state = READY;
+			list_push_back(&readyQ, &current->q);
+		}
 	}
 
+	sched_unlock();
+}
+
+void sys_aos_default_preemptive(uint8_t preemptive) {
+	default_preemptive =  preemptive ? 1 : 0;
+}
+
+void sys_aos_set_preemptive(uint8_t preemptive) {
+	sched_lock();
+	current->preemptive = preemptive ? 1 : 0;
 	sched_unlock();
 }
 
@@ -194,10 +207,8 @@ struct task_t* sys_create_task(taskFuncPtr entrypoint, const char* name, void* a
   t = sys_malloc(sizeof(struct task_t));
   init_task(t, entrypoint, arg, priority);
 	t->name = name;
-	//sched_lock();
   list_push_back(&readyQ, &t->q);
 	list_push_back(&process_list, &t->glist);
-	//sched_unlock();
   return t;
 }
 

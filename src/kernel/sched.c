@@ -38,16 +38,23 @@ void sched_clock(void) {
 
 	current->ticks++;
 
+	// The background-process must step aside for anybody
+	if (unlikely(is_background()))  {
+		if (!list_isempty(&readyQ))
+			current->resched = 1;
+		return;
+	}
+
+	if (!current->preemptive)
+		return;
+
 	/*
 		Check If current process has time left to run. If its time is up change
 		context if any processes in the readyQ
 	*/
-	if (!current->time_left) {
-
-		if (!list_isempty(&readyQ) /*&& current->prio > -127*/)
+	if (!current->time_left)
 			current->resched = 1;
-
-	} else // Very important to avoid underflow of time_left member
+	else // Very important to avoid underflow of time_left member
 		current->time_left--;
 }
 
@@ -97,8 +104,8 @@ static FLATTEN HOT void sched_switch(void) {
 	uint32_t time_longest;
 
 /** @todo optimize this func. It is run with irq_lock held */
-	
-	// Find next process
+
+	// Find next proces
 	if (!list_isempty(&readyQ)) {
 		next = get_struct_task(list_get_front(&readyQ));
 		list_erase(&next->q);
@@ -118,9 +125,10 @@ static FLATTEN HOT void sched_switch(void) {
 				list_push_front(&readyQ, &prev->q);
 			else
 				list_push_back(&readyQ, &prev->q);
+			assert(current->preemptive==1);
 		}
 		prev->nonvoluntary_ctxt++;
-	} else
+	} else // Otherwise it is a voluntary context-switch
 		prev->voluntary_ctxt++;
 
 	/** @todo this will eventually end up with QUANTUM as highes time_slice */
@@ -169,7 +177,8 @@ static FLATTEN HOT void sched_switch(void) {
 
 	next->state = RUNNING;
 	current = next;
-
+	
+	num_context_switch++;
 	switch_context(&prev->ctx, &next->ctx); // zzzZZZ
 }
 
@@ -180,18 +189,22 @@ void process_wakeup(struct task_t* task) {
 	// Higher priority task is placed in front of the queue
 	if (task->prio < current->prio) {
 		list_push_front(&readyQ , &task->q);
-		current->resched = 1;
+
+		// Resched if task is preemptive
+		current->resched = current->preemptive;
 	} else { // Place according to priority
-		struct list_head* insertion_point = NULL;
+		uint_fast8_t inserted = 0;
 		list_for_each(it, &readyQ) {
 			struct task_t* _t = get_struct_task(it);
 
-			if (task->prio < _t->prio) {
-				insertion_point = it;
+			if (unlikely(task->prio < _t->prio)) {
+				inserted = 1;
+				list_push_front(it, &task->q);
 				break;
 			}
 		}
-		list_push_front(insertion_point ? insertion_point: &readyQ , &task->q);
+		if (likely(!inserted))
+			list_push_back(&readyQ , &task->q);
 	}
 
 	task->state = READY;

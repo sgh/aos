@@ -100,9 +100,10 @@ struct task_t {
 	uint32_t ticks;
 
 	/**
-	 * \brief Subticks used by process
+	 * \brief Is the process-preemptive or not
 	 */
-	int32_t subticks;
+	uint8_t preemptive;
+
 
 	/**
 	 * \brief Tick left in current timeslice
