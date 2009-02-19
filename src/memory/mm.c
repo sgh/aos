@@ -18,10 +18,24 @@
 */
 #define AOS_KERNEL_MODULE
 
+// #define INTEGRITY_CHECK
+// #define PCDEBUG
+
+#ifndef PCDEBUG
 #include <aos/kernel.h>
-#include <string.h>
-#include <aos/bits.h>
 #include <aos/assert.h>
+#else
+#include <assert.h>
+#endif
+
+#include <string.h>
+#include <stdlib.h>
+
+#include <aos/bits.h>
+#include <aos/macros.h>
+#include <aos/mm.h>
+
+
 
 
 /* MM defines */
@@ -31,10 +45,11 @@
 #define LOWER_BYTE 0x00FF
 
 // uint32_t memory_size = 0;
-// uint32_t largest_segmentnum = 0;
+// uint32_t largest_segmentnum = 0;	
 
 /* MM status variables */
 static uint8_t* mm_start;
+// static uint8_t* mm_first_free;
 static uint8_t* mm_end;
 static volatile uint8_t schedlock = 0;
 
@@ -49,16 +64,24 @@ struct PACKED mm_header {
 	uint16_t size;
 };
 
+#ifndef PCDEBUG
 #define boundary4_assert(val) sys_assert( ((uint32_t)(val) & 0x3) == 0)
+#else
+#define boundary4_assert(val) assert( ((uint32_t)(val) & 0x3) == 0)
+#endif
 
+#ifndef PCDEBUG
 static_assert(sizeof(struct mm_header) == 4, MM_HEADER_MUST_BE_4_BYTES);
-
 
 /* Memory-functions */
 _syscall2(void, aos_mm_init, void*,  start, void*, end);
 _syscall1(void*, malloc, size_t, size);
 _syscall1(void, free, void*, free);
 _syscall1(void, mmstat, struct mm_stat*, stat);
+#else
+	#define sched_lock()
+	#define sched_unlock()
+#endif
 
 void mm_schedlock(uint8_t allowlock) {
 	schedlock = allowlock;
@@ -78,8 +101,10 @@ void sys_mmstat(struct mm_stat* stat) {
 	do {
 		header = (mm_header_t*)ptr;
 		total_size += header->size + sizeof(mm_header_t);
-// 		printf("Segment %d: %4d bytes (%s)\n",segment,header->size,header->free?"F":"U");
-//
+#ifdef PCDEBUG
+		printf("Segment %d: %4d bytes (%s)\n",segment,header->size,header->free?"F":"U");
+#endif
+
 		if (header->free)
 			stat->free += header->size;
 		else {
@@ -102,16 +127,21 @@ void sys_mmstat(struct mm_stat* stat) {
 	if (schedlock)
 		sched_unlock();
 
-// 	printf("Total size : %4d\n",total_size);
+#ifdef PCDEBUG
+	printf("Total size : %4d\n",total_size);
 // 	printf("Largest segmentnum: %d\n", largest_segmentnum);
 // 	assert(total_size == memory_size);
-// 	printf("\n");
+	printf("\n");
+#endif
 }
 
 void sys_aos_mm_init(void* start, void* end) {
 	struct mm_header* head;
 	uint32_t addr;
-	
+
+#ifdef PCDEBUG
+	printf("Initializing mm\n");
+#endif
 	addr = (uint32_t)start;
 	if (addr&0x3) {
 		addr += 4;
@@ -127,7 +157,8 @@ void sys_aos_mm_init(void* start, void* end) {
 	boundary4_assert(end);
 	
 	mm_start =  start;
-	mm_end = end;
+// 	mm_first_free = mm_start;
+	mm_end   = end;
 	memset(mm_start, 0x0, end-start);
 
 	head = (struct mm_header*)mm_start;
@@ -181,13 +212,20 @@ void* sys_malloc(size_t size)
 					header->size = segmentsize - size - sizeof(mm_header_t);
 				}
 			}
+
+			// Maintain the first free segment
+// 			if (ptr == mm_first_free)
+// 				mm_first_free = ptr;
+
 // 			mm_status();
 			if (schedlock)
 				sched_unlock();
 
+#ifdef INTEGRITY_CHECK
 			// Run statistics to verify integrity
 			struct mm_stat mmstat;
 			sys_mmstat(&mmstat);
+#endif
 
 			return ptr + sizeof(mm_header_t);
 		}
@@ -198,7 +236,9 @@ void* sys_malloc(size_t size)
 	
 // 	AOS_WARNING("Out-Of-Memory"); // Call hook-function
 const int  OUT_OF_MEMORY = 0;
+#ifndef PCDEBUG
 	sys_assert(OUT_OF_MEMORY);
+#endif
 	
 	return NULL; // Out-Of-Memory
 }
@@ -213,6 +253,9 @@ void sys_free(void* segment) {
 	if (schedlock)
 		sched_lock();
 
+// 	if (header < mm_first_free)
+// 		mm_first_free = header;
+
 	header->free=1;
 	do {
 		header = (mm_header_t*)ptr;
@@ -222,10 +265,12 @@ void sys_free(void* segment) {
 			prev_header = header;
 		ptr += header->size + sizeof(mm_header_t);
 	}	while (header->free==1 && ptr<=(uint8_t*)mm_end - sizeof(mm_header_t));	
-	
+
+#ifdef INTEGRITY_CHECK
 	// Run statistics to verify integrity
 	struct mm_stat mmstat;
 	sys_mmstat(&mmstat);
+#endif
 
 	if (schedlock)
 		sched_unlock();
@@ -233,20 +278,29 @@ void sys_free(void* segment) {
 }
 
 
-/*#define MEM_POOL_SIZE 1000
+#ifdef PCDEBUG
+
+static char  memory[1024*32];
+
+#define MEM_POOL_SIZE 1000
 
 int main(int argc, char** argv) {
-// 	void *ptr[MEM_POOL_SIZE];
+ 	void *ptr[MEM_POOL_SIZE];
 	long size;
 	struct timeval t;
 	void* mem[MEM_POOL_SIZE];
 	int i;
 	unsigned int timer = 0;
 	unsigned char leftright = 0;
-	
+	struct mm_stat mmstat;
+	int malloccount = 1000000;
+
+	assert(sizeof(struct mm_header) == 4);
+
 	gettimeofday(&t,NULL);
 	
-	mm_init(memory,sizeof(memory));
+	sys_aos_mm_init((void*)memory,(void*)(memory+sizeof(memory)));
+	sys_mmstat(&mmstat);
 	
 	srandom(t.tv_usec);
 	
@@ -254,11 +308,11 @@ int main(int argc, char** argv) {
 		mem[i] = 0;
 	
 	//mm_status();
-	while (1) {
+	while (malloccount--) {
 		void* ptr;
 		
 		size = random()%(sizeof(memory)>>3)+1;
-		ptr = mm_alloc(size);
+		ptr = sys_malloc(size);
 		if (ptr) { // If alloc succeded place it in the alloc-pool
 // 			printf("Alloc %d\n",size);
 			for (i=0 ; i<MEM_POOL_SIZE; i++) {
@@ -273,7 +327,7 @@ int main(int argc, char** argv) {
 				for (i=0 ; i<MEM_POOL_SIZE; i++) {
 					if (mem[i] != 0) {
 // 						printf("Free idx %d\n",i);
-						mm_free(mem[i]);
+						sys_free(mem[i]);
 						mem[i] = 0;
 						break;
 					}
@@ -282,7 +336,7 @@ int main(int argc, char** argv) {
 				for (i=MEM_POOL_SIZE-1 ; i>=0; i--) {
 					if (mem[i] != 0) {
 // 						printf("Free idx %d\n",i);
-						mm_free(mem[i]);
+						sys_free(mem[i]);
 						mem[i] = 0;
 						break;
 					}
@@ -291,7 +345,7 @@ int main(int argc, char** argv) {
 		}
 		
 		if (timer == 100000) {
-			mm_status();
+// 			sys_mmstat(&mmstat);
 // 			usleep(100000);
 			timer = 0;
 		} else
@@ -299,4 +353,5 @@ int main(int argc, char** argv) {
 	}
 	
 	return 0;
-}*/
+}
+#endif
