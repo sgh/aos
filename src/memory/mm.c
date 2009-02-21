@@ -49,7 +49,6 @@
 
 /* MM status variables */
 static uint8_t* mm_start;
-// static uint8_t* mm_first_free;
 static uint8_t* mm_end;
 static volatile uint8_t schedlock = 0;
 
@@ -157,7 +156,6 @@ void sys_aos_mm_init(void* start, void* end) {
 	boundary4_assert(end);
 	
 	mm_start =  start;
-// 	mm_first_free = mm_start;
 	mm_end   = end;
 	memset(mm_start, 0x0, end-start);
 
@@ -185,49 +183,46 @@ void* sys_malloc(size_t size)
 
 	do {
 		header = (mm_header_t*)ptr;
-		next_header = (mm_header_t*)(ptr + header->size + sizeof(mm_header_t));
 		
-		/* Join Segments */
-		if (header->free==1 && (uint8_t*)next_header<mm_end && next_header->free==1) {
-// 			printf("Joining segments\n");
-// 			mm_status();
-			header->size += next_header->size + sizeof(mm_header_t);
-// 		mm_status();
-		}
-		
-		if (header->size>=size && header->free==1) {
-			segmentsize = header->size;
-// 			mm_status();
-// 			printf("Allocating %d bytes on offset %d\n",size,(unsigned char*)ptr-mm_start+sizeof(mm_header_t));
-			header->free = 0;
-			header->size = size;
-			
-			/* If there is no room left for new mm_header after allocation */
-			if (segmentsize - size < sizeof(mm_header_t))
-				header->size = segmentsize;
-			else { /* IF there is space free for at least a zero-byte segment */
-				header = (mm_header_t*) (ptr + sizeof(mm_header_t) + size);
-				if ((uint8_t*)header<mm_end) {
-					header->free = 1;
-					header->size = segmentsize - size - sizeof(mm_header_t);
-				}
+
+		if (header->free == 1) {
+			/* Join Segments */
+			next_header = (mm_header_t*)(ptr + header->size + sizeof(mm_header_t));
+
+			while ((uint8_t*)next_header<mm_end && next_header->free==1) {
+	// 			printf("Joining segments\n");
+				header->size += next_header->size + sizeof(mm_header_t);
+				next_header = (uint8_t*)(next_header) + next_header->size + sizeof(mm_header_t);
 			}
-
-			// Maintain the first free segment
-// 			if (ptr == mm_first_free)
-// 				mm_first_free = ptr;
-
-// 			mm_status();
-			if (schedlock)
-				sched_unlock();
+		
+			if (header->size>=size) {
+				segmentsize = header->size;
+	// 			printf("Allocating %d bytes on offset %d\n",size,(unsigned char*)ptr-mm_start+sizeof(mm_header_t));
+				header->free = 0;
+				header->size = size;
+			
+				/* If there is no room left for new mm_header after allocation */
+				if (segmentsize - size < sizeof(mm_header_t))
+					header->size = segmentsize;
+				else { /* IF there is space free for at least a zero-byte segment */
+					header = (mm_header_t*) (ptr + sizeof(mm_header_t) + size);
+					if ((uint8_t*)header<mm_end) {
+						header->free = 1;
+						header->size = segmentsize - size - sizeof(mm_header_t);
+					}
+				}
 
 #ifdef INTEGRITY_CHECK
-			// Run statistics to verify integrity
-			struct mm_stat mmstat;
-			sys_mmstat(&mmstat);
+				// Run statistics to verify integrity
+				struct mm_stat mmstat;
+				sys_mmstat(&mmstat);
 #endif
 
-			return ptr + sizeof(mm_header_t);
+				if (schedlock)
+					sched_unlock();
+
+				return ptr + sizeof(mm_header_t);
+			}
 		}
 		ptr += sizeof(mm_header_t) + header->size;
 	} while ((uint8_t*)ptr<mm_end);
@@ -253,13 +248,10 @@ void sys_free(void* segment) {
 	if (schedlock)
 		sched_lock();
 
-// 	if (header < mm_first_free)
-// 		mm_first_free = header;
-
 	header->free=1;
 	do {
 		header = (mm_header_t*)ptr;
-		if (prev_header && header->free==1 && prev_header->free==1) {
+		if (header->free==1 && prev_header && prev_header->free==1) {
 			prev_header->size += header->size + sizeof(mm_header_t);
 		}	else
 			prev_header = header;
