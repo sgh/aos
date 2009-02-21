@@ -26,7 +26,7 @@
 /**
  * \brief The minimum block-size in fragment-stores
  */
-#define FRAGMENT_SIZE 32
+#define FRAGMENT_SIZE 64
 
 /**
  * \brief This describes a concept called fragmented storage.
