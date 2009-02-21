@@ -34,10 +34,10 @@ struct fragment_store* create_fragment(unsigned int size) {
 		chunksize = ciel(size, FRAGMENT_SIZE);
 		fragment = (struct fragment_store*)sys_malloc(sizeof(struct fragment_store));
 
-		if (prev_fragment)
-			prev_fragment->next = fragment;
-		else
+		if (unlikely(prev_fragment == NULL))
 			retval = fragment;
+		else
+			prev_fragment->next = fragment;
 
 		prev_fragment = fragment;
 		
@@ -56,27 +56,18 @@ struct fragment_store* create_fragment(unsigned int size) {
 void load_fragment(unsigned char* data, struct fragment_store* fragment) {
 // 	struct fragment_store* prevfrag;
 
-	// If there are nothing to copy
-	if (fragment->size == 0)
-		return;
-	
 // 	printf("loading: ");
 	while (fragment) {
 		uint16_t fragment_size = ciel(fragment->size, FRAGMENT_SIZE);
-		sys_assert(fragment_size <= FRAGMENT_SIZE);
+		//sys_assert(fragment_size <= FRAGMENT_SIZE);
 
 		// No more data in fragmented space
-		if (fragment_size == 0)
+		if (unlikely(fragment_size == 0))
 			break;
 // 		printf(" %d",fragment->size);
 		memcpy(data,fragment->data, fragment_size);
 		data += fragment_size;
-// 		prevfrag = fragment;
 		fragment = fragment->next;
-		
-		/* Free prevfragment */
-// 		sys_free(prevfrag);
-// 		prevfrag = NULL;
 	}
 // 	printf("\n");
 }
@@ -85,7 +76,7 @@ void store_fragment(struct fragment_store* fragment, const unsigned char* data, 
 	unsigned int chunksize;
 
 	while (size) {
-		sys_assert(fragment);
+		//sys_assert(fragment);
 
 		chunksize = ciel(size, FRAGMENT_SIZE );
 
