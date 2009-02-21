@@ -359,5 +359,5 @@ int main(int argc, char* argv[]) {
 // 		for (i=0; i<verafont.numglyphs; i++) {
 // 			aostk_ttf_raster(&verafont, 0, 0, verafont.glyphs[i].i, 0);
 // 		}
-
+	return 0;
 }
