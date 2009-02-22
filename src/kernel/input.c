@@ -30,9 +30,6 @@ static const struct input_hooks* inputhooks;
 static uint32_t current_keyscan;
 
 static void generic_register_keyscan(uint32_t keyscan, uint8_t irq) {
-	uint32_t now = 0;
-	uint32_t scancode;
-
 	if (current_keyscan == keyscan)
 		return;
 
@@ -58,7 +55,7 @@ void aos_register_keyscan(uint32_t keyscan) {
 	generic_register_keyscan(keyscan, 0);
 }
 
-void aos_register_keypress(uint32_t scancode) {
+void aos_register_keypress(UNUSED uint32_t scancode) {
 #warning implement me
 // 	struct extended_char xchar;
 // 	

@@ -38,7 +38,7 @@
  * @param priority The priority. Less is more :)
  */
 
-void init_task(struct task_t* task,funcPtr entrypoint, void* arg, int8_t priority) {
+void init_task(struct task_t* task, taskFuncPtr entrypoint, void* arg, int8_t priority) {
 
 // 	char* ustack = sys_malloc(USIZE);
 	void* ustack = (char*)&__stack_usr_top__;

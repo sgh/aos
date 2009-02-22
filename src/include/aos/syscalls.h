@@ -35,7 +35,7 @@
 #define _NR_yield                  0
 #define _NR_test                   1
 #define _NR_msleep                 2
-#define _NR_usleep                 3
+//                                 3
 #define _NR_block                  4 
 #define _NR_unblock                5
 #define _NR_malloc                 6
@@ -51,7 +51,6 @@
 #define _NR_sem_init               16
 #define _NR_sem_up                 17
 #define _NR_sem_down               18
-#define _NR_user_syscall           19
 #define _NR_get_process_list       20
 #define _NR_assert_failed          21
 #define _NR_mutex_timeout_lock     22
@@ -64,13 +63,11 @@
 
 /* Syscall declarations */
 struct list_head* sys_get_process_list( void ); // for getting process list to display cpu% of each process on display.
-uint32_t sys_user_syscall(uint32_t syscallnr, void* data);
 void sys_unblock(struct task_t* task);
 void sys_block(struct list_head* q);
 void sys_yield(void);
 void sys_aos_mm_init(void* start, void* end);
 void sys_msleep(uint16_t ms);
-void sys_usleep(uint32_t us);
 void sys_mutex_init(mutex_t* m);
 void sys_mutex_lock(mutex_t* m);
 uint8_t sys_mutex_timeout_lock(mutex_t* m, uint32_t timeout);
