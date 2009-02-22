@@ -1,6 +1,6 @@
 /*
 		AOS - ARM Operating System
-		Copyright (C) 2007  Søren Holm (sgh@sgh.dk)
+		Copyright (C) 2007  Sï¿½ren Holm (sgh@sgh.dk)
 
 		This library is free software; you can redistribute it and/or
 		modify it under the terms of the GNU Lesser General Public
@@ -69,9 +69,6 @@ struct aos_hooks {
 	//void (*fatal_event)(const char* str);
 
 	void (*assert_failed)(const char * const exp, const char* const file, int line);
-
-	uint32_t (*user_syscall)(uint32_t syscallnr, void* data);
-
 };
 
 /**

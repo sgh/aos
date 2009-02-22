@@ -32,7 +32,7 @@
 #include <aos/interrupt.h>
 
 LIST_HEAD(readyQ);
-LIST_HEAD(usleepQ);
+// LIST_HEAD(usleepQ);
 LIST_HEAD(process_list);
 
 
@@ -67,13 +67,6 @@ extern funcPtr __aos_eot__; // AOS End-Of-Text
 // 	register uint32_t now = read_timer32();
 // 	return now>=last_interrupt_time ? now-last_interrupt_time: UINT32_MAX - (last_interrupt_time-now);
 // }
-
-
-uint32_t sys_user_syscall(uint32_t syscallnr, void* data) {
-	if (_aos_hooks && _aos_hooks->user_syscall )
-	return _aos_hooks->user_syscall(syscallnr, data);
-	return 0;
-}
 
 static void do_initcalls(void) {
 	funcPtr* initcall;
@@ -145,12 +138,12 @@ void sys_aos_set_preemptive(uint8_t preemptive) {
 // 	return uint32diff(last_context_time, read_timer32());
 // }
 
-void sys_get_sysutime(uint32_t* time) {
+/*void sys_get_sysutime(uint32_t* time) {
 	if (time == NULL)
 		return;
 	
 	*time = ticks2us(system_ticks);
-}
+}*/
 
 void /*sys_*/get_sysmtime(uint32_t* time) {
 	if (time == NULL)
@@ -161,13 +154,6 @@ void /*sys_*/get_sysmtime(uint32_t* time) {
 
 void sys_aos_hooks(struct aos_hooks* hooks) {
 	_aos_hooks = hooks;	
-}
-
-
-void sys_usleep(uint32_t us) {
-	timer_timeout(&current->sleep_timer, (void*) process_wakeup, current, us2ticks(us));
-
-	current->state = SLEEPING;
 }
 
 void sys_msleep(uint16_t ms) {
@@ -222,10 +208,10 @@ void sys_delete_task(struct task_t* t) {
 }
 
 
-void validate_execution_address(uint32_t address) {
+//void validate_execution_address(uint32_t address) {
 //	ASSERT(address >= (uint32_t)&__aos_sot__);
 //	ASSERT(address <= (uint32_t)&__aos_eot__);
-}
+//}
 
 
 // void sys_disable_irqs() {

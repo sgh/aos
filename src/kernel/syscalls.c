@@ -28,9 +28,6 @@ void* sys_call_table[] =
 {
 	[_NR_yield] sys_yield,
 	[_NR_msleep] sys_msleep,
-	[_NR_usleep] sys_usleep,
-// 	[_NR_disable_irqs] sys_disable_irqs,
-// 	[_NR_enable_irqs] sys_enable_irqs,
 	[_NR_mutex_init] sys_mutex_init,
 	[_NR_mutex_lock] sys_mutex_lock,
 	[_NR_mutex_timeout_lock] sys_mutex_timeout_lock,
@@ -38,10 +35,6 @@ void* sys_call_table[] =
 	[_NR_mutex_trylock] sys_mutex_trylock,
 	[_NR_block] sys_block,
 	[_NR_unblock] sys_unblock,
-// 	[_NR_disable_cs] sys_disable_cs,
-// 	[_NR_enable_cs] sys_enable_cs,
-//	[_NR_get_sysutime] sys_get_sysutime,
-//	[_NR_get_sysmtime] sys_get_sysmtime,
 	[_NR_malloc] sys_malloc,
 	[_NR_free] sys_free,
 	[_NR_mmstat] sys_mmstat,
@@ -57,7 +50,6 @@ void* sys_call_table[] =
 	[_NR_sem_downn] sys_sem_downn,
  	[_NR_sem_trydown] sys_sem_trydown,
  	[_NR_sem_timeout_down] sys_sem_timeout_down,
-	[_NR_user_syscall] sys_user_syscall,
 	[_NR_get_process_list] sys_get_process_list,
 	[_NR_assert_failed] sys_assert_failed,
 };
@@ -65,9 +57,7 @@ void* sys_call_table[] =
 /* Syscall definitions */
 
 
-_syscall2(uint32_t, user_syscall, uint32_t, syscallnr, void*, data);
 _syscall1(void, msleep, uint16_t, ms);
-_syscall1(void, usleep, uint32_t, us);
 _syscall1(void, unblock, struct task_t*, task);
 _syscall1(void, block, struct list_head*, q);
 _syscall0(void, yield);

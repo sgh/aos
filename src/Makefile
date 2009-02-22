@@ -4,12 +4,14 @@ APP = ../libaos.a
 
 MARCH = arm-lpc2xxx
 
-KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c task.c kernel.c sched.c wait.c irq.c timer.c runtime_check.c assert.c input.c input_events.c
+KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c task.c kernel.c sched.c irq.c timer.c assert.c input.c input_events.c aosfifo.c
+#wait.c
 
 DRIVER_SOURCES =  
 #driver_core.c driver_class.c platform/platform.c
 
-ARCH_SOURCES = interrupt.c context.c atomic.s clock.c core.s
+ARCH_SOURCES = interrupt.c context.c clock.c core.s
+#atomic.s
 
 MM_SOURCES = mm.c fragment.c newdelete.c
 
@@ -21,7 +23,7 @@ ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
 
 ASMLIST = -Wa,-alhmsd
 
-FLAGS = -mcpu=arm7tdmi -O3 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -mthumb-interwork
+FLAGS = -mcpu=arm7tdmi -O2 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -mthumb-interwork
 
 CFLAGS = $(FLAGS) -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes
 CPPFLAGS = $(FLAGS)
@@ -85,10 +87,6 @@ lint:
 %.o: %.cpp
 	@echo "Compiling (C++) $< ..."
 	@$(CC) -MD $(THUMB) $(CPPFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
-
-kernel/timer_interrupt.o:  kernel/timer_interrupt.c
-	@echo "Compiling (ARM) $<  ..."
-	@$(CC) -MD $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
 
 kernel/sched.o:  kernel/sched.c
 	@echo "Compiling (ARM) $<  ..."

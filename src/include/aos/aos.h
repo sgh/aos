@@ -98,32 +98,6 @@ void yield(void);
 void msleep(uint16_t ms);
 
 /**
- * \brief Sleep some microseconds.
- * Be aware that nomatter what value you supply you can not sleep shorter
- * than the time it takes to do 2 context-switches.
- * @param us The microseconds to sleep
- */
-void usleep(uint32_t us);
-
-/**
- * \brief Disable context-switching, effectively making the current process
- * owner of the time, except the time it takes to handle interrupts.
- */
-void disable_cs(void);
-
-/**
- * \brief Enable context-switching and allow other processes to run
- */
-void enable_cs(void);
-
-/**
- * \brief Get the current system uptime in microseconds.
- * This overflows after 1.1 hours.
- * @param time Pointer to store the time.
- */
-void get_sysutime(uint32_t* time);
-
-/**
  * \brief Get the current system uptime in milliseconds
  * This overflows after 49 days.
  *
@@ -131,7 +105,8 @@ void get_sysutime(uint32_t* time);
  */
 void get_sysmtime(uint32_t* time);
 
-uint32_t user_syscall(uint32_t syscallnr, void* data);
+void aos_set_preemptive(uint8_t preemptive);
+void aos_default_preemptive(uint8_t preemptive);
 
 /**
  * \brief Get process list to display cpu% of each process on display.
