@@ -21,6 +21,7 @@ static uint8_t queuedata[sizeof(AosEvent)*8 + 1];
 static struct aos_fifo eventqueue;
 #ifndef DEBUG_INPUT
 static semaphore_t eventqueue_sem;
+static mutex_t eventqueue_lock;
 #endif
 
 void dispatch_keypress(unsigned int scancode, unsigned int repeatcount) {
@@ -28,7 +29,9 @@ void dispatch_keypress(unsigned int scancode, unsigned int repeatcount) {
 	e.type = KeyPress;
 	e.keyEvent.keycode = scancode;
 	e.keyEvent.repeatcount = repeatcount;
+	mutex_lock(&eventqueue_lock);
 	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
+	mutex_unlock(&eventqueue_lock);
 #ifndef DEBUG_INPUT
 	sem_up(&eventqueue_sem);
 #endif
@@ -39,7 +42,9 @@ void dispatch_keyrelease(unsigned int scancode) {
 	e.type = KeyRelease;
 	e.keyEvent.keycode = scancode;
 	e.keyEvent.repeatcount = 0;
+	mutex_lock(&eventqueue_lock);
 	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
+	mutex_unlock(&eventqueue_lock);
 #ifndef DEBUG_INPUT
 	sem_up(&eventqueue_sem);
 #endif
@@ -67,6 +72,7 @@ void eventqueue_init(void)
 {
 #ifndef DEBUG_INPUT
 	sem_init(&eventqueue_sem, 0);
+	mutex_init(&eventqueue_lock);
 #endif
 	aos_fifo_init(&eventqueue, queuedata, sizeof(queuedata));
 }
