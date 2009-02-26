@@ -27,6 +27,18 @@ static inline uint8_t is_event_first_keypress(const AosEvent* e) {
 	return (e && (e->type == KeyPress) && (e->keyEvent.repeatcount == 0));
 }
 
+static inline uint8_t is_event_norepeat_keyevent(const AosEvent* e) {
+	return (e && (e->type == KeyPress || e->type == KeyRelease) && (e->keyEvent.repeatcount == 0));
+}
+
+static inline uint8_t is_event_keyrelease(const AosEvent* e) {
+	return (e && (e->type == KeyRelease) && (e->keyEvent.repeatcount == 0));
+}
+
+static inline uint8_t is_event_keyevent(const AosEvent* e) {
+	return (e && (e->type == KeyPress || e->type == KeyRelease));
+}
+
 int aos_get_event(AosEvent* e, int timeout);
 
 void dispatch_keypress(unsigned int scancode, unsigned int repeatcount);
