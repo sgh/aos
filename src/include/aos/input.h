@@ -35,6 +35,10 @@ static inline uint8_t is_event_keyrelease(const AosEvent* e) {
 	return (e && (e->type == KeyRelease) && (e->keyEvent.repeatcount == 0));
 }
 
+static inline uint8_t is_event_keypress(const AosEvent* e) {
+	return (e && (e->type == KeyPress));
+}
+
 static inline uint8_t is_event_keyevent(const AosEvent* e) {
 	return (e && (e->type == KeyPress || e->type == KeyRelease));
 }
