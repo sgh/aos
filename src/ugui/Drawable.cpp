@@ -142,18 +142,21 @@ void Drawable::removeChild(Drawable& child) {
 
 void Drawable::setXY(int x, int y) {
 	invalidateOverlapped();
-	_abs_xy.x = _rel_xy.x = x;
-	_abs_xy.y = _rel_xy.y = y;
+	_rel_xy.x = x;
+	_rel_xy.y = y;
 	update();
 	real_invalidate();
 }
 
 void Drawable::update(void) {
-	Drawable* d = _next;
+	Drawable* d = _children;
 
 	if (_parent) {
 		_abs_xy.x = _parent->_abs_xy.x + _rel_xy.x;
 		_abs_xy.y = _parent->_abs_xy.y + _rel_xy.y;
+	} else {
+		_abs_xy.x = _rel_xy.x;
+		_abs_xy.y = _rel_xy.y;
 	}
 
 	while (d) {
