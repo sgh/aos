@@ -54,11 +54,12 @@ int decode_utf8(const unsigned char** pptr);
 
 unsigned int aostk_font_strwidth(const struct aostk_font* f, const char* str);
 
-unsigned int aostk_font_charwidth(const struct aostk_font* f, char c);
+uint8_t aostk_font_charwidth(const struct aostk_font* f, unsigned int c);
 
 void aostk_putstring(const struct aostk_font* font, int x, int y, const char* str);
 
-void aostk_putstringhc(const struct aostk_font* font, int x, int y, const char* str);
+void aostk_putchar(const struct aostk_font* font, int x, int y, unsigned int ch);
+
 
 #ifdef __cplusplus
 	}

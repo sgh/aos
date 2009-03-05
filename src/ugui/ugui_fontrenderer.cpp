@@ -52,10 +52,10 @@ static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font*
 	return &f->glyphs[0];
 }
 
-unsigned int aostk_font_charwidth(const struct aostk_font* f, char c) {
+uint8_t aostk_font_charwidth(const struct aostk_font* f, unsigned int c) {
 	const struct aostk_glyph* g;
-		g = aostk_get_glyph(f, c);
-		return g->advance.x;
+	g = aostk_get_glyph(f, c);
+	return g->advance.x;
 }
 
 unsigned int aostk_font_strwidth(const struct aostk_font* font, const char* str) {
@@ -99,4 +99,29 @@ void aostk_putstring(const struct aostk_font* font, int x, int y, const char* st
     ugui_raster(g, x, y, color);
     x += g->advance.x;
   }
+}
+
+void aostk_putchar(const struct aostk_font* font, int x, int y, unsigned int ch) {
+	unsigned int color;
+	unsigned int outline;
+  const struct aostk_glyph* g;
+  assert(f != NULL);
+  /**
+   * Y-position is default not the baseline, but the topmost pixel of the font
+   * So calculate the baseline by adding the font height
+   */
+  y += font->height;
+
+	color = ugui_alloc_color(current_context->text_color);
+	outline  = ugui_alloc_color(current_context->text_outline);
+	bool draw_outline = (color != outline);
+  g = aostk_get_glyph(font, ch);
+	if (draw_outline) {
+ 	  ugui_raster(g, x+1, y, outline);
+ 	  ugui_raster(g, x-1, y, outline);
+ 	  ugui_raster(g, x, y+1, outline);
+ 	  ugui_raster(g, x, y-1, outline);
+	}
+
+	ugui_raster(g, x, y, color);
 }
