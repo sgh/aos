@@ -78,6 +78,9 @@ void aos_register_keypress(UNUSED uint32_t scancode) {
 // 	sem_up(&getchar_ready_sem);
 // 	
 // 	mutex_unlock(&char_buffer_lock);
+
+	dispatch_keypress(scancode,0);
+	dispatch_keyrelease(scancode);
 }
 
 static void pressedlist_add(uint32_t time, uint32_t scancode) {
@@ -127,7 +130,7 @@ static void process_keyscan(uint32_t keyscan) {
 
 	if (pressed && inputhooks && inputhooks->beep) inputhooks->beep();
 
-	for (scancode=1; (released && scancode<32); scancode++) {
+	for (scancode=1; (released && scancode<=32); scancode++) {
 		if (released & 1) {
 			dispatch_keyrelease(scancode);
 			pressedlist_remove(scancode);
