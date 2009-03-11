@@ -57,7 +57,8 @@ void UGui::drawTraverse(Drawable* d) {
 				_update_max.y = tmp;
 		}
 
-		drawTraverse(d->_children);
+		if (d->isVisible())
+			drawTraverse(d->_children);
 		d = d->next();
 	}
 }
