@@ -70,6 +70,7 @@ void ugui_line(int x1, int y1, int x2, int y2, unsigned int color);
 void ugui_putpixel(int x, int y, unsigned int color);
 void ugui_fill(int x1, int y1, int width, int height, unsigned int color);
 void ugui_set_bounds(int x1, int y1, int x2, int y2);
+uint8_t ugui_oob(int x, int y);
 unsigned int ugui_alloc_color(unsigned int rgb);
 
 // Native callbacks
