@@ -8,10 +8,10 @@ struct aos_fifo {
 	void* data;
 };
 
-void aos_fifo_init(struct aos_fifo* fifo, void* data, int len);
+void aos_fifo_init(struct aos_fifo* fifo, void* data, int size);
 
-int aos_fifo_read(struct aos_fifo* fifo, void* dst, int len);
+int aos_fifo_read(struct aos_fifo* fifo, void* dst, int selement, int nelements);
 
-int aos_fifo_write(struct aos_fifo* fifo, void* src, int len);
+int aos_fifo_write(struct aos_fifo* fifo, void* src, int selement, int nelements);
 
 #endif
