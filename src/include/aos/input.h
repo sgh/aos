@@ -58,7 +58,7 @@ struct extended_char {
 
 struct input_hooks {
 	void (*beep)(void);
-	void (*keyfilter)(struct extended_char*);
+	void (*keyfilter)(const AosEvent* e);
 };
 
 
