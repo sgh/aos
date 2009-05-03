@@ -1,6 +1,10 @@
 #ifndef AOSFIFO_H
 #define AOSFIFO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct aos_fifo {
 	unsigned int putidx;
 	unsigned int getidx;
@@ -10,8 +14,12 @@ struct aos_fifo {
 
 void aos_fifo_init(struct aos_fifo* fifo, void* data, int size);
 
-int aos_fifo_read(struct aos_fifo* fifo, void* dst, int selement, int nelements);
+int aos_fifo_read(struct aos_fifo* fifo, void* dst, int len);
 
-int aos_fifo_write(struct aos_fifo* fifo, void* src, int selement, int nelements);
+int aos_fifo_write(struct aos_fifo* fifo, void* src, int len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

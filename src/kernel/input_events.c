@@ -6,6 +6,7 @@
 // #define DEBUG_INPUT
 
 #include <aos/input.h>
+#include <aos/errno.h>
 
 #ifndef DEBUG_INPUT
 #define AOS_KERNEL_MODULE
@@ -29,10 +30,12 @@ void dispatch_keypress(unsigned int scancode, unsigned int repeatcount) {
 	e.type = KeyPress;
 	e.keyEvent.keycode = scancode;
 	e.keyEvent.repeatcount = repeatcount;
-	mutex_lock(&eventqueue_lock);
-	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
-	mutex_unlock(&eventqueue_lock);
 #ifndef DEBUG_INPUT
+	mutex_lock(&eventqueue_lock);
+#endif
+	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
+#ifndef DEBUG_INPUT
+	mutex_unlock(&eventqueue_lock);
 	sem_up(&eventqueue_sem);
 #endif
 }
@@ -42,10 +45,12 @@ void dispatch_keyrelease(unsigned int scancode) {
 	e.type = KeyRelease;
 	e.keyEvent.keycode = scancode;
 	e.keyEvent.repeatcount = 0;
-	mutex_lock(&eventqueue_lock);
-	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
-	mutex_unlock(&eventqueue_lock);
 #ifndef DEBUG_INPUT
+	mutex_lock(&eventqueue_lock);
+#endif
+	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
+#ifndef DEBUG_INPUT
+	mutex_unlock(&eventqueue_lock);
 	sem_up(&eventqueue_sem);
 #endif
 }
@@ -58,12 +63,16 @@ int aos_get_event(AosEvent* e, int timeout) {
 	else
 		sem_down(&eventqueue_sem);
 #endif
-	if (result == ESUCCESS)
-		aos_fifo_read(&eventqueue, e, sizeof(AosEvent));
-
+	if (result == ESUCCESS) {
+		int retval = aos_fifo_read(&eventqueue, e, sizeof(AosEvent));
 #ifdef DEBUG_INPUT
-	printf("type:%d keycode:%d\n", e->type, e->keyEvent.keycode);
+		if (retval == 1)
+			printf("type:%d keycode:%d\n", e->type, e->keyEvent.keycode);
+		else
+			result = ETIMEOUT;
 #endif
+	}
+
 	return result;
 }
 
@@ -79,12 +88,20 @@ void eventqueue_init(void)
 
 #ifdef DEBUG_INPUT
 int main() {
+	int tick = 0;
 	AosEvent e;
 	eventqueue_init();
 
 	while (1) {
-		dispatch_keypress(5, 0);
-		aos_get_event(&e);
+		usleep(100000);
+		if ((tick % 5) == 0)
+			dispatch_keypress(5, 0);
+		else
+			printf(".\n");
+
+		tick++;
+
+		aos_get_event(&e, 0);
 		if (e.type == 0)
 			break;
 	}
