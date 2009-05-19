@@ -3,6 +3,7 @@
 
 #include "gtkfb.h"
 #include <stdint.h>
+#include <string.h>
 #include <aos/macros.h>
 #include <aos/input.h>
 
@@ -37,7 +38,7 @@ class DrawableDecoration {
 		int _right;
 		struct DrawingContext _ctx;
 		
-		DrawableDecoration(void) {}
+		DrawableDecoration(void) { memset(&_ctx, 0, sizeof(_ctx)); }
 
 		virtual void draw( UNUSED class Drawable* d) {};
 };
