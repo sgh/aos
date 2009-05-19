@@ -9,14 +9,14 @@ struct aos_fifo {
 	unsigned int putidx;
 	unsigned int getidx;
 	unsigned int size;
-	void* data;
+	unsigned char* data;
 };
 
-void aos_fifo_init(struct aos_fifo* fifo, void* data, int size);
+void aos_fifo_init(struct aos_fifo* fifo, void* data, unsigned int size);
 
-int aos_fifo_read(struct aos_fifo* fifo, void* dst, int len);
+int aos_fifo_read(struct aos_fifo* fifo, unsigned char* dst, unsigned int len);
 
-int aos_fifo_write(struct aos_fifo* fifo, void* src, int len);
+int aos_fifo_write(struct aos_fifo* fifo, unsigned char* src, unsigned int len);
 
 #ifdef __cplusplus
 }

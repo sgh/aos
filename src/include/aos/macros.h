@@ -26,6 +26,7 @@
 #define ciel(val,max)  ((val)>(max) ? (max) : (val))
 #define floor(val,min) ((val)<(min) ? (min) : (val))
 #define max(a,b) ((a)>(b) ? (a) : (b))
+#define min(a,b) ((a)<(b) ? (a) : (b))
 
 // String manipulation
 #define __STRING(x) #x

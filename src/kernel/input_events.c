@@ -33,7 +33,7 @@ void dispatch_keypress(unsigned int scancode, unsigned int repeatcount) {
 #ifndef DEBUG_INPUT
 	mutex_lock(&eventqueue_lock);
 #endif
-	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
+	aos_fifo_write(&eventqueue, (void*)&e, sizeof(AosEvent));
 #ifndef DEBUG_INPUT
 	mutex_unlock(&eventqueue_lock);
 	sem_up(&eventqueue_sem);
@@ -48,7 +48,7 @@ void dispatch_keyrelease(unsigned int scancode) {
 #ifndef DEBUG_INPUT
 	mutex_lock(&eventqueue_lock);
 #endif
-	aos_fifo_write(&eventqueue, &e, sizeof(AosEvent));
+	aos_fifo_write(&eventqueue, (void*)&e, sizeof(AosEvent));
 #ifndef DEBUG_INPUT
 	mutex_unlock(&eventqueue_lock);
 	sem_up(&eventqueue_sem);
@@ -64,7 +64,7 @@ int aos_get_event(AosEvent* e, int timeout) {
 		sem_down(&eventqueue_sem);
 #endif
 	if (result == ESUCCESS) {
-		int retval = aos_fifo_read(&eventqueue, e, sizeof(AosEvent));
+		/*int retval =*/ aos_fifo_read(&eventqueue, (void*)e, sizeof(AosEvent));
 #ifdef DEBUG_INPUT
 		if (retval == 1)
 			printf("type:%d keycode:%d\n", e->type, e->keyEvent.keycode);
