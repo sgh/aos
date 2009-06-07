@@ -1,11 +1,11 @@
 .PHONY:  aos
-APP = testapp
+APP = usbdevice
 
 #SOURCES = testgpio.c handlers.c init_cpu.c startarm.s
 #SOURCES = startarm.s testapp.c init_cpu_lpc21xx.c handlers.c
-SOURCES = startarm.s testapp.cpp init_cpu.c handlers.c 
+SOURCES = startarm.s usbdevice.cpp init_cpu.c handlers.c 
 
-CFLAGS = -mcpu=arm7tdmi-s -Os -gdwarf-2 -Wall -Wextra  -mthumb-interwork -fno-rtti -fno-exceptions
+CFLAGS = -mcpu=arm7tdmi-s -Os -gdwarf-2 -Wall -Wextra  -mthumb-interwork -fno-rtti -fno-exceptions -std=c99
 #-mthumb 
 #-ffunction-sections -fdata-sections
 
@@ -18,7 +18,7 @@ LDFLAGS = -g -nostartfiles  -mthumb-interwork
 LINKERSCRIPT = linkerscript.ld
 #LINKERSCRIPT = lpc2364_rom.ld
 
-LIBS = -lm -lgcc -lc -lstdc++
+LIBS = -laos -lm -lgcc -lc -lstdc++
 
 LIBDIRS = -L .
 
@@ -79,4 +79,4 @@ clean:
 	rm -f $(DEPS)
 	rm -f ../$(APP).a
 
--include kernel/*.d
+-include *.d
