@@ -148,8 +148,7 @@ _vectors:
               LDR   PC,FIQ_Addr
 
 Undef_Addr:   .word   Undef_Handler
-SWI_Addr:     .word   0
-@aos_swi_entry
+SWI_Addr:     .word   aos_swi_entry
 PAbt_Addr:    .word   PAbt_Handler
 DAbt_Addr:    .word   DAbt_Handler
 FIQ_Addr:     .word   FIQ_Handler
