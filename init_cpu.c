@@ -100,7 +100,12 @@ void Init_Clocks(void)
 	CLKSRCSEL = 0x01;
 
 	/* Start PLL */
-	PLLCFG    = 0x0000000B;  // Value M-1 and N-1
+// 	PLLCFG    = 0x0000000B;  // Value M-1 and N-1
+	//              N       M
+	PLLCFG    = (0 << 16) | 11;  // Value M-1 and N-1
+
+	// Fcco = ( 2 * M * Fin ) / N
+	
 	PLLFEED   = 0xAA;
 	PLLFEED   = 0x55;
 
