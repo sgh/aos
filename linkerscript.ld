@@ -4,7 +4,7 @@ MEMORY
   flash    (rx) : ORIGIN = 0x00000000, LENGTH = 256K
   ram      (rw) : ORIGIN = 0x40000000, LENGTH = 0x2000
   ramstack (rw) : ORIGIN = 0x40002000, LENGTH = 0x2000
- 
+	usbram   (rw) : ORIGIN = 0x7FD00000, LENGTH = 0x2000 
 }
 
 /* 
@@ -18,6 +18,17 @@ SECTIONS
   { 
     *(.startup)
   } > flash =0
+
+  .initcalls :
+  {
+  __initcalls_start__ = . ;
+    KEEP(*(.bus_initcalls))
+    KEEP(*(.class_initcalls))
+    KEEP(*(.driver_initcalls))
+    KEEP(*(.aos_initcalls))
+  __initcalls_end__ = . ;
+  } > flash
+
 	
 
 		/* .ctors .dtors are used for c++ constructors/destructors */
@@ -92,7 +103,7 @@ SECTIONS
 	stacklayout :
 	{
 		__stack_usr_bottom__ = .;
-		. = . + 0x0400*2; /* 2 kb */
+		. = . + 0x0400*1; /* 1 kb */
 		__stack_usr_top__    = .;
 		__stack_svc_bottom__ = .;
 		. = . + 0x0400*1; /* 1 kb */
@@ -101,10 +112,10 @@ SECTIONS
 		. = . + 0x0400; /* 1 kb */
 		__stack_irq_top__    = .;
 		__stack_fiq_bottom__ = .;
-		. = . + 0x0080; /* 128 bytes */
+		. = . + 0x0000; /* 0 bytes */
 		__stack_fiq_top__    = .;
 		__stack_und_bottom__ = .;
-		. = . + 0x0080; /* 128 bytes */
+		. = . + 0x0000; /* 0 bytes */
 		__stack_und_top__    = .;
 		__stack_iap_bottom__ = .;
 	} >ramstack
