@@ -57,7 +57,7 @@ all: ${OBJS}
 #cp ../Mikrofyn/Embedded/arm/xc2-bootcode/cb14_cradle-bootloader.bin . 
 #dd if=testapp.bin bs=8k seek=1 skip=1 oflag=append of=cb14_cradle-bootloader.bin
 #$(OBJCOPY) -I binary -O ihex cb14_cradle-bootloader.bin cb14_cradle-bootloader.hex
-	$(OBJCOPY) -O ihex $(APP).elf  testapp.hex
+	$(OBJCOPY) -O ihex $(APP).elf  $(APP).hex
 
 
 aos:
