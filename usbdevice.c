@@ -9,7 +9,9 @@
 #include <aos/aos_hooks.h>
 #include <aos/semaphore.h>
 #include <aos/syscalls.h>
+
 #include "usbcore.h"
+#include "usbdev_lpc23xx.h"
 
 #define AOS_KERNEL_MODULE
 #include <aos/interrupt.h>
@@ -103,7 +105,7 @@ void SIE_read(uint8_t cmd, uint8_t* data/*,int len = 1*/) {
 
 
 /** convert from endpoint address to endpoint index */
-#define EP2IDX(bEP) ((((bEP)&0xF)<<1)|(((bEP)&0x80)>>7))
+#define EP2IDX(bEP) (( ((bEP)&0xF) <<1) | (((bEP)&0x80)>>7 ))
 /** convert from endpoint index to endpoint address */
 #define IDX2EP(idx) ((((idx)<<7)&0x80)|(((idx)>>1)&0xF))
 
@@ -111,9 +113,9 @@ uint8_t rxled;
 uint8_t txled;
 uint8_t dataled;
 
-#define dataon() {FIO2SET = BIT2; dataled = 10; }
-#define txon()   {FIO2SET = BIT1; txled = 10; }
-#define rxon()   {FIO2SET = BIT0; rxled = 10; }
+#define dataon() {FIO2SET = BIT2; dataled = 3; }
+#define txon()   {FIO2SET = BIT1; txled = 3; }
+#define rxon()   {FIO2SET = BIT0; rxled = 3; }
 
 #define dataoff() {FIO2CLR = BIT2; }
 #define txoff()   {FIO2CLR = BIT1; }
@@ -140,6 +142,7 @@ void write_endpoint(uint8_t ep, uint8_t* data, int len) {
 
 	USB_CTRL = 0;
 
+// 	printhex(len); printhex(ep); println();
 	SIE_cmd(EP2IDX(ep));
 	SIE_cmd(SIE_VALIDATE_BUFFER);
 
@@ -165,38 +168,47 @@ static const struct device_descriptor dev_desc = {
 struct my_configuration_descriptor {
 	struct configuration_descriptor conf;
 	struct interface_descriptor interface;
-	struct endpoint_descriptor ep2;
+	struct endpoint_descriptor out_ep2;
+	struct endpoint_descriptor in_ep2;
 };
 
 static const struct my_configuration_descriptor conf_desc = {
 	.conf = {
 		.bLength             = sizeof(struct configuration_descriptor),
 		.bDescriptorType     = DESC_TYPE_CONFIGURATION,
-		.wTotalLength        = sizeof(struct configuration_descriptor) + sizeof(struct interface_descriptor) + sizeof(struct endpoint_descriptor),
+		.wTotalLength        = sizeof(struct configuration_descriptor) + sizeof(struct interface_descriptor) + sizeof(struct endpoint_descriptor)*2,
 		.bNumInterfaces      = 1,
-		.bConfigurationValue = 0,
+		.bConfigurationValue = 1,
 		.iConfiguration      = 0,
 		.bmAttributes        = 0x80,
 		.bMaxPower           = 50
 	},
 	.interface = {
-		.bLength             = sizeof(struct configuration_descriptor),
+		.bLength             = sizeof(struct interface_descriptor),
 		.bDescriptorType     = DESC_TYPE_INTERFACE,
 		.bInterfaceNumber    = 0,
 		.bAlternateSetting   = 0,
-		.bNumEndpoints       = 1,
+		.bNumEndpoints       = 2,
 		.bInterfaceClass     = 0xFF,
 		.bInterfaceSubClass  = 0xFF,
 		.bInterfaceProtocol  = 0xFF,
 		.iInterface          = 0,
 	},
-	.ep2 = {
+	.out_ep2 = {
 		.bLength = sizeof(struct endpoint_descriptor),
 		.bDescriptorType = DESC_TYPE_ENDPOINT,
-		.bEndpointAddress = 2,
+		.bEndpointAddress = 0x2,
 		.bmAttributes = 0x02,
 		.wMaxPacketSize = 64,
-		.bInterval = 16,
+		.bInterval = 0,
+	},
+	.in_ep2 = {
+		.bLength = sizeof(struct endpoint_descriptor),
+		.bDescriptorType = DESC_TYPE_ENDPOINT,
+		.bEndpointAddress = 0x82,
+		.bmAttributes = 0x02,
+		.wMaxPacketSize = 64,
+		.bInterval = 0,
 	}
 };
 
@@ -208,26 +220,12 @@ void send_configuration_descriptor(uint8_t ep) {
 	write_endpoint(ep, (uint8_t*)&conf_desc, conf_desc.conf.wTotalLength);
 }
 
-#define USB_GET_STATUS         0
-#define USB_CLEAR_FEATURE      1
-#define USB_SET_FEATURE        3
-#define USB_SET_ADDRESS        5
-#define USB_GET_DESCRIPTOR     6
-#define USB_SET_DESCRIPTOR     7
-#define USB_GET_CONFIGURATION  8
-#define USB_SET_CONFIGURATION  9
-#define USB_GET_INTERFACE      10
-#define USB_SET_INTERFACE      11
-#define USB_SYNCH_FRAME        12
-
-#define EP_STAT_STP BIT2
 
 void parse_control_packet(uint8_t ep, UNUSED  int len, uint32_t stat) {
 	struct setup_packet setup;
 	memcpy(&setup, packet_buffer, sizeof(struct setup_packet));
 
 	if (! (stat & EP_STAT_STP)) {
-		
 		return;
 	}
 
@@ -312,13 +310,13 @@ void parse_control_packet(uint8_t ep, UNUSED  int len, uint32_t stat) {
 			REALIZE_EP |= BIT4;
 			EP_INDEX = 4;
 			MAXPACKET_SIZE = 64;
-			while ((DEV_INT_STAT & EP_RLZED_INT) == 0);
+			while ((DEV_INT_STAT & EP_RLZED_INT) == 0) ;
 			DEV_INT_CLR = EP_RLZED_INT;
 			
 			REALIZE_EP |= BIT5;
 			EP_INDEX = 5;
 			MAXPACKET_SIZE = 64;
-			while ((DEV_INT_STAT & EP_RLZED_INT) == 0);
+			while ((DEV_INT_STAT & EP_RLZED_INT) == 0) ;
 			DEV_INT_CLR = EP_RLZED_INT;
 			
 			SIE_write(SIE_CONFIGURE_DEVICE, 1);
@@ -342,8 +340,12 @@ void parse_control_packet(uint8_t ep, UNUSED  int len, uint32_t stat) {
 	}
 }
 
-void endpoint_input(uint8_t ep, UNUSED  int len, uint32_t stat) {
+void endpoint_input(uint8_t ep, int len, uint32_t stat) {
+// 	static int count = 0;
+// 	count++;
+// 	write_endpoint(ep | BIT7, 0, 8);
 	dataon();
+	write_endpoint( ep | BIT7, packet_buffer, len);
 }
 
 void usb_interrupt_handler(UNUSED void* arg) {
@@ -374,8 +376,8 @@ void usb_interrupt_handler(UNUSED void* arg) {
 		}
 	}
 
-	// Slow interrupt
-// 	if (dev_intr & EP_SLOW_INT) {
+	// Endpoint interrupt. I don't distinguis between EP_SLOW_INT and EP_FAST_INT
+	if (dev_intr & (EP_SLOW_INT|EP_FAST_INT)) {
 
 		for (unsigned char n=0; n<32; n++) {
 			
@@ -410,18 +412,18 @@ void usb_interrupt_handler(UNUSED void* arg) {
 					SIE_cmd(SIE_CLEAR_BUFFER);
 
 					if (n==0 || n==1) {
-						parse_control_packet(n, len, stat);
+						parse_control_packet(n>>1, len, stat);
 						println();
 					} else
-						endpoint_input(n, len, stat);
+						endpoint_input(n>>1, len, stat);
 				}
 
 // 				println();
 
 			}
 		}
-
-// 	}
+		USB_CTRL = 0;
+	}
 
 	DEV_INT_CLR = dev_intr;
 

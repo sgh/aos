@@ -1,6 +1,7 @@
 #include <usb.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main() {
 	struct usb_bus *busses;
@@ -47,7 +48,11 @@ int main() {
 // 			}
 		}
 	}
-	char buf[1024];
+	char buf1[128];
+	char buf2[128];
+	
+	memset(buf1, 0, sizeof(buf1));
+	memset(buf2, 0, sizeof(buf2));
 	int count = 0;
 	if (mydev) {
 		int res;
@@ -55,17 +60,30 @@ int main() {
 		myhandle = usb_open(mydev);
 		res = usb_claim_interface(myhandle, 0);
 		printf("res=%d\n", res);
-// TODO : Apparently this actually works, but nothing is received on the device
+
+		// TODO Stuff could get stuf in receive-buffer so reset device or clear buffers or something
+		
 		while (1) {
-			res = usb_bulk_write(myhandle, 0x2, buf, 2048, 500);
-	// 		res = usb_control_msg(myhandle, 0, 0, 0, 0, 0, 0, 500);
-			if (res == 2048) {
-				printf("%d\n",count);
+			int size;
+			size = sprintf(buf1, "T %d", count) + 1;
+			
+			res = usb_bulk_write(myhandle, 2, buf1, size, 1000);
+			if (res != size)
+				printf("Write: res=%d\n", res);
+
+			memset(buf2, 0, sizeof(buf2));
+			res = usb_bulk_read(myhandle, 2, buf2, sizeof(buf2), 1000);
+			
+			if (strcmp(buf1, buf2) != 0) {
+				printf("%8s : %8s\n", buf1, buf2);
+				printf("Read: res=%d\n", res);
+			} 
+// 			else {
+// 				printf(".");
 // 				fflush(0);
-			} else
-				printf("res=%d\n", res);
-// 			usleep(1000);
+// 			}
 			count++;
+// 			usleep(10000);
 		}
 	}
 
