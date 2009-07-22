@@ -67,17 +67,19 @@ int main() {
 			int size;
 			size = sprintf(buf1, "T %d", count) + 1;
 			
-			res = usb_bulk_write(myhandle, 2, buf1, size, 1000);
+			res = usb_bulk_write(myhandle, 2, buf1, size, 0);
 			if (res != size)
 				printf("Write: res=%d\n", res);
 
 			memset(buf2, 0, sizeof(buf2));
-			res = usb_bulk_read(myhandle, 2, buf2, sizeof(buf2), 1000);
+			res = usb_bulk_read(myhandle, 2, buf2, sizeof(buf2), 100);
 			
-			if (strcmp(buf1, buf2) != 0) {
+			if (res==0 && strcmp(buf1, buf2) != 0)
 				printf("%8s : %8s\n", buf1, buf2);
+
+			if (res < 0)
 				printf("Read: res=%d\n", res);
-			} 
+ 
 // 			else {
 // 				printf(".");
 // 				fflush(0);
