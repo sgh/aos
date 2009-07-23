@@ -47,6 +47,71 @@ static void _send_configuration_descriptor(uint8_t ep) {
 		usbdev_write_endpoint(ep, 0, 0);
 }
 
+static uint8_t _usbcore_set_configuration(const int wanted_conf) {
+	uint8_t INTERFACE = 0;
+	uint8_t state = 0;
+
+	const void* ptr = _configuration_descriptor;
+	const void* sentinel_ptr = ptr + _configuration_descriptor->wTotalLength;
+	int total_length = _configuration_descriptor->wTotalLength;
+	
+// 	printf("Total length: %d\n", total_length);
+	
+	// First find the wanted configuration
+	while (ptr < sentinel_ptr) {
+		const uint8_t descriptor_lenght = *((uint8_t*)ptr);
+		const uint8_t descriptor_type = *((uint8_t*)ptr+1);
+		
+// 		printf("Type: %d (%d)\n", descriptor_type, descriptor_lenght);
+		
+		switch (state) {
+			case 0: // Find configuration
+				// Found a configuration descriptor - check it
+				if (descriptor_type == DESC_TYPE_CONFIGURATION) {
+					const struct configuration_descriptor* _conf = ptr;
+					if (_conf->bConfigurationValue == wanted_conf) {
+// 						printf("wanted configuration found\n");
+						state++;
+					}
+				}
+				break;
+			case 1: // Find interface
+					// Found a configuration descriptor - check it
+				if (descriptor_type == DESC_TYPE_INTERFACE) {
+					const struct interface_descriptor* _iface = ptr;
+					if (_iface->bInterfaceNumber == INTERFACE) {
+// 					printf("wanted interface found\n");
+						state++;
+					}
+				}
+				break;
+		}
+		
+		
+		// Exit after finding the interface - ptr is now pointing to the interface
+		if (state == 2)
+			break;
+		ptr += descriptor_lenght;
+	}
+	
+	if (state != 2)
+		return 0;
+
+	// Process the endpoints
+	const struct interface_descriptor* _iface = ptr;
+	const struct endpoint_descriptor* _ep = ptr + _iface->bLength;;
+	int num_endpoints = _iface->bNumEndpoints;
+	
+	// Now realize the endpoints
+	while (num_endpoints--) {
+		uint8_t pEp = (_ep->bEndpointAddress<<1) | (_ep->bEndpointAddress>>7);
+// 		printf("pEp: %d  MaxPktSize: %d\n", pEp, _ep->wMaxPacketSize);
+		usbdev_realize_endpoint(pEp, _ep->wMaxPacketSize);
+		_ep++;
+	}
+	return 1;
+}
+
 void parse_control_packet(uint8_t pEp, uint32_t stat) {
 	uint8_t lep = pEp >> 1;
 	struct setup_packet setup;
@@ -131,13 +196,12 @@ void parse_control_packet(uint8_t pEp, uint32_t stat) {
 		case USB_SET_CONFIGURATION:
 			printstr("SET_CONFIGURATION ");
 			printhex(setup.wValue);
-			
-			// TODO: investigate _configuration_descriptor on how to configura the device
-			usbdev_realize_endpoint(4, 64);
-			usbdev_realize_endpoint(5, 64);
-			usbdev_set_configured(1);
-			
-			usbdev_write_endpoint(lep | BIT7, 0, 0);
+
+			if (_usbcore_set_configuration(setup.wValue)) {
+				usbdev_set_configured(1);
+				usbdev_write_endpoint(lep | BIT7, 0, 0);
+			}
+
 			break;
 		case USB_GET_INTERFACE:
 			printstr("U GET_INTERFACE");
