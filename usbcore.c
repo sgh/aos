@@ -237,6 +237,7 @@ void usbcore_init(struct configuration_descriptor* conf, struct device_descripto
 }
 
 void usbcore_device_endpoint_in(uint8_t pEp, uint32_t stat) {
+	// TODO: Add register_endpoint-function to allow a minimum "user-application"
 	if ((pEp>>1) == 0) {
 		parse_control_packet(pEp, stat);
 	} else
