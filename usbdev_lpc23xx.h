@@ -39,7 +39,4 @@
 #define SIE_CLEAR_BUFFER       0xF2
 #define SIE_CONFIGURE_DEVICE   0xD8
 
-// Endport statusbits
-#define EP_STAT_STP BIT2
-
 #endif

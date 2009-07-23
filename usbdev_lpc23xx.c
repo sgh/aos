@@ -36,7 +36,7 @@ void SIE_read(uint8_t cmd, uint8_t* data/*,int len = 1*/) {
 }
 
 
-void write_endpoint(uint8_t ep, uint8_t* data, int len) {
+void usbdev_write_endpoint(uint8_t ep, uint8_t* data, int len) {
 	txon();
 	
 	USB_CTRL   = DEV_WRITE(ep);
@@ -56,7 +56,7 @@ void write_endpoint(uint8_t ep, uint8_t* data, int len) {
 }
 
 
-int read_endpoint(int pEp, uint32_t* buf, int buflen) {
+int usbdev_read_endpoint(int pEp, uint32_t* buf, int buflen) {
 		// Set ready bit
 	USB_CTRL = DEV_READ(pEp >> 1);
 
@@ -71,7 +71,7 @@ int read_endpoint(int pEp, uint32_t* buf, int buflen) {
 		goto out;
 	}
 	
-	if (likely(buf)) {
+	if (likely(buf!=NULL)) {
 		while (USB_CTRL & RD_EN) {
 			*buf = RX_DATA;
 			buf++;
@@ -85,4 +85,26 @@ out:
 	SIE_cmd(SIE_CLEAR_BUFFER);
 	
 	return len;
+}
+
+void usbdev_set_configured(int configured) {
+		SIE_write(SIE_CONFIGURE_DEVICE, configured ? 1 : 0);
+}
+
+void usbdev_realize_endpoint(uint8_t pEp, int maxpkgsize){
+	DEV_INT_CLR = EP_RLZED_INT;
+	
+	REALIZE_EP |= 1<<pEp;
+	EP_INDEX = pEp;
+	MAXPACKET_SIZE = maxpkgsize;
+	while ((DEV_INT_STAT & EP_RLZED_INT) == 0) ;
+	DEV_INT_CLR = EP_RLZED_INT;
+}
+
+void usbdev_set_address(uint32_t addr) {
+	SIE_write(SIE_SET_ADDRESS, addr | BIT7);
+}
+
+void usbdev_reset(void) {
+	SIE_write(SIE_SET_DEVICE_STATUS, 0x10);
 }

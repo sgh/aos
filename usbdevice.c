@@ -41,25 +41,6 @@ void printbits(unsigned char bits) {
 	U0THR = '\n';
 }
 
-void printstr(const char* str) {
-	int count = 16;
-
-	while (*str) {
-		if (count == 16) {
-			while ((U0LSR & BIT5) == 0) ;
-			count = 0;
-		}
-		U0THR = *str;
-		count++;
-		str++;
-	}
-}
-
-void println() {
-	while ((U0LSR & BIT5) == 0) ;
-	U0THR = '\r';
-	U0THR = '\n';
-}
 
 const char const vals[0x10] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 void printhex(unsigned char val) {
@@ -70,8 +51,6 @@ void printhex(unsigned char val) {
 	U0THR = vals[val&0x0F];
 	U0THR = ' ';
 }
-
-uint32_t packet_buffer[16]; // 64 bytes
 
 static const struct device_descriptor dev_desc = {
 	.bLength            = sizeof(struct device_descriptor),
@@ -137,143 +116,6 @@ static const struct my_configuration_descriptor conf_desc = {
 	}
 };
 
-void send_device_descriptor(uint8_t ep) {
-	write_endpoint(ep, (uint8_t*)&dev_desc, dev_desc.bLength);
-}
-
-void send_configuration_descriptor(uint8_t ep) {
-	write_endpoint(ep, (uint8_t*)&conf_desc, conf_desc.conf.wTotalLength);
-}
-
-
-void realize_endpoint(uint8_t pEp, int maxpkgsize){
-	DEV_INT_CLR = EP_RLZED_INT;
-	
-	REALIZE_EP |= 1<<pEp;
-	EP_INDEX = pEp;
-	MAXPACKET_SIZE = maxpkgsize;
-	while ((DEV_INT_STAT & EP_RLZED_INT) == 0) ;
-	DEV_INT_CLR = EP_RLZED_INT;
-}
-
-void parse_control_packet(uint8_t pEp, uint32_t stat) {
-	uint8_t lep = pEp >> 1;
-	struct setup_packet setup;
-
-	if (! (stat & EP_STAT_STP)) {
-		return;
-	}
-	
-	int len = read_endpoint(pEp, &setup, sizeof(packet_buffer) );
-
-	switch (setup.bRequest) {
-		case USB_GET_STATUS:
-			printstr("U GET_STATUS");
-			write_endpoint(lep | BIT7, (uint8_t*)"\0", 1);
-			break;
-		case USB_CLEAR_FEATURE:
-			printstr("U CLEAR_FEATURE");
-			write_endpoint(lep | BIT7, 0, 0);
-			break;
-		case USB_SET_FEATURE:
-			printstr("U SET_FEATURE");
-			write_endpoint(lep | BIT7, 0, 0);
-			break;
-		case USB_SET_ADDRESS:
-			printstr("SET_ADDRESS ");
-			printhex(setup.wValue);
-			write_endpoint(lep | BIT7, 0, 0);
-			SIE_write(SIE_SET_ADDRESS, (setup.wValue & 0x3F) | BIT7);
-			break;
-		case USB_GET_DESCRIPTOR:
-			printstr("GET_DESCRIPTOR(");
-			switch (setup.wValue >> 8) {
-				case DESC_TYPE_DEVICE:
-					printstr("device");
-					send_device_descriptor(lep | BIT7);
-					break;
-				case DESC_TYPE_CONFIGURATION:
-					printstr("configuration");
-					send_configuration_descriptor(lep | BIT7);
-					break;
-				case DESC_TYPE_STRING:
-					printstr("U string");
-					write_endpoint(lep | BIT7, 0, 0);
-					break;
-				case DESC_TYPE_INTERFACE:
-					printstr("U interface");
-					write_endpoint(lep | BIT7, 0, 0);
-					break;
-				case DESC_TYPE_ENDPOINT:
-					printstr("U endpoint");
-					write_endpoint(lep | BIT7, 0, 0);
-					break;
-				case DESC_TYPE_DEVICE_QUALIFIER:
-					printstr("U qualifier");
-					write_endpoint(lep | BIT7, 0, 0);
-					break;
-				case DESC_TYPE_OTHER_SPEED_CONFIGURATION:
-					printstr("U configuration");
-					write_endpoint(lep | BIT7, 0, 0);
-					break;
-				case DESC_TYPE_INTERFACE_POWER:
-					printstr("U power");
-					write_endpoint(lep | BIT7, 0, 0);
-					break;
-				default:
-						printhex(setup.wValue>>8);
-						printhex(setup.wValue & 0xFF);
-						write_endpoint(lep | BIT7, 0, 0);
-						break;
-			}
-			printstr(")");
-				
-			
-			break;
-		case USB_SET_DESCRIPTOR:
-			printstr("U SET_DESCIPTOR ");
-			printhex(setup.wValue);
-			break;
-		case USB_GET_CONFIGURATION:
-			printstr("U GET_CONFIGURATION");
-			send_configuration_descriptor(lep | BIT7);
-			break;
-		case USB_SET_CONFIGURATION:
-			printstr("SET_CONFIGURATION ");
-			printhex(setup.wValue);
-			
-			realize_endpoint(4, 64);
-			realize_endpoint(5, 64);
-			SIE_write(SIE_CONFIGURE_DEVICE, 1);
-			
-			write_endpoint(lep | BIT7, 0, 0);
-			break;
-		case USB_GET_INTERFACE:
-			printstr("U GET_INTERFACE");
-			break;
-		case USB_SET_INTERFACE:
-			printstr("U SET_INTERFACE");
-			printhex(setup.wValue);
-			printhex(setup.wIndex);
-			break;
-		case USB_SYNCH_FRAME:
-			printstr("U SYNCH_FRAME");
-			break;
-		default:
-			printstr("UNKNOWN"); break;
-			break;
-	}
-}
-
-void endpoint_input(uint8_t pEp, uint32_t stat) {
-	uint8_t lEp = pEp >> 1;
-	int len = read_endpoint(pEp, packet_buffer, sizeof(packet_buffer));
-// 	static int count = 0;
-// 	count++;
-// 	write_endpoint(ep | BIT7, 0, 8);
-	dataon();
-	write_endpoint( lEp | BIT7, packet_buffer, len);
-}
 
 
 void usb_interrupt_handler(UNUSED void* arg) {
@@ -336,6 +178,8 @@ void AOS_TASK test1(UNUSED void* arg) {
 	uint32_t state = 0;
 // 	char buf[128];
 
+	usbcore_init(&conf_desc, &dev_desc);
+
 	// Power up the USB-controller
 	PCONP |= BIT31;
 
@@ -354,16 +198,10 @@ void AOS_TASK test1(UNUSED void* arg) {
 	// Disable pull-ups on Vbus
 	PINMODE3 &= ~(0x10 << 28);
 
-	//Set EUBEpin and USBMaxPSize for EP0+EP1 wait for EP_RLZED
-	EP_INDEX       = 0;
-	MAXPACKET_SIZE = 64;
-	EP_INDEX       = 1;
-	MAXPACKET_SIZE = 64;
-  while ((DEV_INT_STAT & EP_RLZED_INT) == 0);
-	
-	SIE_write(SIE_SET_ADDRESS, 0x80);
-	
-	SIE_write(SIE_SET_DEVICE_STATUS, 0x10);
+	usbdev_realize_endpoint(0, 64);
+	usbdev_realize_endpoint(1, 64);
+	usbdev_set_address(0);
+	usbdev_reset();
 
 	// Install interrupt handler
 	irq_attach(22, usb_interrupt_handler, NULL);
