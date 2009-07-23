@@ -7,7 +7,6 @@
 #include <aos/mm.h>
 #include <aos/irq.h>
 #include <aos/aos_hooks.h>
-#include <aos/semaphore.h>
 #include <aos/syscalls.h>
 
 #include "usbcore.h"
@@ -20,10 +19,6 @@
 
 
 char __attribute__((aligned(4))) dmem[7*1024];
-
-semaphore_t empty_sem;
-semaphore_t full_sem;
-mutex_t lock;
 
 void printbits(unsigned char bits) {
 	unsigned int bit = 128;
@@ -223,10 +218,6 @@ void main(void) {
 
 	FIO2SET  = BIT3;
 // 	aos_hooks(&my_hooks);
-
-	sem_init(&empty_sem, 0);
-	sem_init(&full_sem, 1);
-	mutex_init(&lock);
 
 	aos_context_init(pclock/4);
 	FIO2PIN = 0x0;
