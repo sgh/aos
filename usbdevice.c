@@ -11,7 +11,6 @@
 #include <aos/syscalls.h>
 
 #include "usbcore.h"
-#include "usbdev_lpc23xx.h"
 
 #define AOS_KERNEL_MODULE
 #include <aos/interrupt.h>
@@ -118,102 +117,27 @@ static const struct my_configuration_descriptor conf_desc = {
 
 
 
-void usb_interrupt_handler(UNUSED void* arg) {
-	unsigned int dev_intr;
-	unsigned int usb_intr;
-	unsigned int ep_intr;
-	
-	usb_intr = USB_INT_STAT;
-	ep_intr  = EP_INT_STAT;
-	dev_intr = DEV_INT_STAT;
-
-	// Frame interrupt
-	if (dev_intr & FRAME_INT) {
-		if (dataled) {
-			dataled--;
-			if (dataled == 0)
-				dataoff();
-		}
-		if (rxled) {
-			rxled--;
-			if (rxled == 0)
-				rxoff();
-		}
-		if (txled) {
-			txled--;
-			if (txled == 0)
-				txoff();
-		}
-	}
-
-	// Endpoint interrupt. I don't distinguis between EP_SLOW_INT and EP_FAST_INT
-	if (dev_intr & (EP_SLOW_INT|EP_FAST_INT)) {
-
-		for (unsigned char pEp=0; pEp<32; pEp++) {
-			
-			if (EP_INT_STAT & (1 << pEp)) {
-				rxon();
-				
-				// Clear endpoint receive interrupt and read status
-				EP_INT_CLR = 1 << pEp;
-				while ((DEV_INT_STAT & CDFULL_INT) == 0) ;
-				uint32_t stat = CMD_DATA;
-
-				if ((pEp>>1) == 0) {
-					parse_control_packet(pEp, stat);
-					println();
-				} else
-					endpoint_input(pEp, stat);
-			}
-
-		}
-		USB_CTRL = 0;
-	}
-
-	DEV_INT_CLR = dev_intr;
-
-}
+void usbdev_interrupt_handler(UNUSED void* arg);
 
 void AOS_TASK test1(UNUSED void* arg) {
 	uint32_t state = 0;
 // 	char buf[128];
 
 	usbcore_init(&conf_desc, &dev_desc);
-
-	// Power up the USB-controller
-	PCONP |= BIT31;
-
-	// Initialize USB clocks
-	OTG_CLK_CTRL |= 0x12;
-	while ((OTG_CLK_STAT & 0x12) != 0x12) msleep(10);
-
-	// Enable USB pins
-	PINSEL1 |= (0x01 << 26); // D+
-	PINSEL1 |= (0x01 << 28); // D-
-	PINSEL3 |= (0x10 << 28); // Vbus
-	PINSEL3 |= (0x01 << 2);  // GoodLink
-// 	FIO2DIR |= BIT9;
-// 	FIO2CLR = BIT9;
-
-	// Disable pull-ups on Vbus
-	PINMODE3 &= ~(0x10 << 28);
-
+	usbdev_init();
 	usbdev_realize_endpoint(0, 64);
 	usbdev_realize_endpoint(1, 64);
 	usbdev_set_address(0);
 	usbdev_reset();
 
 	// Install interrupt handler
-	irq_attach(22, usb_interrupt_handler, NULL);
-
-	// Enable USB interrupts
-	DEV_INT_EN = DEV_STAT_INT | EP_FAST_INT | EP_SLOW_INT | FRAME_INT;
-	EP_INT_EN  = BIT5 | BIT4 | BIT2 | BIT0;
-	
-// 	EP_INT_EN = 0xFFFFFFFF;
+	irq_attach(22, usbdev_interrupt_handler, NULL);
 
 	// Enable interrupt
 	interrupt_unmask(22);
+	
+	
+	
 
 	// Pull dowm
 	FIO2DIR |= BIT9;
