@@ -108,6 +108,7 @@ void usbdev_set_address(uint32_t addr) {
 }
 
 void usbdev_reset(void) {
+	usbdev_set_address(0);
 	SIE_write(SIE_SET_DEVICE_STATUS, 0x10);
 }
 

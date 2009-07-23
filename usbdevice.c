@@ -120,9 +120,6 @@ void AOS_TASK test1(UNUSED void* arg) {
 
 	usbcore_init(&conf_desc, &dev_desc);
 	usbdev_init();
-	usbdev_realize_endpoint(0, 64);
-	usbdev_realize_endpoint(1, 64);
-	usbdev_set_address(0);
 	usbdev_reset();
 
 	// Install interrupt handler
@@ -130,9 +127,6 @@ void AOS_TASK test1(UNUSED void* arg) {
 
 	// Enable interrupt
 	interrupt_unmask(22);
-	
-	
-	
 
 	// Pull dowm
 	FIO2DIR |= BIT9;
