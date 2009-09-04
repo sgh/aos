@@ -5,7 +5,7 @@
 #ifdef __linux__
 #include "../include/aos/aosfifo.h"
 #include <assert.h>
-#define AOSFIFO_TEST
+//#define AOSFIFO_TEST
 #include <stdio.h>
 #else
 #include <aos/aosfifo.h>
