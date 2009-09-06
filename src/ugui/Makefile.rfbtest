@@ -1,0 +1,23 @@
+APP = rfbtest
+
+#CXX = arm-elf-g++
+#AR = arm-elf-ar
+
+SOURCES = rfbtest.cpp testfont.cpp
+OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
+OBJS := $(patsubst %.c, %.o, $(OBJS))
+
+CPPFLAGS =  -D__STDC_LIMIT_MACROS -fno-rtti -fno-exceptions -I ../include -Os -I .. -ggdb
+#-fno-default-inline
+
+all: $(OBJS)
+	$(CXX) -o $(APP) $(OBJS) -L ../.. -lugui -lpthread  -lvncserver
+
+ttf2c: ttf2c.c
+	gcc  -o ttf2c -I ../include -I /usr/include/freetype2 -I .. -lfreetype ttf2c.c
+
+%.o: %.c
+	$(CC) -I ../include $(CFLAGS) -MD -c -ggdb -O0 -Wall -Wextra -o $@ $<
+
+clean:
+	rm $(OBJS)

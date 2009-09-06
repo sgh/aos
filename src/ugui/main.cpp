@@ -42,7 +42,8 @@ class Cross : public Drawable {
 		ugui_line(0,0,20,20, 0xFFFF00);
 
 // 		aostk_putstring(&VeraMoBd, 0, 0,  "ABCDEFGHIJKLMNOPQRSTUVXYZÆØÅ");
-		aostk_putstring(&VeraMoBd, 0, 12, "abcdefghijklmnopqrstuvxyzæøå\xE2\x80\xB0\xD0\x89\xCF\x80");
+// 		aostk_putstring(&VeraMoBd, 0, 12, "abcdefghijklmnopqrstuvxyzæøå");
+		aostk_putstring(&VeraMoBd, 0, 12, "ma");
 // 		aostk_putstring(&VeraMoBd, 0, 24, buf);
 	}
 };

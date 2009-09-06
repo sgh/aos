@@ -204,18 +204,25 @@ unsigned int ugui_alloc_color(unsigned int rgb) {
 	return rgb;
 }
 
-void __attribute__((hot)) ugui_putpixel8_native(struct ppix8_native* ppix) {
-  register unsigned int color = ppix->color;
-  register unsigned char bitmap = ppix->bitmap;
+void ugui_putpixel16_native(uint16_t bitmap, int x, int y, unsigned char color) {
+  if (bitmap & 0x0100) ugui_putpixel(x+15, y, color);
+  if (bitmap & 0x0200) ugui_putpixel(x+14, y, color);
+  if (bitmap & 0x0400) ugui_putpixel(x+13, y, color);
+  if (bitmap & 0x0800) ugui_putpixel(x+12, y, color);
+  if (bitmap & 0x1000) ugui_putpixel(x+11, y, color);
+  if (bitmap & 0x2000) ugui_putpixel(x+10, y, color);
+  if (bitmap & 0x4000) ugui_putpixel(x+9, y, color);
+  if (bitmap & 0x8000) ugui_putpixel(x+8, y, color);
 
-  if (bitmap & 0x80) ugui_putpixel(ppix->x, ppix->y, color);
-  if (bitmap & 0x40) ugui_putpixel(ppix->x+1, ppix->y, color);
-  if (bitmap & 0x20) ugui_putpixel(ppix->x+2, ppix->y, color);
-  if (bitmap & 0x10) ugui_putpixel(ppix->x+3, ppix->y, color);
-  if (bitmap & 0x08) ugui_putpixel(ppix->x+4, ppix->y, color);
-  if (bitmap & 0x04) ugui_putpixel(ppix->x+5, ppix->y, color);
-  if (bitmap & 0x02) ugui_putpixel(ppix->x+6, ppix->y, color);
-  if (bitmap & 0x01) ugui_putpixel(ppix->x+7, ppix->y, color);
+	if (bitmap & 0x0001) ugui_putpixel(x+7, y, color);
+  if (bitmap & 0x0002) ugui_putpixel(x+6, y, color);
+  if (bitmap & 0x0004) ugui_putpixel(x+5, y, color);
+  if (bitmap & 0x0008) ugui_putpixel(x+4, y, color);
+  if (bitmap & 0x0010) ugui_putpixel(x+3, y, color);
+  if (bitmap & 0x0020) ugui_putpixel(x+2, y, color);
+  if (bitmap & 0x0040) ugui_putpixel(x+1, y, color);
+  if (bitmap & 0x0080) ugui_putpixel(x+0,  y, color);
+
 }
 
 void ugui_putpixel(int x, int y, unsigned int color) {

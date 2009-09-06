@@ -145,7 +145,7 @@ int UGui::eventLoop(void) {
 	_update_max.x = INT32_MIN;
 	_update_max.y = INT32_MIN;
 
-	mutex_timeout_lock(&_process_lock, 100);
+	//mutex_timeout_lock(&_process_lock, 100);
 	
 	get_sysmtime(&startTime);
 	processEvents(_root);
