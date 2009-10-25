@@ -5,7 +5,9 @@
 #include "ugui/ugui.h"
 #include <aos/aos.h>
 
+struct UGuiBound ugui_bounds;
 struct DrawingContext* current_context;
+
 UGui*       UGui::_instance;
 mutex_t     UGui::_eventlock;
 mutex_t     UGui::_drawlock;

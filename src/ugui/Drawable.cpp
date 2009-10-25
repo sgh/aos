@@ -55,13 +55,17 @@ bool Drawable::redraw(void) {
 	}
 
 	// Setup for drawing drawable content
-	x1 = _abs_xy.x;
-	y1 = _abs_xy.y;
-	x2 = _abs_xy.x + _width  - 1;
-	y2 = _abs_xy.y + _height - 1;
+	ugui_bounds.x1 = /*_abs_xy.x +*/ 0;
+	ugui_bounds.y1 = /*_abs_xy.y +*/ 0;
+	ugui_bounds.x2 = /*_abs_xy.x +*/ _width  - 1;
+	ugui_bounds.y2 = /*_abs_xy.y +*/ _height - 1;
+
 	current_context = &_ctx;
-	#warning we must obey parent boundaries too
-	ugui_set_bounds(x1, y1, x2, y2);
+// 	#warning we must obey parent boundaries too
+	ugui_set_bounds(ugui_bounds.x1+_abs_xy.x,
+	                ugui_bounds.y1+_abs_xy.y,
+	                ugui_bounds.x2+_abs_xy.x,
+	                ugui_bounds.y2+_abs_xy.y);
 
 	//printf("Drawme r(%d,%d) a(%d,%d)\n", _rel_xy.x, _rel_xy.y, _abs_xy.x, _abs_xy.y);
 

@@ -7,7 +7,7 @@
 #include "ugui/ugui_font.h"
 #include "ugui/ugui.h"
 
-void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned char color) {
+static void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned char color) {
 	const unsigned char* r;
 	unsigned int rows = glyph->size.height;
 	int gwidth;
@@ -16,17 +16,20 @@ void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned char co
 	x += glyph->left;
 	r = glyph->data;
 	gwidth = glyph->size.width + x;
+	
+	// Check bounds
+	if (ugui_bounds.x2 < gwidth)
+		gwidth = ugui_bounds.x2;
+
+	// TODO:Add bounding on non 8 bit boundary by adding a mask on ugui_putpixel16_native
 
 	while (rows--) {
 		ptr = r;
 		r += glyph->pitch;
 		for (int _x=x; _x<gwidth; _x+=16) {
-			uint16_t bitmap = *ptr;
-			ptr++;
-			if (likely((_x+8)<gwidth)) {
-				bitmap |= (*ptr) << 8;
-				ptr++;
-			}
+			uint16_t bitmap;
+			bitmap  = (*ptr++) << 8;
+			bitmap |= (*ptr++);
 			ugui_putpixel16_native(bitmap, _x, _y, color);
 		}
 		_y++;
@@ -74,7 +77,7 @@ unsigned int aostk_font_strwidth(const struct aostk_font* font, const char* str)
 
 void aostk_putstring(const struct aostk_font* font, int x, int y, const char* str) {
 	unsigned int color;
-	unsigned int outline;
+	unsigned int outline_color;
   const struct aostk_glyph* g;
   assert(f != NULL);
   /**
@@ -84,16 +87,17 @@ void aostk_putstring(const struct aostk_font* font, int x, int y, const char* st
   y += font->height;
 
 	color = ugui_alloc_color(current_context->text_color);
-	outline  = ugui_alloc_color(current_context->text_outline);
-	bool draw_outline = (color != outline);
+	outline_color  = ugui_alloc_color(current_context->text_outline);
+	bool draw_outline = (color != outline_color);
   while (*str) {
+		
     g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str));
 
 		if (draw_outline) {
-  	  ugui_raster(g, x+1, y, outline);
-  	  ugui_raster(g, x-1, y, outline);
-  	  ugui_raster(g, x, y+1, outline);
-  	  ugui_raster(g, x, y-1, outline);
+  	  ugui_raster(g, x+1, y, outline_color);
+  	  ugui_raster(g, x-1, y, outline_color);
+  	  ugui_raster(g, x, y+1, outline_color);
+  	  ugui_raster(g, x, y-1, outline_color);
 		}
 
     ugui_raster(g, x, y, color);

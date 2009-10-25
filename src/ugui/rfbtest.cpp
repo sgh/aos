@@ -1,4 +1,5 @@
 #include <ugui/ugui.h>
+#include <ugui/ugui_font.h>
 #include <ugui/Drawable.h>
 #include <rfb/rfb.h>
 
@@ -30,6 +31,23 @@ void ugui_fill(int x, int y, int width, int height, unsigned int color) {
 }
 
 void ugui_putpixel16_native(uint16_t bitmap, int x, int y, unsigned char color) {
+	if (bitmap & 0x8000) rfbDrawPixel(server, x+0, y, color);
+	if (bitmap & 0x4000) rfbDrawPixel(server, x+1, y, color);
+	if (bitmap & 0x2000) rfbDrawPixel(server, x+2, y, color);
+	if (bitmap & 0x1000) rfbDrawPixel(server, x+3, y, color);
+	if (bitmap & 0x0800) rfbDrawPixel(server, x+4, y, color);
+	if (bitmap & 0x0400) rfbDrawPixel(server, x+5, y, color);
+	if (bitmap & 0x0200) rfbDrawPixel(server, x+6, y, color);
+	if (bitmap & 0x0100) rfbDrawPixel(server, x+7, y, color);
+	if (bitmap & 0x0080) rfbDrawPixel(server, x+8, y, color);
+	if (bitmap & 0x0040) rfbDrawPixel(server, x+9, y, color);
+	if (bitmap & 0x0020) rfbDrawPixel(server, x+10, y, color);
+	if (bitmap & 0x0010) rfbDrawPixel(server, x+11, y, color);
+	if (bitmap & 0x0008) rfbDrawPixel(server, x+12, y, color);
+	if (bitmap & 0x0004) rfbDrawPixel(server, x+13, y, color);
+	if (bitmap & 0x0002) rfbDrawPixel(server, x+14, y, color);
+	if (bitmap & 0x0001) rfbDrawPixel(server, x+15, y, color);
+	
 }
 
 void ugui_set_bounds(int x1, int y1, int x2, int y2) {
@@ -39,9 +57,26 @@ void ugui_line(int x1, int y1, int x2, int y2, unsigned int color) {
 	rfbDrawLine(server, x1, y1, x2, y2, color);
 }
 
+unsigned int ugui_alloc_color(unsigned int rgb) {
+        return rgb;
 }
 
-Drawable* td;
+
+}
+
+extern const struct aostk_font VeraMoBd;
+
+class MyDrawable : public Drawable {
+	public:
+		MyDrawable(int x,int y,int width,int height) : Drawable(x,y,width,height) {}
+		void draw() {
+			_ctx.text_color = 0xFF00FF ;
+			aostk_putstring(&VeraMoBd, 0, 0, "TestHest");
+		}
+};
+
+
+MyDrawable* td;
 
 void keyevent(rfbBool down, rfbKeySym key, struct _rfbClientRec* cl) {
 	printf("%d\n", key);
@@ -54,9 +89,10 @@ void keyevent(rfbBool down, rfbKeySym key, struct _rfbClientRec* cl) {
 	}
 }
 
+
 int main(int argc,char** argv)
 {
-	td = new Drawable(0,0,100,100);
+	td = new MyDrawable(0,0,100,100);
   server = rfbGetScreen(&argc,argv,400,300,8,3,4);
   server->frameBuffer = (char*)malloc(400*300*4);
 	server->kbdAddEvent = keyevent;
