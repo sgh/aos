@@ -4,7 +4,7 @@
 
 #include "ugui/ugui.h"
 #include "ugui/Drawable.h"
-#include "aos/aos.h"
+//#include "aos/aos.h"
 
 #define INVALIDATE_EVENT 1
 #define SHOW_EVENT       2
@@ -12,7 +12,7 @@
 #define FOCUS_EVENT      8
 
 Drawable::Drawable(int x, int y, int width, int height)
-	: _parent(NULL), _children(NULL), _next(NULL), _prev(NULL), _events(0), _next_update(0xFFFFFFFF), _width(width), _height(height), _visible(true), _transparent(false), _modal(false), _dirty(0)  {
+	: _parent(NULL), _children(NULL), _next(NULL), _prev(NULL), _events(0), _width(width), _height(height), _visible(true), _transparent(false), _modal(false), _dirty(0)  {
 	memset(&_ctx, 0, sizeof(_ctx));
 	_abs_xy.x = _rel_xy.x = x;
 	_abs_xy.y = _rel_xy.y = y;
@@ -21,14 +21,14 @@ Drawable::Drawable(int x, int y, int width, int height)
 }
 
 bool Drawable::redraw(void) {
-	if (_next_update != 0xFFFFFFFF) {
+/*	if (_next_update != 0xFFFFFFFF) {
 		uint32_t now;
 		get_sysmtime(&now);
 		if (_next_update <= now) {
 			invalidate();
 			_next_update = 0xFFFFFFFF;
 		}
-	}
+	}*/
 
 	if (!_dirty)
 		return false;
@@ -280,12 +280,13 @@ void Drawable::processEvents(void) {
 }
 
 void Drawable::invalidate_elapsed(int ms) {
+#warning NOT IMPLEMENTED
 #warning FIX ME. It does not work with semaphore triggered eventloop
 	uint32_t now;
 	if (_dirty) return;
-	get_sysmtime(&now);
+/*	get_sysmtime(&now);
 	if (_next_update == 0xFFFFFFFF)
-		_next_update = now + ms;
+		_next_update = now + ms;*/
 }
 
 void Drawable::real_invalidate(void) {

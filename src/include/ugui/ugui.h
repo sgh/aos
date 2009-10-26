@@ -10,6 +10,15 @@
 
 extern struct DrawingContext* current_context;
 
+struct UGuiBound {
+	int x1;
+	int y1;
+	int x2;
+	int y2;
+};
+
+extern struct UGuiBound ugui_bounds;
+
 // void ugui_lock(void);
 // void ugui_unlock(void);
 

@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include "ugui/ugui.h"
-#include <aos/aos.h>
 
 struct UGuiBound ugui_bounds;
 struct DrawingContext* current_context;
@@ -149,19 +148,19 @@ int UGui::eventLoop(void) {
 
 	//mutex_timeout_lock(&_process_lock, 100);
 	
-	get_sysmtime(&startTime);
+//	get_sysmtime(&startTime);
 	processEvents(_root);
-	get_sysmtime(&endTime);
+//	get_sysmtime(&endTime);
 
-	_event_time = endTime - startTime;
+//	_event_time = endTime - startTime;
 
 	drawLock();
-	get_sysmtime(&startTime);
+//	get_sysmtime(&startTime);
 	drawTraverse(_root);
-	get_sysmtime(&endTime);
+//	get_sysmtime(&endTime);
 	drawUnlock();
 
-	_draw_time = endTime - startTime;
+//	_draw_time = endTime - startTime;
 
 	return _draw_activity;
 // 	printf("\n");
