@@ -302,6 +302,10 @@ int main(int argc, char* argv[]) {
 	// Cyrillic glyphs
 	for (unicode = 0x0400; unicode<=0x04FF; unicode++)
 		generate_glyph(&face, &height, unicode);
+	
+// Arabic glyphs
+	for (unicode = 0x0600; unicode<=0x06FF; unicode++)
+		generate_glyph(&face, &height, unicode);
 
 	// Permille
 	generate_glyph(&face, &height, 0x2030);

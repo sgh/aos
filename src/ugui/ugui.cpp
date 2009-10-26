@@ -15,12 +15,9 @@ int         UGui::_event_time;
 int         UGui::_draw_time;
 
 UGui::UGui() : _root(NULL), _focus_drawable(NULL) {
-// 	fprintf(stdout,"UGui construction ... ");
-// 	fflush(stdout);
 	mutex_init(&_process_lock);
 	mutex_init(&_eventlock);
 	mutex_init(&_drawlock);
-// 	fprintf(stdout,"ok\n");
 }
 
 void UGui::pushEvent(void) {
@@ -145,8 +142,6 @@ int UGui::eventLoop(void) {
 	_update_min.y = INT32_MAX;
 	_update_max.x = INT32_MIN;
 	_update_max.y = INT32_MIN;
-
-	//mutex_timeout_lock(&_process_lock, 100);
 	
 //	get_sysmtime(&startTime);
 	processEvents(_root);
@@ -167,10 +162,7 @@ int UGui::eventLoop(void) {
 }
 
 void UGui::eventLock(void) {
-// 	fprintf(stdout,"Locking eventLock ...");
-// 	fflush(stdout);
 	mutex_lock(&_eventlock);
-// 	fprintf(stdout,"ok\n");
 }
 
 void UGui::eventUnlock(void) {
@@ -178,10 +170,7 @@ void UGui::eventUnlock(void) {
 }
 
 void UGui::drawLock(void) {
-// 	fprintf(stdout,"Locking eventLock ...");
-// 	fflush(stdout);
 	mutex_lock(&_drawlock);
-// 	fprintf(stdout,"ok\n");
 }
 
 void UGui::drawUnlock(void) {

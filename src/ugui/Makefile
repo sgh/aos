@@ -18,7 +18,7 @@ OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
 OBJS := $(patsubst %.c, %.o, $(OBJS))
 
 
-$APP): $(OBJS)
+$APP): $(OBJS) ttf2c
 	$(AR) rcs $(APP) $(OBJS)
 #arm-elf-size -t $(APP)
 
