@@ -27,9 +27,13 @@ static void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned 
 		ptr = r;
 		r += glyph->pitch;
 		for (int _x=x; _x<gwidth; _x+=16) {
-			uint16_t bitmap;
-			bitmap  = (*ptr++) << 8;
-			bitmap |= (*ptr++);
+			uint16_t bitmap  = ((*ptr) << 8) | (*(ptr+1));
+
+			// Clear MSB if the bitmap is only 8 bits
+			if (gwidth <= (_x+8))
+				bitmap &= 0xFF00;
+
+			ptr += 2;
 			ugui_putpixel16_native(bitmap, _x, _y, color);
 		}
 		_y++;
@@ -55,13 +59,13 @@ static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font*
 	return &f->glyphs[0];
 }
 
-uint8_t aostk_font_charwidth(const struct aostk_font* f, unsigned int c) {
+uint8_t ugui_font_charwidth(const struct aostk_font* f, unsigned int c) {
 	const struct aostk_glyph* g;
 	g = aostk_get_glyph(f, c);
 	return g->advance.x;
 }
 
-unsigned int aostk_font_strwidth(const struct aostk_font* font, const char* str) {
+unsigned int ugui_font_strwidth(const struct aostk_font* font, const char* str) {
 	unsigned int width = 0;
 	const struct aostk_glyph* g;
 
@@ -75,7 +79,7 @@ unsigned int aostk_font_strwidth(const struct aostk_font* font, const char* str)
 	return width;
 }
 
-void aostk_putstring(const struct aostk_font* font, int x, int y, const char* str) {
+void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str) {
 	unsigned int color;
 	unsigned int outline_color;
   const struct aostk_glyph* g;
@@ -105,7 +109,7 @@ void aostk_putstring(const struct aostk_font* font, int x, int y, const char* st
   }
 }
 
-void aostk_putchar(const struct aostk_font* font, int x, int y, unsigned int ch) {
+void ugui_putchar(const struct aostk_font* font, int x, int y, unsigned int ch) {
 	unsigned int color;
 	unsigned int outline;
   const struct aostk_glyph* g;
