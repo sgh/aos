@@ -69,7 +69,7 @@ extern struct task_t idle_task;
 /**
  * \brief The default preemptiveness of the system
  */
-extern uint8_t default_preemption;
+extern uint8_t default_preemptive;
 
 /**
  * \brief The aos hooks

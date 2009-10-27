@@ -61,7 +61,7 @@ void init_task(struct task_t* task, taskFuncPtr entrypoint, void* arg, int8_t pr
 	task->time_left = QUANTUM;
 	task->sleep_timer.type = TMR_STOP;
 	task->timeout_timer.type = TMR_STOP;
-	task->preemptive = 1;
+	task->preemptive = default_preemptive;
 	task->state = READY;
 }
 
