@@ -78,57 +78,57 @@ void UGui::processEvents(Drawable* d) {
 	}
 }
 
-void UGui::addRoot(Drawable& child) {
+void UGui::addRoot(Drawable* child) {
 	drawLock();
 	eventLock();
 	Drawable* d = _root;
 
 	while (d) {
-		assert(d != &child);
+		assert(d != child);
 		if (!d->_next)
 			break;
 
-		if (d->_next->_modal && !child._modal)
+		if (d->_next->_modal && !child->_modal)
 			break;
 
 		d = d->_next;
 	}
 	
-	child._parent = NULL;
+	child->_parent = NULL;
 
 	if (d) { // Not the first child
-		child._prev = d;
-		child._next = d->_next;
-		d->_next = &child;
+		child->_prev = d;
+		child->_next = d->_next;
+		d->_next = child;
 	} else { // First child
-		_root = &child;
-		child._prev = NULL;
-		child._next = NULL;
+		_root = child;
+		child->_prev = NULL;
+		child->_next = NULL;
 	}
 
-	child.update();
-	child.real_invalidate();
+	child->update();
+	child->real_invalidate();
 	eventUnlock();
 	drawUnlock();
 }
 
-void UGui::removeRoot(Drawable& child) {
+void UGui::removeRoot(Drawable* child) {
 	drawLock();
 	eventLock();
-	child.real_invalidate();
-	child.invalidateOverlapped();
+	child->real_invalidate();
+	child->invalidateOverlapped();
 
 	// Setup links
-	if (child._next)
-		child._next->_prev = child._prev;
-	if (child._prev)
-		child._prev->_next = child._next;
+	if (child->_next)
+		child->_next->_prev = child->_prev;
+	if (child->_prev)
+		child->_prev->_next = child->_next;
 
-	child._next = NULL;
-	child._prev = NULL;
-	child._parent = NULL;
+	child->_next = NULL;
+	child->_prev = NULL;
+	child->_parent = NULL;
 
-	if (_root == &child)
+	if (_root == child)
 		_root = NULL;
 	eventUnlock();
 	drawUnlock();

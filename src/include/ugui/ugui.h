@@ -53,9 +53,9 @@ public:
 
 	void pushEvent(void);
 
-	void addRoot(Drawable& child);
+	void addRoot(Drawable* child);
 
-	void removeRoot(Drawable& child);
+	void removeRoot(Drawable* child);
 	
 	void eventLock(void);
 	void eventUnlock(void);

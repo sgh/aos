@@ -27,11 +27,14 @@ static void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned 
 		ptr = r;
 		r += glyph->pitch;
 		for (int _x=x; _x<gwidth; _x+=16) {
-			uint16_t bitmap  = ((*ptr) << 8) | (*(ptr+1));
+			uint16_t mask = 0xFFFF;
+			uint16_t bitmap;
 
-			// Clear MSB if the bitmap is only 8 bits
-			if (gwidth <= (_x+8))
-				bitmap &= 0xFF00;
+			// Mask off bits if there is no more room
+			if ((gwidth - _x) < 16)
+				mask <<= 16 - (gwidth - _x);
+
+			bitmap = ( ((*ptr) << 8) | (*(ptr+1)) ) & mask;
 
 			ptr += 2;
 			ugui_putpixel16_native(bitmap, _x, _y, color);

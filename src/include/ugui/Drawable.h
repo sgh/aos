@@ -43,8 +43,6 @@ class DrawableDecoration {
 		virtual void draw( UNUSED class Drawable* d) {};
 };
 
-extern class SimpleLineDecoration testdecoration;
-
 class Drawable {
 
 	Drawable* _parent;   // Parent Drawable
@@ -141,6 +139,23 @@ public:
 	struct Box intersection(Drawable& d);
 
 	friend class UGui;
+};
+
+
+class LineDecoration : public DrawableDecoration {
+	unsigned int _color;
+public:
+	LineDecoration(int size, unsigned int color);
+	void draw(Drawable* d);
+};
+
+
+class TextDecoration : public DrawableDecoration {
+	char _text[64];
+public:
+	TextDecoration(const char* text = NULL);
+	void draw(Drawable* d);
+	void setText(const char* new_text);
 };
 
 

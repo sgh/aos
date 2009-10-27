@@ -33,21 +33,16 @@ bool Drawable::redraw(void) {
 	if (!_dirty)
 		return false;
 
-	int x1;
-	int y1;
-	int x2;
-	int y2;
-
 	// Setup for drawing decoration
 	if (_decoration) {
 // 		x1 = _abs_xy.x - _decoration->_left;
 // 		y1 = _abs_xy.y - _decoration->_top;
 // 		x2 = _abs_xy.x + _width  - 1 + _decoration->_right;
 // 		y2 = _abs_xy.y + _height - 1 + _decoration->_bottom;
-		x1 = absx_deco();
-		y1 = absy_deco();
-		x2 = x1 + width_deco() - 1;
-		y2 = y1 + height_deco() -1;
+		int x1 = absx_deco();
+		int y1 = absy_deco();
+		int x2 = x1 + width_deco() - 1;
+		int y2 = y1 + height_deco() -1;
 		current_context = &_decoration->_ctx;
 		#warning we must obey parent boundaries too
 		ugui_set_bounds(x1, y1, x2, y2);
@@ -57,8 +52,8 @@ bool Drawable::redraw(void) {
 	// Setup for drawing drawable content
 	ugui_bounds.x1 = /*_abs_xy.x +*/ 0;
 	ugui_bounds.y1 = /*_abs_xy.y +*/ 0;
-	ugui_bounds.x2 = /*_abs_xy.x +*/ _width  - 1;
-	ugui_bounds.y2 = /*_abs_xy.y +*/ _height - 1;
+	ugui_bounds.x2 = /*_abs_xy.x +*/ _width;
+	ugui_bounds.y2 = /*_abs_xy.y +*/ _height;
 
 	current_context = &_ctx;
 // 	#warning we must obey parent boundaries too

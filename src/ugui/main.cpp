@@ -48,38 +48,6 @@ class Cross : public Drawable {
 	}
 };
 
-class SimpleLineDecoration : public DrawableDecoration {
-
-public:
-	SimpleLineDecoration() {
-		_top = 10;
-		_bottom = 2;
-		_left = 2;
-		_right = 2;
-	}
-
-#define maxX(d) ((d)->width() - 1 + _left + _right)
-#define maxY(d) ((d)->height() - 1 + _top + _bottom)
-
-	void draw(Drawable* d) {
-		int col = 0x0000ff;
-		int i;
-		for (i=0; i<_top; i++) {
-			col -= 100 / _top;
-			ugui_line(_top - i, i, maxX(d), i, col);
-		}
-
-		for (i=0; i<2; i++) {
-			ugui_line(0, maxY(d) - i, maxX(d), maxY(d) - i, col);
-			ugui_line(i, _top, i, maxY(d), col );
-			ugui_line(maxX(d) - i, _top, maxX(d) - i, maxY(d), col);
-		}
-	}
-	
-};
-
-class SimpleLineDecoration testdecoration;
-
 int main(void) {
 	float angle = 0;
 	int y;
