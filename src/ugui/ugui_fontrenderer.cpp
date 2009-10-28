@@ -1,11 +1,12 @@
 #include <stdlib.h>
-//#include <types.h>
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
 
 #include "ugui/ugui_font.h"
 #include "ugui/ugui.h"
+
+char right_to_left = 1;
 
 static void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned char color) {
 	const unsigned char* r;
@@ -43,10 +44,24 @@ static void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned 
 	}
 }
 
-static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned int c) {
+static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned int c, unsigned int prev, unsigned int next) {
 	unsigned int high = f->numglyphs - 1;
 	unsigned int low = 0;
 	unsigned int pivot;
+	
+	if (c == 0x641) {
+		if (prev) {
+			if (next)
+				c = 0xFEF4; // Middle of a word
+			else
+				c = 0xFEF2; // End of a word
+		} else {
+			if (next)
+				c = 0xFEF3; // Beginning of a word
+			else
+				c = 0xFEF1; // Isolated letter
+		}
+	}
 
 	while (high >= low) {
 		pivot = (high + low) >> 1;
@@ -59,12 +74,13 @@ static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font*
 		else
 			return &f->glyphs[pivot];
 	}
+
 	return &f->glyphs[0];
 }
 
 uint8_t ugui_font_charwidth(const struct aostk_font* f, unsigned int c) {
 	const struct aostk_glyph* g;
-	g = aostk_get_glyph(f, c);
+	g = aostk_get_glyph(f, c, 0, 0);
 	return g->advance.x;
 }
 
@@ -76,7 +92,7 @@ unsigned int ugui_font_strwidth(const struct aostk_font* font, const char* str) 
 	assert(f);
 
 	while (*str) {
-    g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str));
+    g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str), 0, 0);
 		width += g->advance.x;
 	}
 	return width;
@@ -84,6 +100,8 @@ unsigned int ugui_font_strwidth(const struct aostk_font* font, const char* str) 
 
 void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str) {
 	unsigned int color;
+	unsigned int prev_char = 0;
+	unsigned int next_char = 0;
 	unsigned int outline_color;
   const struct aostk_glyph* g;
   assert(f != NULL);
@@ -97,8 +115,13 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 	outline_color  = ugui_alloc_color(current_context->text_outline);
 	bool draw_outline = (color != outline_color);
   while (*str) {
+
+    g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str), prev_char, next_char);
+// 		prev_char = ;
 		
-    g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str));
+		// Right-to-left text must be pre-advanced
+		if (right_to_left)
+			x -= g->advance.x;
 
 		if (draw_outline) {
   	  ugui_raster(g, x+1, y, outline_color);
@@ -108,7 +131,10 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 		}
 
     ugui_raster(g, x, y, color);
-    x += g->advance.x;
+		
+		// Normal left-to-right text must by post-advanced
+		if (!right_to_left)
+			x += g->advance.x;
   }
 }
 
@@ -126,7 +152,7 @@ void ugui_putchar(const struct aostk_font* font, int x, int y, unsigned int ch) 
 	color = ugui_alloc_color(current_context->text_color);
 	outline  = ugui_alloc_color(current_context->text_outline);
 	bool draw_outline = (color != outline);
-  g = aostk_get_glyph(font, ch);
+  g = aostk_get_glyph(font, ch, 0, 0);
 	if (draw_outline) {
  	  ugui_raster(g, x+1, y, outline);
  	  ugui_raster(g, x-1, y, outline);

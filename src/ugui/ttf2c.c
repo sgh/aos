@@ -302,16 +302,24 @@ int main(int argc, char* argv[]) {
 	// Cyrillic glyphs
 	for (unicode = 0x0400; unicode<=0x04FF; unicode++)
 		generate_glyph(&face, &height, unicode);
-	
-// Arabic glyphs
+
+	// Arabic glyphs
 	for (unicode = 0x0600; unicode<=0x06FF; unicode++)
 		generate_glyph(&face, &height, unicode);
-
+	
 	// Permille
 	generate_glyph(&face, &height, 0x2030);
 
 	// Degree
 	generate_glyph(&face, &height, 0x2070);
+
+	// Arabic presensation Forms-A
+	for (unicode = 0xFB50; unicode<=0xFDFF; unicode++)
+		generate_glyph(&face, &height, unicode);
+
+	// Arabic presensation Forms-B
+	for (unicode = 0xFE70; unicode<=0xFEFF; unicode++)
+		generate_glyph(&face, &height, unicode);
 
 	printf("// ");
 	for (i=0; i<argc; i++)
