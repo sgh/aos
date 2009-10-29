@@ -6,7 +6,7 @@
 #include "ugui/ugui_font.h"
 #include "ugui/ugui.h"
 
-char right_to_left = 1;
+static signed char text_direction = -1;
 
 static void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned char color) {
 	const unsigned char* r;
@@ -44,24 +44,122 @@ static void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned 
 	}
 }
 
+static unsigned int arabic_context_forms[] = {
+// http://en.wikipedia.org/wiki/Arabic_Unicode#
+//
+// The arabic contextual forms are calculated as follows
+// fx. for 0x628 the isolated form is 0xFE8F
+// * Connection to previouse char 0xFE8F + 1
+// * Connection to next char 0xFE8F + 2
+// * Connection to both next and previous char 0xFE8F + 3
+//
+	0x627, 0xFE8D, // Only conection to previous char
+	0x628, 0xFE8F,
+	0x62A, 0xFE95,
+	0x62B, 0xFE99,
+	0x62C, 0xFE9D,
+	0x62D, 0xFEA1,
+	0x62E, 0xFEA5,
+	0x62F, 0xFEA9, // Only conection to previous char
+	0x630, 0xFEAB, // Only conection to previous char
+	0x631, 0xFEAD, // Only conection to previous char
+	0x632, 0xFEAF, // Only conection to previous char
+	0x633, 0xFEB1,
+	0x634, 0xFEB5,
+	0x635, 0xFEB9,
+	0x636, 0xFEBD,
+	0x637, 0xFEC1,
+	0x638, 0xFEC5,
+	0x639, 0xFEC9,
+	0x63A, 0xFECD,
+	0x641, 0xFED1,
+	0x642, 0xFED5,
+	0x643, 0xFED9,
+	0x644, 0xFEDD,
+	0x645, 0xFEE1,
+	0x646, 0xFEE5,
+	0x647, 0xFEE9,
+	0x648, 0xFEED, // Only conection to previous char
+	0x64A, 0xFEF1,
+	0x622, 0xFE81,
+	0x629, 0xFE93, // Only conection to previous char
+	0x649, 0xFEEF, // Only conection to previous char
+};
+
+
+static unsigned int arabic_context_forms_nomiddle_noend[] = {
+// Some characters have no beginning or middle contextual form.
+	0x627,
+	0x625,
+	0x630,
+	0x631,
+	0x632,
+	0x648,
+	0x622,
+	0x629,
+	0x649
+};
+
+
+static char is_not_empty(unsigned int c) {
+	if (c==0 || c==32)
+		return 0;
+	return 1;
+}
+
+static inline unsigned int contextual_forms(unsigned int c, unsigned int prev, unsigned int next) {
+
+	// Arabic contextual form
+	if (c >= 0x600 && c<=0x6FF) {
+			unsigned char prev_connects = 0;   // Can the previous character connect to me
+			unsigned char next_connects = 0;   // Can the previous character connect to me
+			unsigned char i_connect_left = 1;  // Can I connect left
+			unsigned char i_connect_right = 1; // Can I connect right
+			int idx;
+			
+			// previous and next chars only connect if they are not whitespace or start/end of line
+			if (is_not_empty(prev)) prev_connects = 1;
+			if (is_not_empty(next)) next_connects = 1;
+
+			for (idx=0; idx<sizeof(arabic_context_forms) / sizeof(arabic_context_forms[0]); idx+=2) {
+				if (arabic_context_forms[idx] == c)
+					break;
+			}
+
+			// Characters which do only connect left
+			for (int i=0; i<sizeof(arabic_context_forms_nomiddle_noend) / sizeof(arabic_context_forms_nomiddle_noend[0]); i++) {
+					if (c == arabic_context_forms_nomiddle_noend[i]) {
+						i_connect_right = 0;
+					}
+					if (prev == arabic_context_forms_nomiddle_noend[i]) {
+						prev_connects = 0;
+					}
+			}
+
+			// If only previous an I can connect
+			if (prev_connects && i_connect_left && !(i_connect_right && next_connects))
+				c = arabic_context_forms[idx+1] + 1; 
+			
+			// If only next an I can connect
+			if (!(prev_connects && i_connect_left) && i_connect_right && next_connects)
+				c = arabic_context_forms[idx+1] + 2;
+			
+			// Both I and previous and next char can connect
+			if (prev_connects && i_connect_left && i_connect_right && next_connects)
+				c = arabic_context_forms[idx+1] + 3;
+
+	}
+	
+	return c;
+}
+
+
 static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned int c, unsigned int prev, unsigned int next) {
 	unsigned int high = f->numglyphs - 1;
 	unsigned int low = 0;
 	unsigned int pivot;
 	
-	if (c == 0x641) {
-		if (prev) {
-			if (next)
-				c = 0xFEF4; // Middle of a word
-			else
-				c = 0xFEF2; // End of a word
-		} else {
-			if (next)
-				c = 0xFEF3; // Beginning of a word
-			else
-				c = 0xFEF1; // Isolated letter
-		}
-	}
+	c = contextual_forms(c, prev, next);
 
 	while (high >= low) {
 		pivot = (high + low) >> 1;
@@ -102,6 +200,7 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 	unsigned int color;
 	unsigned int prev_char = 0;
 	unsigned int next_char = 0;
+	unsigned int current_char = 0;
 	unsigned int outline_color;
   const struct aostk_glyph* g;
   assert(f != NULL);
@@ -110,17 +209,28 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
    * So calculate the baseline by adding the font height
    */
   y += font->height;
+	
+	// Start from the other side of the box if the text direction is right-to-left
+	if (text_direction == -1)
+		x = ugui_bounds.x2 - x;
 
 	color = ugui_alloc_color(current_context->text_color);
 	outline_color  = ugui_alloc_color(current_context->text_outline);
+	
 	bool draw_outline = (color != outline_color);
-  while (*str) {
+	
+	current_char = decode_utf8((const unsigned char**)&str);
+	
+  while (current_char) {
+		next_char = decode_utf8((const unsigned char**)&str);
 
-    g = aostk_get_glyph(font, decode_utf8((const unsigned char**)&str), prev_char, next_char);
-// 		prev_char = ;
+    g = aostk_get_glyph(font, current_char, prev_char, next_char);
+		
+ 		prev_char = current_char;
+		current_char = next_char;
 		
 		// Right-to-left text must be pre-advanced
-		if (right_to_left)
+		if (text_direction == -1)
 			x -= g->advance.x;
 
 		if (draw_outline) {
@@ -133,7 +243,7 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
     ugui_raster(g, x, y, color);
 		
 		// Normal left-to-right text must by post-advanced
-		if (!right_to_left)
+		if (text_direction == 1)
 			x += g->advance.x;
   }
 }
