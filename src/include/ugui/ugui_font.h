@@ -50,7 +50,7 @@ static inline uint8_t ugui_font_height(const struct aostk_font* f) {
 }
 
 
-int decode_utf8(const unsigned char** pptr);
+int decode_utf8(const unsigned char* ptr, unsigned int* unicode);
 
 unsigned int ugui_font_strwidth(const struct aostk_font* f, const char* str);
 

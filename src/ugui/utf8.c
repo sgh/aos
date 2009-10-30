@@ -3,11 +3,11 @@
 
 //#define UTF8_DEBUG
 
-int decode_utf8(const unsigned char** pptr) {
-	const unsigned char* ptr = *pptr;
+int decode_utf8(const unsigned char* ptr, unsigned int* unicode) {
 	unsigned char c;
 	int code_length = 0;
 	unsigned int value = 0;
+	int retval;
 
 //#ifdef UTF8_DEBUG
 //	printf("%s:\n",__FUNCTION__);
@@ -26,13 +26,16 @@ int decode_utf8(const unsigned char** pptr) {
 	for (c = *ptr; c & 0x80; c<<=1)
 		code_length++;
 
+	retval = code_length;
+	
 	// Ascii
 	if (code_length==0) { 
-		if (*ptr == 0)
-			*pptr = ptr;
-		else
-			*pptr = ptr + 1;
-		return *ptr;
+// 		if (*ptr == 0)
+// 			*pptr = ptr;
+// 		else
+// 			*pptr = ptr + 1;
+		*unicode = *ptr;
+		return 1;
 	}
 
 	value = *ptr << code_length;
@@ -45,29 +48,34 @@ int decode_utf8(const unsigned char** pptr) {
 //		printf("::0x%02X\n", *ptr);
 //#endif
 		if (*ptr == 0) {
-			*pptr = ptr;
-			return *ptr;
+// 			*pptr = ptr;
+			*unicode = *ptr;
+			return code_length;
 		}
 		value <<= 6;
 		value |= *ptr & 0x3F;
 	}
 
-//#ifdef UTF8_DEBUG
-//	printf("Decoded unicode 0x%02X\n", value);
-//#endif
-	*pptr = ptr+1;
-	return value;
+// #ifdef UTF8_DEBUG
+// 	printf("Decoded unicode 0x%02X\n", value);
+// #endif
+
+	*unicode = value;
+	return retval;
 }
 
 
 #ifdef UTF8_DEBUG
 int main() {
-	unsigned char* buf = "Язык";
-	unsigned char* ptr = buf;
-	int c;
+// 	unsigned char* buf = "Язык";
+	unsigned char* buf = "HelloحWorld";
+	const unsigned char* ptr = buf;
+	unsigned int c;
+	int len;
 	do {
- 		c = decode_utf8(&ptr);
- 		printf("0x%02X\n", c);
+ 		len = decode_utf8(ptr, &c);
+ 		printf("len %d 0x%02X\n",len, c);
+		ptr+=len;
  	} while (c);
  	return 0;
 }
