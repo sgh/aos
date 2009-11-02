@@ -107,8 +107,15 @@ static char is_not_empty(unsigned int c) {
 
 static signed char char_direction(unsigned int c, signed char prev_char_direction) {
 	// Spaces inheric the previous direction
-	if (c == 32 && prev_char_direction!=0)
-		return prev_char_direction;
+	// TODO Add support for correct detection of previous and next strong character
+	// Spaces and weak characters should be aligned like this 
+	// PrevWeak NextWeak Direction
+	// LRT      LTR      LTR
+	// LRT      RTL      Inherit main direction
+	// RTL      LTR      Inherit main direction
+	// RTL      RTL      RTL
+	if (c == 32)
+		return 1;
 	
 	// Arabic is right-to-left
 	if (c >= 0x600 && c<=0x6FF)
@@ -216,26 +223,33 @@ struct ugui_fontrender_state {
 	const struct aostk_font* font;
 	int x;
 	int y;
+	int segment_width;
+	unsigned int outline_color;
+	unsigned int color;
+};
+
+struct unicode_state {
+	unsigned int prev_strong;
+	unsigned int next_strong;
+	unsigned int current_char;
+	unsigned int prev_char;
+	unsigned int next_char;
 };
 
 static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* str, int count, signed char text_direction) {
 	int x = state->x;
 	int y = state->y;
-	unsigned int color;
 	unsigned int prev_char = 0;
 	unsigned int next_char = 0;
 	unsigned int current_char = 0;
 	unsigned int current_char_len;
-	unsigned int outline_color;
   const struct aostk_glyph* g;
   assert(state->font != NULL);
 	
-	// TODO: Handle text_direction
+	if (text_direction == -1)
+		x += state->segment_width;
 	
-	color = ugui_alloc_color(current_context->text_color);
-	outline_color  = ugui_alloc_color(current_context->text_outline);
-	
-	bool draw_outline = (color != outline_color);
+	bool draw_outline = (state->color != state->outline_color);
 	
 	current_char_len = decode_utf8((const unsigned char*)str, &current_char);
 	str += current_char_len;
@@ -246,20 +260,28 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 
     g = aostk_get_glyph(state->font, current_char, prev_char, next_char);
 		
+		if (text_direction == -1)
+			x -= g->advance.x;
+		
  		prev_char = current_char;
 		current_char = next_char;
 		
 		if (draw_outline) {
-  	  ugui_raster(g, x+1, y, outline_color);
-  	  ugui_raster(g, x-1, y, outline_color);
-  	  ugui_raster(g, x, y+1, outline_color);
-  	  ugui_raster(g, x, y-1, outline_color);
+  	  ugui_raster(g, x+1, y, state->outline_color);
+  	  ugui_raster(g, x-1, y, state->outline_color);
+  	  ugui_raster(g, x, y+1, state->outline_color);
+  	  ugui_raster(g, x, y-1, state->outline_color);
 		}
 
-    ugui_raster(g, x, y, color);
-		
-		x += g->advance.x;
+    ugui_raster(g, x, y, state->color);
+
+		if (text_direction == 1)
+			x += g->advance.x;
   }
+	
+	if (text_direction == -1)
+		x += state->segment_width;
+
 	state->x = x;
 	state->y = y;
 }
@@ -267,91 +289,68 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 
 void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str) {
 	unsigned int current_char;
+	unsigned int prev_char = 0;
+	unsigned int next_char = 0;
 	unsigned int current_char_len;
 	signed char direction;
 	signed char tmp;
-	const char* ptr = str;
+	const char* current_ptr = str;
+	const char* prev_ptr = 0;
 	int char_count = 0;
 	struct ugui_fontrender_state state;
 	int num =0;
 
-  assert(f != NULL);
-
-  /**
-   * Y-position is default not the baseline, but the topmost pixel of the font
-   * So calculate the baseline by adding the font height
-   */
+	/**
+	 * Y-position is default not the baseline, but the topmost pixel of the font
+	 * So calculate the baseline by adding the font height
+	 */
   y += font->height;
 	
-	state.font = font;
-	state.x = x;
-	state.y = y;
+	state.font           = font;
+	state.x              = x;
+	state.y              = y;
+	state.segment_width  = 0;
+	state.color          = ugui_alloc_color(current_context->text_color);
+	state.outline_color  = ugui_alloc_color(current_context->text_outline);;
 
-	current_char_len = decode_utf8((const unsigned char*)ptr, &current_char);
-	ptr += current_char_len;
-	tmp = direction = char_direction(current_char, direction);
+	direction = char_direction(current_char, direction);
 
-  while (current_char) {
-		char_count++;
-		current_char_len = decode_utf8((const unsigned char*)ptr, &current_char);
+	do {
+		
+		// Decode current and next unicode symbol
+		current_char_len = decode_utf8((const unsigned char*)current_ptr, &current_char);
+		decode_utf8((const unsigned char*)current_ptr + current_char_len, &next_char);
 
+		// Check for change of direction
 		tmp = direction;
 		direction = char_direction(current_char, direction);
 
-		// Check for directional change
+		// If direction has changed - render the glyphs now
 		if (tmp != direction) {
-				ugui_render_glyphs(&state, str, char_count, direction);
-			str = ptr;
+// 			if (tmp == 1)  state.color = ugui_alloc_color(0xFF0000);
+// 			if (tmp == -1) state.color = ugui_alloc_color(0x0000FF);
+
+			ugui_render_glyphs(&state, str, char_count, tmp);
+			str = current_ptr;
 			char_count = 0;
+			state.segment_width = 0;
+			num++;
 		}
 		
-		ptr += current_char_len;
-	}
-	
+		char_count++;
+
+		// Now get the current glyphs width
+		state.segment_width += aostk_get_glyph(state.font, current_char, prev_char, next_char)->advance.x;
+		
+		// Next unicode symbol
+		prev_ptr = current_ptr;
+		current_ptr += current_char_len;
+		prev_char = current_char;
+		
+	} while (current_char);
+
 }
 
-
-// void __ugui_putstring(const struct aostk_font* font, int x, int y, const char* str) {
-// 	unsigned int color;
-// 	unsigned int prev_char = 0;
-// 	unsigned int next_char = 0;
-// 	unsigned int current_char = 0;
-// 	unsigned int outline_color;
-//   const struct aostk_glyph* g;
-//   assert(f != NULL);
-//   /**
-//    * Y-position is default not the baseline, but the topmost pixel of the font
-//    * So calculate the baseline by adding the font height
-//    */
-//   y += font->height;
-// 	
-// 	color = ugui_alloc_color(current_context->text_color);
-// 	outline_color  = ugui_alloc_color(current_context->text_outline);
-// 	
-// 	bool draw_outline = (color != outline_color);
-// 	
-// 	current_char = decode_utf8((const unsigned char**)&str, 1);
-// 	
-//   while (current_char) {
-// 		next_char = decode_utf8((const unsigned char**)&str, 1);
-// 
-//     g = aostk_get_glyph(font, current_char, prev_char, next_char);
-// 		
-//  		prev_char = current_char;
-// 		current_char = next_char;
-// 		
-// 		if (draw_outline) {
-//   	  ugui_raster(g, x+1, y, outline_color);
-//   	  ugui_raster(g, x-1, y, outline_color);
-//   	  ugui_raster(g, x, y+1, outline_color);
-//   	  ugui_raster(g, x, y-1, outline_color);
-// 		}
-// 
-//     ugui_raster(g, x, y, color);
-// 		
-// 		x += g->advance.x;
-//   }
-// }
 
 void ugui_putchar(const struct aostk_font* font, int x, int y, unsigned int ch) {
 	unsigned int color;
