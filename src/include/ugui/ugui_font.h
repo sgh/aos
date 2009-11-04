@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <aos/macros.h>
+#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,6 +48,10 @@ struct PACKED aostk_font {
 
 static inline uint8_t ugui_font_height(const struct aostk_font* f) {
 	return f->height;
+}
+
+static inline int ugui_strlen(const char* str) {
+	return strlen(str);
 }
 
 

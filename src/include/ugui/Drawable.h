@@ -29,6 +29,8 @@ struct Box {
 	int height;
 };
 
+#ifdef __cplusplus
+
 class DrawableDecoration {
 		
 	public:
@@ -158,5 +160,6 @@ public:
 	void setText(const char* new_text);
 };
 
+#endif
 
 #endif

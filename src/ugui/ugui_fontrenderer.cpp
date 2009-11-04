@@ -206,13 +206,15 @@ uint8_t ugui_font_charwidth(const struct aostk_font* f, unsigned int c) {
 unsigned int ugui_font_strwidth(const struct aostk_font* font, const char* str) {
 	unsigned int width = 0;
 	const struct aostk_glyph* g;
+	int char_len;
 
 	assert(str);
 	assert(f);
 
 	while (*str) {
 		unsigned int c;
-		decode_utf8((const unsigned char*)str, &c);
+		char_len = decode_utf8((const unsigned char*)str, &c);
+		str += char_len;
     g = aostk_get_glyph(font, c, 0, 0);
 		width += g->advance.x;
 	}

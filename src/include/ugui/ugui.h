@@ -2,13 +2,22 @@
 #ifndef UGUI_H
 #define UGUI_H
 
-#ifdef __cplusplus
-
-#include "Drawable.h"
 #include <aos/mutex.h>
 #include <aos/semaphore.h>
+#include "Drawable.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern struct DrawingContext* current_context;
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+
 
 struct UGuiBound {
 	int x1;
