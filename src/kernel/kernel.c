@@ -82,6 +82,7 @@ static void do_initcalls(void) {
 
 void aos_basic_init() {
 	interrupt_init();
+	irq_init();
 // 	init_runtime_check();
 }
 

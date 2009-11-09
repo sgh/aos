@@ -83,8 +83,6 @@ void irq_unlock(void) {
 		interrupt_restore(saved_irq_state);
 }
 
-static void irq_init(void) {
+void irq_init(void) {
 	memset(irq_table, 0, sizeof(irq_table));
 }
-
-AOS_MODULE_INIT(irq_init);
