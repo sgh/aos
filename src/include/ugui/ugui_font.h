@@ -72,6 +72,7 @@ struct utf8_parser {
 	uint32_t unicode;    /** \brief Unicode symbol */
 };
 
+void utf8_init(struct utf8_parser* parser, const char* str);
 char utf8_next(struct utf8_parser* parser);
 char utf8_prev(struct utf8_parser* parser);
 

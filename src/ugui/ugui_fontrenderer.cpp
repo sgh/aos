@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include <stdio.h>
+#include <stdint.h>
 
 #include "ugui/ugui_font.h"
 #include "ugui/ugui.h"
@@ -198,26 +198,24 @@ static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font*
 }
 
 uint8_t ugui_font_charwidth(const struct aostk_font* f, unsigned int c) {
-	const struct aostk_glyph* g;
-	g = aostk_get_glyph(f, c, 0, 0);
-	return g->advance.x;
+	return aostk_get_glyph(f, c, 0, 0)->advance.x;
 }
 
 unsigned int ugui_font_strwidth(const struct aostk_font* font, const char* str) {
 	unsigned int width = 0;
-	const struct aostk_glyph* g;
-	int char_len;
+	struct utf8_parser utf8;
+	uint32_t uc;
 
 	assert(str);
-	assert(f);
+	assert(font);
 
-	while (*str) {
-		unsigned int c;
-		char_len = decode_utf8((const unsigned char*)str, &c);
-		str += char_len;
-    g = aostk_get_glyph(font, c, 0, 0);
-		width += g->advance.x;
+	utf8_init(&utf8, str);
+	while (uc = utf8_current(&utf8)) {
+		uc = utf8_current(&utf8);
+		width += aostk_get_glyph(font, uc, 0, 0)->advance.x;
+		utf8_next(&utf8)
 	}
+
 	return width;
 }
 
@@ -228,14 +226,6 @@ struct ugui_fontrender_state {
 	int segment_width;
 	unsigned int outline_color;
 	unsigned int color;
-};
-
-struct unicode_state {
-	unsigned int prev_strong;
-	unsigned int next_strong;
-	unsigned int current_char;
-	unsigned int prev_char;
-	unsigned int next_char;
 };
 
 static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* str, int count, signed char text_direction) {
