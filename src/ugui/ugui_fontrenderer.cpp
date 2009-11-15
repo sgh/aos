@@ -213,7 +213,7 @@ unsigned int ugui_font_strwidth(const struct aostk_font* font, const char* str) 
 	while (uc = utf8_current(&utf8)) {
 		uc = utf8_current(&utf8);
 		width += aostk_get_glyph(font, uc, 0, 0)->advance.x;
-		utf8_next(&utf8)
+		utf8_next(&utf8);
 	}
 
 	return width;
@@ -231,10 +231,10 @@ struct ugui_fontrender_state {
 static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* str, int count, signed char text_direction) {
 	int x = state->x;
 	int y = state->y;
+	struct utf8_parser utf8;
+	unsigned int current_char = 0;
 	unsigned int prev_char = 0;
 	unsigned int next_char = 0;
-	unsigned int current_char = 0;
-	unsigned int current_char_len;
   const struct aostk_glyph* g;
   assert(state->font != NULL);
 	
@@ -243,21 +243,29 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 	
 	bool draw_outline = (state->color != state->outline_color);
 	
-	current_char_len = decode_utf8((const unsigned char*)str, &current_char);
-	str += current_char_len;
+	utf8_init(&utf8, str);
+	
+	current_char = utf8_current(&utf8);
+	if (count > 1) {
+		utf8_next(&utf8);
+		next_char = utf8_current(&utf8);
+	}
 
 	while (count--) {
-		current_char_len = decode_utf8((const unsigned char*)str, &next_char);
-		str += current_char_len;
-
     g = aostk_get_glyph(state->font, current_char, prev_char, next_char);
 		
 		if (text_direction == -1)
 			x -= g->advance.x;
-		
+
  		prev_char = current_char;
 		current_char = next_char;
-		
+
+		if (count > 1) {
+			utf8_next(&utf8);
+			next_char = utf8_current(&utf8);
+		} else
+			next_char = 0;
+
 		if (draw_outline) {
   	  ugui_raster(g, x+1, y, state->outline_color);
   	  ugui_raster(g, x-1, y, state->outline_color);
@@ -269,6 +277,7 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 
 		if (text_direction == 1)
 			x += g->advance.x;
+
   }
 	
 	if (text_direction == -1)
@@ -280,7 +289,7 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 
 
 void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str) {
-	unsigned int current_char;
+	unsigned int current_char = 0;
 	unsigned int prev_char = 0;
 	unsigned int next_char = 0;
 	unsigned int current_char_len;
@@ -289,6 +298,7 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 	const char* current_ptr = str;
 	const char* prev_ptr = 0;
 	int char_count = 0;
+	struct utf8_parser utf8;
 	struct ugui_fontrender_state state;
 	int num =0;
 
@@ -307,11 +317,19 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 
 	direction = char_direction(current_char, direction);
 
+	utf8_init(&utf8, str);
+	next_char = utf8_current(&utf8);
 	do {
 		
-		// Decode current and next unicode symbol
-		current_char_len = decode_utf8((const unsigned char*)current_ptr, &current_char);
-		decode_utf8((const unsigned char*)current_ptr + current_char_len, &next_char);
+		prev_char = current_char;
+		current_char = next_char;
+
+		// Decode next unicode symbol
+		if (current_char != 0) {
+			utf8_next(&utf8);
+			next_char = utf8_current(&utf8);
+		} else
+			next_char = 0;
 
 		// Check for change of direction
 		tmp = direction;
@@ -334,12 +352,7 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 		// Now get the current glyphs width
 		state.segment_width += aostk_get_glyph(state.font, current_char, prev_char, next_char)->advance.x;
 		
-		// Next unicode symbol
-		prev_ptr = current_ptr;
-		current_ptr += current_char_len;
-		prev_char = current_char;
-		
-	} while (current_char);
+	} while (next_char);
 
 }
 
