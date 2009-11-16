@@ -352,7 +352,7 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 		// Now get the current glyphs width
 		state.segment_width += aostk_get_glyph(state.font, current_char, prev_char, next_char)->advance.x;
 		
-	} while (next_char);
+	} while (current_char);
 
 }
 
