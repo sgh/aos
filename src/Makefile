@@ -2,60 +2,43 @@
 
 APP = ../libaos.a
 
-MARCH = arm-lpc2xxx
+KERNEL_SOURCES = input.c input_events.c aosfifo.c
 
-KERNEL_SOURCES = syscalls.c list.c semaphore.c mutex.c task.c kernel.c sched.c irq.c timer.c assert.c input.c input_events.c aosfifo.c
-#wait.c
+ifeq ($(ARCH),arm-lpc2xxx)
+	ARCH_SOURCES = interrupt.c context.c clock.c core.s
+	KERNEL_SOURCES += assert.c syscalls.c list.c semaphore.c mutex.c task.c kernel.c sched.c irq.c timer.c
+	MM_SOURCES = mm.c fragment.c newdelete.c
+	ASMLIST = -Wa,-alhmsd
+	FLAGS = -mcpu=arm7tdmi -O2 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -mthumb-interwork $(ASMLIST)=$@.lst
+	CFLAGS = $(FLAGS) -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes
+	CPPFLAGS = $(FLAGS) 
+	THUMB = -mthumb
+	LDFLAGS = -mthumb-interwork
+	ASFLAGS = -mthumb-interwork -gdwarf2
+	TOOLCHAIN_PREFIX=arm-elf-
+endif
 
-DRIVER_SOURCES =  
-#driver_core.c driver_class.c platform/platform.c
+ifeq ($(ARCH),linux)
+	ARCH_SOURCES = mutex.c
+endif
 
-ARCH_SOURCES = interrupt.c context.c clock.c core.s
-#atomic.s
+ifeq ($(ARCH),)
+	ARCH_ERROR = $(error error Please set ARCH to (arm-lpc2xxx|linux))
+endif
 
-MM_SOURCES = mm.c fragment.c newdelete.c
+CC      = $(TOOLCHAIN_PREFIX)gcc
+AS      = $(TOOLCHAIN_PREFIX)as
+AR      = $(TOOLCHAIN_PREFIX)ar
+LD      = $(TOOLCHAIN_PREFIX)ld
+SIZE    = $(TOOLCHAIN_PREFIX)size
+OBJCOPY = $(ARM_PREFIX)objcopy
 
-ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
-
-SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES)) $(addprefix memory/,$(MM_SOURCES))  $(addprefix drivers/,$(DRIVER_SOURCES)) $(addprefix arch/$(MARCH)/,$(ARCH_SOURCES))
-
-ARM_SOURCES = $(addprefix kernel/,$(ARM_KERNEL_SOURCES))
-
-ASMLIST = -Wa,-alhmsd
-
-FLAGS = -mcpu=arm7tdmi -O2 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -mthumb-interwork
-
-CFLAGS = $(FLAGS) -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes
-CPPFLAGS = $(FLAGS)
-#-fomit-frame-pointer
-#-mapcs
-#-ffreestanding
-#-ffunction-sections -fdata-sections
-
-THUMB = -mthumb
-
-LDFLAGS = -mthumb-interwork
-
-ASFLAGS = -mthumb-interwork -gdwarf2
-#--gc-sections
-	
-LINKERSCRIPT = kernel/linkerscript.ld
-
-#LIBS = -lc -lm -lgcc -lnosys 
-LIBS = 
-
-LIBDIRS = -L .
+SOURCES = $(addprefix kernel/,$(KERNEL_SOURCES)) $(addprefix memory/,$(MM_SOURCES)) $(addprefix arch/$(ARCH)/,$(ARCH_SOURCES))
 
 ##
 # Tools
 ##
-ARM_PREFIX=arm-elf-
-CC = $(ARM_PREFIX)gcc
-AS = $(ARM_PREFIX)as
-AR = $(ARM_PREFIX)ar
-LD = $(ARM_PREFIX)ld
-SIZE = $(ARM_PREFIX)size
-OBJCOPY = $(ARM_PREFIX)objcopy
+
 
 ##
 # Includes
@@ -63,7 +46,7 @@ OBJCOPY = $(ARM_PREFIX)objcopy
 INCLUDE_DIRS = include
 INCLUDE = $(addprefix -I,$(INCLUDE_DIRS))
 
-ARM_OBJS := $(patsubst %.c,%.o,$(ARM_SOURCES))
+
 OBJS := $(patsubst %.cpp,%.o,$(SOURCES))
 OBJS := $(patsubst %.c,%.o,$(SOURCES))
 OBJS := $(patsubst %.s,%.o,$(OBJS))
@@ -79,26 +62,27 @@ size:
 symlink_setup: include/arch
 
 include/arch:
-	ln -sfn ../arch/$(MARCH) include/arch
+	$(ARCH_ERROR)
+	ln -sfn ../arch/$(ARCH) include/arch
 
 lint:
 	$(MAKE) CC=splint CFLAGS=$(INCLUDE)
 
 %.o: %.cpp
 	@echo "Compiling (C++) $< ..."
-	@$(CC) -MD $(THUMB) $(CPPFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
+	@$(CC) -MD $(THUMB) $(CPPFLAGS) -c $(INCLUDE) -o $@ $<
 
 kernel/sched.o:  kernel/sched.c
 	@echo "Compiling (ARM) $<  ..."
-	@$(CC) -MD $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
+	@$(CC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
 
 kernel/irq.o:  kernel/irq.c
 	@echo "Compiling (ARM) $<  ..."
-	@$(CC) -MD $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
+	@$(CC) -MD $(CFLAGS) -c $(INCLUDE) -o $@ $<
 
 %.o: %.c
 	@echo "Compiling (C) $< ..."
-	@$(CC) -MD $(THUMB) $(CFLAGS) $(ASMLIST)=$@.lst -c $(INCLUDE) -o $@ $<
+	@$(CC) -MD $(THUMB) $(CFLAGS) -c $(INCLUDE) -o $@ $<
 
 
 %.o: %.s

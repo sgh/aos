@@ -1,7 +1,7 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#define MAX_CONCURRENT_KEYS 3
+// #define MAX_CONCURRENT_KEYS 3
 
 #ifdef __cplusplus
 	extern "C" {
@@ -49,11 +49,11 @@ void dispatch_keypress(unsigned int scancode, unsigned int repeatcount);
 void dispatch_keyrelease(unsigned int scancode);
 
 /** @todo refine this */
-struct extended_char {
-	uint32_t keys[MAX_CONCURRENT_KEYS];   // The keys
-	uint32_t times[MAX_CONCURRENT_KEYS];  // The time the keys was pressed (not repeated)
-	uint32_t repeatcount;
-};
+// struct extended_char {
+// 	uint32_t keys[MAX_CONCURRENT_KEYS];   // The keys
+// 	uint32_t times[MAX_CONCURRENT_KEYS];  // The time the keys was pressed (not repeated)
+// 	uint32_t repeatcount;
+// };
 
 
 struct input_hooks {
@@ -73,7 +73,7 @@ uint32_t aos_getchar(int timeout);
  * simultanously pressed keys, and when they where pressed.
  * @return The extended key-information
  */
-struct extended_char aos_extended_getchar(int timeout);
+// struct extended_char aos_extended_getchar(int timeout);
 
 /**
  * \brief Set the repeatrate 
@@ -97,7 +97,7 @@ void aos_put_keybuffer(uint32_t key);
 
 void aos_key_management_task(void*);
 
-uint32_t aos_concurrent_keys(const struct extended_char* exchar, const uint32_t keys[MAX_CONCURRENT_KEYS]);
+// uint32_t aos_concurrent_keys(const struct extended_char* exchar, const uint32_t keys[MAX_CONCURRENT_KEYS]);
 
 void aos_input_init(const struct input_hooks* hooks);
 

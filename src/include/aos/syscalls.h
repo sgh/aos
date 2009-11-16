@@ -23,7 +23,7 @@
 
 // #include <kernel.h>
 #include <aos/semaphore.h>
-#include <aos/task.h>
+// #include <aos/task.h>
 #include <aos/types.h>
 #include <aos/list.h>
 #include <aos/mm.h>

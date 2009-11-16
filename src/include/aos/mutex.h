@@ -1,6 +1,6 @@
 /*
 		AOS - ARM Operating System
-		Copyright (C) 2007  Søren Holm (sgh@sgh.dk)
+		Copyright (C) 2007  Sï¿½ren Holm (sgh@sgh.dk)
 
 		This library is free software; you can redistribute it and/or
 		modify it under the terms of the GNU Lesser General Public
@@ -97,6 +97,7 @@ uint8_t mutex_trylock(mutex_t* m);
  * @param m The mutex to initialize
  */
 void mutex_init(mutex_t* m);
+
 
 #if defined(__linux__)
 static inline void sys_mutex_lock(mutex_t* m) {

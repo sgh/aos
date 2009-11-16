@@ -10,8 +10,9 @@
 
 #ifndef DEBUG_INPUT
 #define AOS_KERNEL_MODULE
-#include <aos/kernel.h>
-#include <aos/aos.h>
+// #include <aos/kernel.h>
+// #include <aos/aos.h>
+#include <aos/semaphore.h>
 #include <aos/mutex.h>
 #include <aos/irq.h>
 #endif
