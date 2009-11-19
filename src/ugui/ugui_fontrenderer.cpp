@@ -295,12 +295,12 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 	unsigned int current_char_len;
 	signed char direction;
 	signed char tmp;
-	const char* current_ptr = str;
+	const char* current_ptr;
 	const char* prev_ptr = 0;
 	int char_count = 0;
 	struct utf8_parser utf8;
 	struct ugui_fontrender_state state;
-	int num =0;
+// 	int num =0;
 
 	/**
 	 * Y-position is default not the baseline, but the topmost pixel of the font
@@ -320,9 +320,10 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 	utf8_init(&utf8, str);
 	next_char = utf8_current(&utf8);
 	do {
-		
 		prev_char = current_char;
 		current_char = next_char;
+
+		current_ptr = (const char*)utf8.ptr;
 
 		// Decode next unicode symbol
 		if (current_char != 0) {
@@ -336,15 +337,20 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 		direction = char_direction(current_char, direction);
 
 		// If direction has changed - render the glyphs now
-		if (tmp != direction) {
-// 			if (tmp == 1)  state.color = ugui_alloc_color(0xFF0000);
-// 			if (tmp == -1) state.color = ugui_alloc_color(0x0000FF);
-
+		if ((tmp != direction) || (current_char=='\n')) {
 			ugui_render_glyphs(&state, str, char_count, tmp);
 			str = current_ptr;
 			char_count = 0;
 			state.segment_width = 0;
-			num++;
+// 			num++;
+			if (current_char == '\n') {
+				state.x  = x;
+				state.y += ugui_font_height(state.font);
+
+				// Skip linefeed when rendering next line
+				str = (const char*)utf8.ptr;;
+				utf8_next(&utf8); // Skip linefeed
+			}
 		}
 		
 		char_count++;
