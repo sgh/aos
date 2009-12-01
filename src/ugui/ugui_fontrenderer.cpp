@@ -42,68 +42,6 @@ static void ugui_raster(const struct aostk_glyph* glyph, int x, int y, unsigned 
 	}
 }
 
-static unsigned int arabic_context_forms[] = {
-// http://en.wikipedia.org/wiki/Arabic_Unicode#
-//
-// The arabic contextual forms are calculated as follows
-// fx. for 0x628 the isolated form is 0xFE8F
-// * Connection to previouse char 0xFE8F + 1
-// * Connection to next char 0xFE8F + 2
-// * Connection to both next and previous char 0xFE8F + 3
-//
-	0x627, 0xFE8D, // Only conection to previous char
-	0x628, 0xFE8F,
-	0x62A, 0xFE95,
-	0x62B, 0xFE99,
-	0x62C, 0xFE9D,
-	0x62D, 0xFEA1,
-	0x62E, 0xFEA5,
-	0x62F, 0xFEA9, // Only conection to previous char
-	0x630, 0xFEAB, // Only conection to previous char
-	0x631, 0xFEAD, // Only conection to previous char
-	0x632, 0xFEAF, // Only conection to previous char
-	0x633, 0xFEB1,
-	0x634, 0xFEB5,
-	0x635, 0xFEB9,
-	0x636, 0xFEBD,
-	0x637, 0xFEC1,
-	0x638, 0xFEC5,
-	0x639, 0xFEC9,
-	0x63A, 0xFECD,
-	0x641, 0xFED1,
-	0x642, 0xFED5,
-	0x643, 0xFED9,
-	0x644, 0xFEDD,
-	0x645, 0xFEE1,
-	0x646, 0xFEE5,
-	0x647, 0xFEE9,
-	0x648, 0xFEED, // Only conection to previous char
-	0x64A, 0xFEF1,
-	0x622, 0xFE81,
-	0x629, 0xFE93, // Only conection to previous char
-	0x649, 0xFEEF, // Only conection to previous char
-};
-
-
-static unsigned int arabic_context_forms_nomiddle_noend[] = {
-// Some characters have no beginning or middle contextual form.
-	0x627,
-	0x625,
-	0x630,
-	0x631,
-	0x632,
-	0x648,
-	0x622,
-	0x629,
-	0x649
-};
-
-
-static char is_not_empty(unsigned int c) {
-	if (c==0 || c==32)
-		return 0;
-	return 1;
-}
 
 static signed char char_direction(unsigned int c, signed char prev_char_direction) {
 	// Spaces inheric the previous direction
@@ -128,59 +66,10 @@ static signed char char_direction(unsigned int c, signed char prev_char_directio
 	return 1;
 }
 
-static inline unsigned int contextual_forms(unsigned int c, unsigned int prev, unsigned int next) {
-
-	// Arabic contextual form
-	if (c >= 0x600 && c<=0x6FF) {
-			unsigned char prev_connects = 0;   // Can the previous character connect to me
-			unsigned char next_connects = 0;   // Can the previous character connect to me
-			unsigned char i_connect_left = 1;  // Can I connect left
-			unsigned char i_connect_right = 1; // Can I connect right
-			int idx;
-			
-			// previous and next chars only connect if they are not whitespace or start/end of line
-			if (is_not_empty(prev)) prev_connects = 1;
-			if (is_not_empty(next)) next_connects = 1;
-
-			for (idx=0; idx<sizeof(arabic_context_forms) / sizeof(arabic_context_forms[0]); idx+=2) {
-				if (arabic_context_forms[idx] == c)
-					break;
-			}
-
-			// Characters which do only connect left
-			for (int i=0; i<sizeof(arabic_context_forms_nomiddle_noend) / sizeof(arabic_context_forms_nomiddle_noend[0]); i++) {
-					if (c == arabic_context_forms_nomiddle_noend[i]) {
-						i_connect_right = 0;
-					}
-					if (prev == arabic_context_forms_nomiddle_noend[i]) {
-						prev_connects = 0;
-					}
-			}
-
-			// If only previous an I can connect
-			if (prev_connects && i_connect_left && !(i_connect_right && next_connects))
-				c = arabic_context_forms[idx+1] + 1; 
-			
-			// If only next an I can connect
-			if (!(prev_connects && i_connect_left) && i_connect_right && next_connects)
-				c = arabic_context_forms[idx+1] + 2;
-			
-			// Both I and previous and next char can connect
-			if (prev_connects && i_connect_left && i_connect_right && next_connects)
-				c = arabic_context_forms[idx+1] + 3;
-
-	}
-	
-	return c;
-}
-
-
-static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned int c, unsigned int prev, unsigned int next) {
+static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned int c) {
 	unsigned int high = f->numglyphs - 1;
 	unsigned int low = 0;
 	unsigned int pivot;
-	
-	c = contextual_forms(c, prev, next);
 
 	while (high >= low) {
 		pivot = (high + low) >> 1;
@@ -198,22 +87,22 @@ static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font*
 }
 
 uint8_t ugui_font_charwidth(const struct aostk_font* f, unsigned int c) {
-	return aostk_get_glyph(f, c, 0, 0)->advance.x;
+	return aostk_get_glyph(f, c)->advance.x;
 }
 
 unsigned int ugui_font_strwidth(const struct aostk_font* font, const char* str) {
 	unsigned int width = 0;
-	struct utf8_parser utf8;
+	struct unicode_parser unicode;
 	uint32_t uc;
 
 	assert(str);
 	assert(font);
 
-	utf8_init(&utf8, str);
-	while (uc = utf8_current(&utf8)) {
-		uc = utf8_current(&utf8);
-		width += aostk_get_glyph(font, uc, 0, 0)->advance.x;
-		utf8_next(&utf8);
+	unicode_init(&unicode, str);
+	while (uc = unicode_current(&unicode)) {
+		uc = unicode_current(&unicode);
+		width += aostk_get_glyph(font, uc)->advance.x;
+		unicode_next(&unicode);
 	}
 
 	return width;
@@ -231,10 +120,8 @@ struct ugui_fontrender_state {
 static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* str, int count, signed char text_direction) {
 	int x = state->x;
 	int y = state->y;
-	struct utf8_parser utf8;
+	struct unicode_parser unicode;
 	unsigned int current_char = 0;
-	unsigned int prev_char = 0;
-	unsigned int next_char = 0;
   const struct aostk_glyph* g;
   assert(state->font != NULL);
 	
@@ -243,28 +130,14 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 	
 	bool draw_outline = (state->color != state->outline_color);
 	
-	utf8_init(&utf8, str);
-	
-	current_char = utf8_current(&utf8);
-	if (count > 1) {
-		utf8_next(&utf8);
-		next_char = utf8_current(&utf8);
-	}
+	unicode_init(&unicode, str);
 
-	while (count--) {
-    g = aostk_get_glyph(state->font, current_char, prev_char, next_char);
+	while (count>0) {
+    g = aostk_get_glyph(state->font, unicode_current(&unicode));
+		unicode_next(&unicode);
 		
 		if (text_direction == -1)
 			x -= g->advance.x;
-
- 		prev_char = current_char;
-		current_char = next_char;
-
-		if (count > 1) {
-			utf8_next(&utf8);
-			next_char = utf8_current(&utf8);
-		} else
-			next_char = 0;
 
 		if (draw_outline) {
   	  ugui_raster(g, x+1, y, state->outline_color);
@@ -278,6 +151,7 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 		if (text_direction == 1)
 			x += g->advance.x;
 
+		count--;
   }
 	
 	if (text_direction == -1)
@@ -290,16 +164,12 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 
 void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str) {
 	unsigned int current_char = 0;
-	unsigned int prev_char = 0;
-	unsigned int next_char = 0;
-	unsigned int current_char_len;
 	signed char direction;
 	signed char tmp;
-	const char* current_ptr;
-	const char* prev_ptr = 0;
 	int char_count = 0;
-	struct utf8_parser utf8;
+	struct unicode_parser unicode;
 	struct ugui_fontrender_state state;
+	const uint8_t* current_ptr;
 // 	int num =0;
 
 	/**
@@ -315,22 +185,16 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 	state.color          = ugui_alloc_color(current_context->text_color);
 	state.outline_color  = ugui_alloc_color(current_context->text_outline);;
 
-	direction = char_direction(current_char, direction);
-
-	utf8_init(&utf8, str);
-	next_char = utf8_current(&utf8);
+	unicode_init(&unicode, str);
+	direction = char_direction(unicode_current(&unicode), direction);
+	direction = -1;
 	do {
-		prev_char = current_char;
-		current_char = next_char;
 
-		current_ptr = (const char*)utf8.ptr;
+		current_ptr = unicode.current.ptr;
+		current_char = unicode_current(&unicode);
 
 		// Decode next unicode symbol
-		if (current_char != 0) {
-			utf8_next(&utf8);
-			next_char = utf8_current(&utf8);
-		} else
-			next_char = 0;
+		unicode_next(&unicode);
 
 		// Check for change of direction
 		tmp = direction;
@@ -338,8 +202,9 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 
 		// If direction has changed - render the glyphs now
 		if ((tmp != direction) || (current_char=='\n')) {
-			ugui_render_glyphs(&state, str, char_count, tmp);
-			str = current_ptr;
+			state.color = tmp==1 ? 0 : ugui_alloc_color(0xFF0000);
+			ugui_render_glyphs(&state, str, char_count, 1);
+			str = (const char*)current_ptr;
 			char_count = 0;
 			state.segment_width = 0;
 // 			num++;
@@ -348,15 +213,15 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 				state.y += ugui_font_height(state.font);
 
 				// Skip linefeed when rendering next line
-				str = (const char*)utf8.ptr;;
-				utf8_next(&utf8); // Skip linefeed
+// 				str = (const char*)unicode.ptr;;
+				unicode_next(&unicode); // Skip linefeed
 			}
 		}
 		
 		char_count++;
 
 		// Now get the current glyphs width
-		state.segment_width += aostk_get_glyph(state.font, current_char, prev_char, next_char)->advance.x;
+		state.segment_width += aostk_get_glyph(state.font, current_char)->advance.x;
 		
 	} while (current_char);
 
@@ -377,7 +242,7 @@ void ugui_putchar(const struct aostk_font* font, int x, int y, unsigned int ch) 
 	color = ugui_alloc_color(current_context->text_color);
 	outline  = ugui_alloc_color(current_context->text_outline);
 	bool draw_outline = (color != outline);
-  g = aostk_get_glyph(font, ch, 0, 0);
+  g = aostk_get_glyph(font, ch);
 	if (draw_outline) {
  	  ugui_raster(g, x+1, y, outline);
  	  ugui_raster(g, x-1, y, outline);
