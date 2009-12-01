@@ -56,7 +56,16 @@ static signed char char_direction(unsigned int c, signed char prev_char_directio
 		return 1;
 	
 	// Arabic is right-to-left
+	// Standard arabic
 	if (c >= 0x600 && c<=0x6FF)
+		return -1;
+
+	// Arabic presentation forms A
+	if (c >= 0xFB50 && c<=0xFDFF)
+		return -1;
+
+	// Arabic presentation forms B
+	if (c >= 0xFE70 && c<=0xFEFF)
 		return -1;
 	
 	if (c == 0)
@@ -187,43 +196,31 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 
 	unicode_init(&unicode, str);
 	direction = char_direction(unicode_current(&unicode), direction);
-	direction = -1;
 	do {
-
-		current_ptr = unicode.current.ptr;
 		current_char = unicode_current(&unicode);
 
 		// Decode next unicode symbol
 		unicode_next(&unicode);
 
-		// Check for change of direction
-		tmp = direction;
-		direction = char_direction(current_char, direction);
 
-		// If direction has changed - render the glyphs now
-		if ((tmp != direction) || (current_char=='\n')) {
-			state.color = tmp==1 ? 0 : ugui_alloc_color(0xFF0000);
-			ugui_render_glyphs(&state, str, char_count, 1);
-			str = (const char*)current_ptr;
+		int tmp = direction;
+		direction = char_direction(unicode_current(&unicode), direction);
+
+		if (tmp != direction) {
+			state.color          = tmp==1 ? 0 : ugui_alloc_color(0xFF0000);
+			ugui_render_glyphs(&state, str, char_count, tmp);
+			str = (const char*)unicode.next.ptr;
 			char_count = 0;
-			state.segment_width = 0;
-// 			num++;
-			if (current_char == '\n') {
-				state.x  = x;
-				state.y += ugui_font_height(state.font);
-
-				// Skip linefeed when rendering next line
-// 				str = (const char*)unicode.ptr;;
-				unicode_next(&unicode); // Skip linefeed
-			}
 		}
-		
+			
 		char_count++;
 
 		// Now get the current glyphs width
 		state.segment_width += aostk_get_glyph(state.font, current_char)->advance.x;
 		
 	} while (current_char);
+
+	
 
 }
 
