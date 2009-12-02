@@ -206,17 +206,16 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 		int tmp = direction;
 		direction = char_direction(unicode_current(&unicode), direction);
 
+		char_count++;
+		// Now get the current glyphs width
+		state.segment_width += aostk_get_glyph(state.font, current_char)->advance.x;
+		
 		if (tmp != direction) {
-			state.color          = tmp==1 ? 0 : ugui_alloc_color(0xFF0000);
+			state.outline_color = tmp==1 ? 0 : ugui_alloc_color(0xFF0000);
 			ugui_render_glyphs(&state, str, char_count, tmp);
 			str = (const char*)unicode.next.ptr;
 			char_count = 0;
 		}
-			
-		char_count++;
-
-		// Now get the current glyphs width
-		state.segment_width += aostk_get_glyph(state.font, current_char)->advance.x;
 		
 	} while (current_char);
 
