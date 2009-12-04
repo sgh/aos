@@ -4,10 +4,9 @@
 #include <ugui/ugui_font.h>
 
 
-static char is_not_empty(unsigned int c) {
-	if (c==0 || c==32)
-		return 0;
-	return 1;
+static char connects_prev_next(unsigned int c, int direction) {
+	// TODO
+	return 0;
 }
 
 
@@ -84,10 +83,12 @@ void unicode_decode(struct unicode_parser* parser) {
 	int i;
 	char found = 0;
 
+	parser->unicode = current;
+return;
 	// TODO This only applies to arabic chars
 	// previous and next chars only connect if they are not whitespace or start/end of line
-	if (is_not_empty(prev)) prev_connects = 1;
-	if (is_not_empty(next)) next_connects = 1;
+	prev_connects = connects_prev_next(prev, -1);
+	next_connects = connects_prev_next(next, 1);
 
 	// Find Ligatures
 	for (idx=0; idx<sizeof(ligatures) / sizeof(ligatures[0]); idx+=3) {
@@ -137,7 +138,8 @@ void unicode_init(struct unicode_parser* parser, const char* str) {
 	utf8_init(&parser->current, str);
 	parser->next = parser->current;
 	utf8_next(&parser->next);
-	unicode_decode(&parser); SEGFAUL HERE
+	parser->unicode = parser->current.unicode;
+// 	unicode_decode(&parser);
 }
 
 char unicode_next(struct unicode_parser* parser) {

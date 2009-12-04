@@ -89,7 +89,8 @@ char utf8_next(struct utf8_parser* parser) {
 	if (utf8_search_next(parser)) {
 		utf8_decode(parser);
 		return 1;
-	}
+	} //else
+// 		parser->unicode = 0;
 
 	return 0;
 }
@@ -98,7 +99,8 @@ char utf8_prev(struct utf8_parser* parser) {
 	if (utf8_search_prev(parser)) {
 		utf8_decode(parser);
 		return 1;
-	}
+	} //else
+// 		parser->unicode = 0;
 
 	return 0;
 }
