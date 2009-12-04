@@ -109,19 +109,18 @@ int main() {
 	struct utf8_parser utf8;
 	uint32_t uc;
 // 	unsigned char* buf = "Язык";
-// 	unsigned char* buf = "Helloæ\xF0\xA4\xAD\xA2℃æحWorld";
-	unsigned char* buf = "الإعداد XC-2";
+	unsigned char* buf = "Helloæ\xF0\xA4\xAD\xA2℃æحWorld";
 
 	utf8_init(&utf8, buf);
 	
 	do {
 		uc = utf8_current(&utf8);
-		printf("UC : %X\n",uc);
+		printf("UC: %X\n",uc);
 	} while (utf8_next(&utf8));
 
 	do {
 		uc = utf8_current(&utf8);
-		printf("UC : %X\n",uc);
+		printf("UC: %X\n",uc);
 	} while (utf8_prev(&utf8));
 
  	return 0;

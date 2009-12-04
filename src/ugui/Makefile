@@ -13,7 +13,7 @@ endif
 CXXFLAGS = $(FLAGS) -fno-rtti -fno-exceptions -fno-default-inline
 CFLAGS = $(FLAGS)
 
-SOURCES = Drawable.cpp ugui.cpp ugui_fontrenderer.cpp utf8.cpp unicode.c LineDecoration.cpp TextDecoration.cpp
+SOURCES = Drawable.cpp ugui.cpp ugui_fontrenderer.cpp utf8.cpp LineDecoration.cpp TextDecoration.cpp unicode.c
 OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
 OBJS := $(patsubst %.c, %.o, $(OBJS))
 
