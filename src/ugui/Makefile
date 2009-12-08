@@ -4,6 +4,10 @@ CXX = $(TARGET)g++
 CC = $(TARGET)gcc
 AR = $(TARGET)ar
 
+# freetype2
+FT_CFLAGS = $(shell pkg-config --cflags freetype2)
+FT_LDFLAGS = $(shell pkg-config --libs freetype2)
+
 FLAGS =  -I ../include -O2 -I .. -DNDEBUG -D__STDC_LIMIT_MACROS
 
 ifeq ($(TARGET),arm-elf-)
@@ -23,7 +27,8 @@ $APP): $(OBJS) ttf2c
 #arm-elf-size -t $(APP)
 
 ttf2c: ttf2c.c
-	gcc  -o ttf2c -I ../include -I /usr/include/freetype2 -I .. -lfreetype ttf2c.c
+#	gcc  -o ttf2c -I ../include -I /usr/include/freetype2 -I .. -lfreetype ttf2c.c
+	gcc  -o ttf2c -I ../include $(FT_CFLAGS) $(FT_LDFLAGS) -I .. ttf2c.c
 
 clean:
-	rm $(OBJS) $(APP)
+	-rm $(OBJS) $(APP)
