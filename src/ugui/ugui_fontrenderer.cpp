@@ -228,7 +228,7 @@ void ugui_putchar(const struct aostk_font* font, int x, int y, unsigned int ch) 
 	unsigned int color;
 	unsigned int outline;
   const struct aostk_glyph* g;
-  assert(f != NULL);
+
   /**
    * Y-position is default not the baseline, but the topmost pixel of the font
    * So calculate the baseline by adding the font height
