@@ -8,7 +8,8 @@ AR = $(TARGET)ar
 FT_CFLAGS = $(shell pkg-config --cflags freetype2)
 FT_LDFLAGS = $(shell pkg-config --libs freetype2)
 
-FLAGS =  -I ../include -O2 -I .. -DNDEBUG -D__STDC_LIMIT_MACROS
+FLAGS =  -O2 -DNDEBUG -D__STDC_LIMIT_MACROS
+INCLUDES = -I ../include -I ..
 
 ifeq ($(TARGET),arm-elf-)
 FLAGS += -mcpu=arm7tdmi  -mthumb-interwork -mthumb
@@ -26,9 +27,15 @@ $APP): $(OBJS) ttf2c
 	$(AR) rcs $(APP) $(OBJS)
 #arm-elf-size -t $(APP)
 
+%.o: %.c
+	$(CC) $(CFLAGS) -c $(INCLUDES) $< -o $@
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $(INCLUDES) $< -o $@
+
 ttf2c: ttf2c.c
 #	gcc  -o ttf2c -I ../include -I /usr/include/freetype2 -I .. -lfreetype ttf2c.c
-	gcc  -o ttf2c -I ../include $(FT_CFLAGS) $(FT_LDFLAGS) -I .. ttf2c.c
+	gcc  -o ttf2c $(FT_CFLAGS) $(FT_LDFLAGS) $(INCLUDES) ttf2c.c
 
 clean:
-	-rm $(OBJS) $(APP)
+	-rm -f $(OBJS) $(APP)
