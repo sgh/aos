@@ -1,0 +1,17 @@
+Content per directory
+
+* doc
+Currently this dir primaryly contains documentation on processors, but
+AOS-documentation will be added.
+
+* usbtest
+An usb-loopback test written from scratch.
+
+* src
+The AOS-source
+
+* oldstuff
+Old unused and incomplete thing. 
+- drivers     : A driver infrastructure inspired by Linux. 
+- aostk       : AOS toolkit. Graphics framework.
+- datastructs : Unused data-structures.
