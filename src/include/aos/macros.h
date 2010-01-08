@@ -58,7 +58,7 @@
 #define HOT        __attribute__(( hot ))
 
 #define likely(x)    __builtin_expect(x, 1)
-#define unlikely(x)  __builtin_expect(x, 1)
+#define unlikely(x)  __builtin_expect(x, 0)
 
 /**
  * \brief Calculate the difference between two uint32_t
