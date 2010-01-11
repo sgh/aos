@@ -175,6 +175,7 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 	unsigned int current_char = 0;
 	signed char direction;
 	signed char tmp;
+	char line_feed = 0;
 	int char_count = 0;
 	struct unicode_parser unicode;
 	struct ugui_fontrender_state state;
@@ -209,12 +210,22 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 		char_count++;
 		// Now get the current glyphs width
 		state.segment_width += aostk_get_glyph(state.font, current_char)->advance.x;
+
+		if (current_char == '\n')
+			line_feed = 1;
 		
-		if (tmp != direction) {
+		if ((tmp != direction) || line_feed) {
 			state.outline_color = tmp==1 ? 0 : ugui_alloc_color(0xFF0000);
+			if (line_feed)
+				char_count--;
 			ugui_render_glyphs(&state, str, char_count, tmp);
-			str = (const char*)unicode.next.ptr;
+			str = (const char*)unicode.current.ptr;
 			char_count = 0;
+			if (line_feed) {
+				state.y += y;
+				state.x = x;
+				line_feed = 0;
+			}
 		}
 		
 	} while (current_char);
