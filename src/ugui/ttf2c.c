@@ -323,7 +323,7 @@ int main(int argc, char* argv[]) {
 		if (strstr(base, ".ttf") == (base+strlen(base)-4)) {
 			fontfiles[i-1] = argv[i];
 		}
-		free(arg);
+		free((void*)arg);
 
 		// First non filename argument is the height
 		if (fontfiles[i-1] == 0) {
