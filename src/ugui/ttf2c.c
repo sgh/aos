@@ -143,7 +143,7 @@ unsigned int unicode2iso8859_5(unsigned int unicode) {
 	return unicode;
 }
 
-void generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
+char generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
 	int idx;
 	int glyph_index;
 	int error;
@@ -153,7 +153,7 @@ void generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
 #ifndef TTF2C
 		printf("Glyph not found (%d)\n", unicode);
 #endif
-		return;
+		return 0;
 	}
 
 	error = FT_Load_Glyph(
@@ -200,7 +200,19 @@ void generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
 #endif
 
 	genfont.numglyphs++;
+	return 1;
 }
+
+int add_glyph_range(const char* rangename, FT_Face* face, int* height, unsigned int from, unsigned int to) {
+	unsigned int num = 0;
+	unsigned int unicode;
+	fprintf(stderr,"Adding %s: ",rangename);
+	for (unicode = from; unicode<=to; unicode++)
+		num += generate_glyph(face, height, unicode) ? 1 : 0;
+	fprintf(stderr," %d (%d) %s\n", to-from+1, num, num ?"":"!!!");
+	return num;
+}
+
 
 int main(int argc, char* argv[]) {
 	int error;
@@ -210,23 +222,20 @@ int main(int argc, char* argv[]) {
 	FT_Face     face;
 
 	if (argc < 4) {
-		printf("ttf2c <file.ttf> <point-size> <name>\n");
+		fprintf(stderr,"ttf2c <file.ttf> <point-size> <name>\n");
 		exit(1);
 	}
 
 	error = FT_Init_FreeType( &library );
 	
 	if ( error ) {
-		printf("Error initializing freetype\n");
+		fprintf(stderr,"Error initializing freetype\n");
 		exit(1);
 	}
 	
-	//error = FT_New_Face( library,"VeraMono.ttf", 0, &face );s
 	error = FT_New_Face( library, argv[1], 0, &face );
-	//error = FT_New_Face( library,"FreeMonoBold.ttf", 0, &face );
-	if ( error == FT_Err_Unknown_File_Format )
-	{
-		printf("Error opening font file\n");
+	if ( error == FT_Err_Unknown_File_Format ) {
+		fprintf(stderr,"Error opening font file\n");
 		exit(1);
 	} else 
 	if ( error ) {
@@ -234,52 +243,43 @@ int main(int argc, char* argv[]) {
 	}
 
 	FT_CharMap  found = 0;
-	FT_CharMap  charmap;
 	int n;
 	for (n = 0; n < face->num_charmaps; n++ ) {
-		charmap = face->charmaps[n];
+		FT_CharMap  charmap = face->charmaps[n];
 #ifndef TTF2C
 		printf("platform_id:%d  encoding_id:%d\n", charmap->platform_id, charmap->encoding_id);
 #endif
 		found = charmap;
 		if ( charmap->platform_id == 3/*my_platform_id*/ && charmap->encoding_id == 1/*my_encoding_id*/ ) {
-#ifndef TTF2C
-			printf("found charmap\n");
-#endif
+// #ifndef TTF2C
+			fprintf(stderr,"found charmap\n");
+// #endif
 			break;
 		}
 	}
 
 	if ( !found ) {
-		printf("Encoding not found\n");
+		fprintf(stderr,"Encoding not found\n");
 		exit(1);
 	}
 
 	/* now, select the charmap for the face object */
 	error = FT_Set_Charmap( face, found );
 	if ( error ) {
-		printf("Error setting encoding\n");
+		fprintf(stderr,"Error setting encoding\n");
 		exit(1);
 	}
 
 	int width  = 0;
 	int height = atoi(argv[2]);
 	
-	error = FT_Set_Char_Size(
-		face,    /* handle to face object           */
-		0,   /* char_width in 1/64th of points  */
-		height*64,   /* char_height in 1/64th of points */
-		72,     /* horizontal device resolution    */
-		72 );   /* vertical device resolution      */
+	error = FT_Set_Char_Size(face, 0, height*64, 72, 72);
 	
-	error = FT_Set_Pixel_Sizes(
-		face,   /* handle to face object */
-		0,      /* pixel_width           */
-		height );   /* pixel_height          */
+	error = FT_Set_Pixel_Sizes(face, 0, height);
 	
 	if (error) {
-		//printf("Error setting char size\n");
-		//exit(0);
+		fprintf(stderr,"Error setting char size\n");
+		exit(1);
 	}
 
 	height = 0;
@@ -290,44 +290,19 @@ int main(int argc, char* argv[]) {
 
 // 	printf("EM size %d\n", 4 * 300/72);
 //
-	unsigned int unicode;
+	int num = 0;
 
-	// Standard ASCII
-	for (unicode = 0x0000; unicode<=0x00FF; unicode++)
-		generate_glyph(&face, &height, unicode);
-
-	// Pi
-	generate_glyph(&face, &height, 0x03C0);
-
-	// Cyrillic glyphs
-	for (unicode = 0x0400; unicode<=0x04FF; unicode++)
-		generate_glyph(&face, &height, unicode);
-
-	// Arabic glyphs
-	for (unicode = 0x0600; unicode<=0x06FF; unicode++)
-		generate_glyph(&face, &height, unicode);
-
-	// Hindi glyphs
-	for (unicode = 0x900; unicode<=0x97F; unicode++)
-		generate_glyph(&face, &height, unicode);
-
-	// Permille
-	generate_glyph(&face, &height, 0x2030);
-
-	// Degree
-	generate_glyph(&face, &height, 0x2070);
-
-	// Katakana Japanese
-	for (unicode = 0x30A0; unicode<=0x30FF; unicode++)
-		generate_glyph(&face, &height, unicode);
-
-	// Arabic presensation Forms-A
-	for (unicode = 0xFB50; unicode<=0xFDFF; unicode++)
-		generate_glyph(&face, &height, unicode);
-
-	// Arabic presensation Forms-B
-	for (unicode = 0xFE70; unicode<=0xFEFF; unicode++)
-		generate_glyph(&face, &height, unicode);
+	num += add_glyph_range("ASCII",          &face, &height, 0x0000, 0x00FF);
+	num += add_glyph_range("Pi symbol",      &face, &height, 0x03C0, 0x03C0);
+	num += add_glyph_range("Cyrillic",       &face, &height, 0x0400, 0x04FF);
+	num += add_glyph_range("Arabic",         &face, &height, 0x0600, 0x06FF);
+	num += add_glyph_range("Hindi",          &face, &height, 0x0900, 0x097F);
+	num += add_glyph_range("Permille",       &face, &height, 0x2030, 0x2030);
+	num += add_glyph_range("Degree",         &face, &height, 0x2070, 0x2070);
+	num += add_glyph_range("Katakana",       &face, &height, 0x30A0, 0x30FF);
+	num += add_glyph_range("Arabic Forms-A", &face, &height, 0xFB50, 0xFDFF);
+	num += add_glyph_range("Arabic Forms-B", &face, &height, 0xFE70, 0xFEFF);
+	fprintf(stderr,"%d glyphs added\n", num);
 
 	printf("// ");
 	for (i=0; i<argc; i++)
