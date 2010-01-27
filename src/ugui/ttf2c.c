@@ -317,6 +317,10 @@ int main(int argc, char* argv[]) {
 	// Degree
 	generate_glyph(&face, &height, 0x2070);
 
+	// Katakana Japanese
+	for (unicode = 0x30A0; unicode<=0x30FF; unicode++)
+		generate_glyph(&face, &height, unicode);
+
 	// Arabic presensation Forms-A
 	for (unicode = 0xFB50; unicode<=0xFDFF; unicode++)
 		generate_glyph(&face, &height, unicode);
