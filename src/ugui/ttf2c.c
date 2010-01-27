@@ -143,11 +143,16 @@ unsigned int unicode2iso8859_5(unsigned int unicode) {
 
 char generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
 	int idx;
-	int glyph_index;
+	int glyph_index = 0;
 	int error;
-	glyph_index = FT_Get_Char_Index( (*face), unicode);
 
-	if ((unicode != 0) && (glyph_index == 0)) {
+	do {
+		glyph_index = FT_Get_Char_Index( (*face), unicode);
+		if (glyph_index==0)
+			face++;
+	} while (*face && glyph_index==0);
+
+	if (/*(unicode != 0) &&*/ (glyph_index == 0)) {
 #ifndef TTF2C
 		printf("Glyph not found (%d)\n", unicode);
 #endif
@@ -160,7 +165,7 @@ char generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
 			/*load_flags*/ FT_LOAD_DEFAULT|FT_LOAD_RENDER|FT_LOAD_FORCE_AUTOHINT|FT_LOAD_TARGET_MONO);  /* load flags, see below */
 
 	if (error) {
-		printf("Error loading\n");
+		fprintf(stderr,"Error loading\n");
 		exit(0);
 	}
 
@@ -168,7 +173,7 @@ char generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
 													/*render_mode*/FT_RENDER_MODE_MONO ); /* render mode */
 
 	if (error) {
-		printf("Error rendering %d\n", unicode);
+		fprintf(stderr,"Error rendering %d\n", unicode);
 		exit(0);
 	}
 
@@ -201,12 +206,12 @@ char generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
 	return 1;
 }
 
-int add_glyph_range(const char* rangename, FT_Face* face, int* height, unsigned int from, unsigned int to) {
+int add_glyph_range(const char* rangename, FT_Face* faces, int* height, unsigned int from, unsigned int to) {
 	unsigned int num = 0;
 	unsigned int unicode;
 	fprintf(stderr,"Adding %s: ",rangename);
 	for (unicode = from; unicode<=to; unicode++)
-		num += generate_glyph(face, height, unicode) ? 1 : 0;
+		num += generate_glyph(faces, height, unicode) ? 1 : 0;
 	fprintf(stderr," %d (%d) %s\n", to-from+1, num, num ?"":"!!!");
 	return num;
 }
@@ -214,6 +219,7 @@ int add_glyph_range(const char* rangename, FT_Face* face, int* height, unsigned 
 void initialize_face(FT_Face* face, FT_Library* library, int height, const char* filename) {
 	int error;
 
+	fprintf(stderr,"Loading %s... ", filename);
 	error = FT_New_Face( *library, filename, 0, face );
 	if ( error == FT_Err_Unknown_File_Format ) {
 		fprintf(stderr,"Error opening font file\n");
@@ -233,7 +239,7 @@ void initialize_face(FT_Face* face, FT_Library* library, int height, const char*
 		found = charmap;
 		if ( charmap->platform_id == 3/*my_platform_id*/ && charmap->encoding_id == 1/*my_encoding_id*/ ) {
 // #ifndef TTF2C
-			fprintf(stderr,"found charmap\n");
+// 			fprintf(stderr,"found charmap\n");
 // #endif
 			break;
 		}
@@ -261,17 +267,22 @@ void initialize_face(FT_Face* face, FT_Library* library, int height, const char*
 		fprintf(stderr,"Error setting char size\n");
 		exit(1);
 	}
+	
+	fprintf(stderr,"ok\n");
 }
+
+FT_Face     faces[16];
+const char* fontfiles[16];
 
 int main(int argc, char* argv[]) {
 	int error;
 	int i;
 	int j;
+	const char* fontname = 0;
 	FT_Library  library;
-	FT_Face     face;
 
 	if (argc < 4) {
-		fprintf(stderr,"ttf2c <file.ttf> <point-size> <name>\n");
+		fprintf(stderr,"ttf2c <fontA.ttf> ... <fontB.ttf> <point-size> <name>\n");
 		exit(1);
 	}
 
@@ -282,24 +293,46 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	int height = atoi(argv[2]);
+	int height = 0;
 
-	initialize_face(&face, &library, height, argv[1]);
+	// Count the number of filenames
+	// The argument is a font if it end with ".ttf"
+	for (i=1; i<argc; i++) {
+		const char* arg = strdup(argv[i]);
+		const char* base = basename(arg);
+		if (strstr(base, ".ttf") == (base+strlen(base)-4)) {
+			fontfiles[i-1] = argv[i];
+		}
+		free(arg);
 
+		// First non filename argument is the height
+		if (fontfiles[i-1] == 0) {
+			height = atoi(argv[i]);
+			fontname = argv[i+1];
+			break;
+		}
+	}
+
+	i=0;
+	while (fontfiles[i]) {
+		initialize_face(&faces[i], &library, height, fontfiles[i]);
+		i++;
+	}
+	
 	height = 0;
 
 	int num = 0;
 
-	num += add_glyph_range("ASCII",          &face, &height, 0x0000, 0x00FF);
-	num += add_glyph_range("Pi symbol",      &face, &height, 0x03C0, 0x03C0);
-	num += add_glyph_range("Cyrillic",       &face, &height, 0x0400, 0x04FF);
-	num += add_glyph_range("Arabic",         &face, &height, 0x0600, 0x06FF);
-	num += add_glyph_range("Hindi",          &face, &height, 0x0900, 0x097F);
-	num += add_glyph_range("Permille",       &face, &height, 0x2030, 0x2030);
-	num += add_glyph_range("Degree",         &face, &height, 0x2070, 0x2070);
-	num += add_glyph_range("Katakana",       &face, &height, 0x30A0, 0x30FF);
-	num += add_glyph_range("Arabic Forms-A", &face, &height, 0xFB50, 0xFDFF);
-	num += add_glyph_range("Arabic Forms-B", &face, &height, 0xFE70, 0xFEFF);
+	num += add_glyph_range("ASCII",          faces, &height, 0x0000, 0x00FF);
+	num += add_glyph_range("Pi symbol",      faces, &height, 0x03C0, 0x03C0);
+	num += add_glyph_range("Cyrillic",       faces, &height, 0x0400, 0x04FF);
+	num += add_glyph_range("Arabic",         faces, &height, 0x0600, 0x06FF);
+	num += add_glyph_range("Hindi",          faces, &height, 0x0900, 0x097F);
+	num += add_glyph_range("Permille",       faces, &height, 0x2030, 0x2030);
+	num += add_glyph_range("Degree",         faces, &height, 0x2070, 0x2070);
+	num += add_glyph_range("Katakana",       faces, &height, 0x30A0, 0x30FF);
+	num += add_glyph_range("Arabic Forms-A", faces, &height, 0xFB50, 0xFDFF);
+	num += add_glyph_range("Arabic Forms-B", faces, &height, 0xFE70, 0xFEFF);
 	fprintf(stderr,"%d glyphs added\n", num);
 
 	printf("// ");
@@ -346,8 +379,8 @@ int main(int argc, char* argv[]) {
 
 // 	printf("struct aostk_font %s = { .numglyphs = %d, .height = %d, .glyphs = glyphs };\n", argv[3], genfont.numglyphs, height);
 #ifdef TTF2C
-	printf("extern const struct aostk_font %s;\n", argv[3]);
-	printf("const struct aostk_font %s = { numglyphs : %d, height : %d, glyphs };\n", argv[3], genfont.numglyphs, height);
+	printf("extern const struct aostk_font %s;\n", fontname);
+	printf("const struct aostk_font %s = { numglyphs : %d, height : %d, glyphs };\n", fontname, genfont.numglyphs, height);
 #endif
 // 		for (i=0; i<verafont.numglyphs; i++) {
 // 			aostk_ttf_raster(&verafont, 0, 0, verafont.glyphs[i].i, 0);
