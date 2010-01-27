@@ -75,8 +75,6 @@ void optimize_glyph(struct aostk_glyph* glyph, uint8_t* data) {
 		data[i] = data[glyph->pitch*pre_empty_rows + i];
 	}
 
-	#warning optimize pitch here
-
 #ifndef TTF2C
 	printf("New top should be: %d\n", pre_empty_rows);
 #endif
@@ -217,7 +215,7 @@ int add_glyph_range(const char* rangename, FT_Face* face, int* height, unsigned 
 int main(int argc, char* argv[]) {
 	int error;
 	int i;
-		int j;
+	int j;
 	FT_Library  library;
 	FT_Face     face;
 
@@ -239,7 +237,7 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	} else 
 	if ( error ) {
-		printf("another error code means that the font file could not \nbe opened or read, or simply that it is broken...");
+		fprintf(stderr,"another error code means that the font file could not \nbe opened or read, or simply that it is broken...");
 	}
 
 	FT_CharMap  found = 0;
@@ -283,13 +281,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	height = 0;
-	
-// 	printf("max_advanc_height %d\n", face->max_advance_height);
-// 	printf("units_per_EM %d\n", face->units_per_EM);
 
-
-// 	printf("EM size %d\n", 4 * 300/72);
-//
 	int num = 0;
 
 	num += add_glyph_range("ASCII",          &face, &height, 0x0000, 0x00FF);
