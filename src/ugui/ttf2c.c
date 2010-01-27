@@ -146,13 +146,19 @@ char generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
 	int glyph_index = 0;
 	int error;
 
+// 	fprintf(stderr, "uni:%d\n", unicode);
 	do {
 		glyph_index = FT_Get_Char_Index( (*face), unicode);
-		if (glyph_index==0)
+		if (glyph_index == 0)
 			face++;
 	} while (*face && glyph_index==0);
 
-	if (/*(unicode != 0) &&*/ (glyph_index == 0)) {
+	if (glyph_index == 0)
+		face--;
+
+// 	fprintf(stderr, "glyph:%d\n", glyph_index);
+
+	if ((unicode != 0) && (glyph_index == 0)) {
 #ifndef TTF2C
 		printf("Glyph not found (%d)\n", unicode);
 #endif
