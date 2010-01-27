@@ -192,7 +192,7 @@ char generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
 #ifndef TTF2C
 	printf("Symbol #%d\n", genglyphs[genfont.numglyphs].i);
 #endif
-	optimize_glyph(&genglyphs[genfont.numglyphs], genglyphs[genfont.numglyphs].data);
+	optimize_glyph(&genglyphs[genfont.numglyphs], (uint8_t*)genglyphs[genfont.numglyphs].data);
 #ifndef TTF2C
 	my_draw_bitmap(&genglyphs[genfont.numglyphs]);
 #endif
@@ -211,6 +211,57 @@ int add_glyph_range(const char* rangename, FT_Face* face, int* height, unsigned 
 	return num;
 }
 
+void initialize_face(FT_Face* face, FT_Library* library, int height, const char* filename) {
+	int error;
+
+	error = FT_New_Face( *library, filename, 0, face );
+	if ( error == FT_Err_Unknown_File_Format ) {
+		fprintf(stderr,"Error opening font file\n");
+		exit(1);
+	} else
+	if ( error ) {
+		fprintf(stderr,"another error code means that the font file could not \nbe opened or read, or simply that it is broken...");
+	}
+
+	FT_CharMap  found = 0;
+	int n;
+	for (n = 0; n < (*face)->num_charmaps; n++ ) {
+		FT_CharMap  charmap = (*face)->charmaps[n];
+#ifndef TTF2C
+		printf("platform_id:%d  encoding_id:%d\n", charmap->platform_id, charmap->encoding_id);
+#endif
+		found = charmap;
+		if ( charmap->platform_id == 3/*my_platform_id*/ && charmap->encoding_id == 1/*my_encoding_id*/ ) {
+// #ifndef TTF2C
+			fprintf(stderr,"found charmap\n");
+// #endif
+			break;
+		}
+	}
+
+	if ( !found ) {
+		fprintf(stderr,"Encoding not found\n");
+		exit(1);
+	}
+
+	/* now, select the charmap for the face object */
+	error = FT_Set_Charmap( *face, found );
+	if ( error ) {
+		fprintf(stderr,"Error setting encoding\n");
+		exit(1);
+	}
+
+	int width  = 0;
+
+	error = FT_Set_Char_Size((*face), 0, height*64, 72, 72);
+
+	error = FT_Set_Pixel_Sizes((*face), 0, height);
+
+	if (error) {
+		fprintf(stderr,"Error setting char size\n");
+		exit(1);
+	}
+}
 
 int main(int argc, char* argv[]) {
 	int error;
@@ -230,55 +281,10 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr,"Error initializing freetype\n");
 		exit(1);
 	}
-	
-	error = FT_New_Face( library, argv[1], 0, &face );
-	if ( error == FT_Err_Unknown_File_Format ) {
-		fprintf(stderr,"Error opening font file\n");
-		exit(1);
-	} else 
-	if ( error ) {
-		fprintf(stderr,"another error code means that the font file could not \nbe opened or read, or simply that it is broken...");
-	}
 
-	FT_CharMap  found = 0;
-	int n;
-	for (n = 0; n < face->num_charmaps; n++ ) {
-		FT_CharMap  charmap = face->charmaps[n];
-#ifndef TTF2C
-		printf("platform_id:%d  encoding_id:%d\n", charmap->platform_id, charmap->encoding_id);
-#endif
-		found = charmap;
-		if ( charmap->platform_id == 3/*my_platform_id*/ && charmap->encoding_id == 1/*my_encoding_id*/ ) {
-// #ifndef TTF2C
-			fprintf(stderr,"found charmap\n");
-// #endif
-			break;
-		}
-	}
-
-	if ( !found ) {
-		fprintf(stderr,"Encoding not found\n");
-		exit(1);
-	}
-
-	/* now, select the charmap for the face object */
-	error = FT_Set_Charmap( face, found );
-	if ( error ) {
-		fprintf(stderr,"Error setting encoding\n");
-		exit(1);
-	}
-
-	int width  = 0;
 	int height = atoi(argv[2]);
-	
-	error = FT_Set_Char_Size(face, 0, height*64, 72, 72);
-	
-	error = FT_Set_Pixel_Sizes(face, 0, height);
-	
-	if (error) {
-		fprintf(stderr,"Error setting char size\n");
-		exit(1);
-	}
+
+	initialize_face(&face, &library, height, argv[1]);
 
 	height = 0;
 
