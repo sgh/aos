@@ -350,9 +350,15 @@ int main(int argc, char* argv[]) {
 	num += add_glyph_range("Hindi",          faces, &height, 0x0900, 0x097F);
 	num += add_glyph_range("Permille",       faces, &height, 0x2030, 0x2030);
 	num += add_glyph_range("Degree",         faces, &height, 0x2070, 0x2070);
+	num += add_glyph_range("Hiragana",       faces, &height, 0x3040, 0x309F);
 	num += add_glyph_range("Katakana",       faces, &height, 0x30A0, 0x30FF);
+
+	unsigned int cjk_selection[] = {0x4E0D, 0x52FE, 0x5B9A, 0x6E2C, 0x826F, 0x8A2D, 0x8EF8, 0x914D, 0x9AD8 };
+	num += add_glyph_selection("Selected CJK",   faces, &height, cjk_selection, sizeof(cjk_selection)/sizeof(cjk_selection[0]));
+
 	num += add_glyph_range("Arabic Forms-A", faces, &height, 0xFB50, 0xFDFF);
 	num += add_glyph_range("Arabic Forms-B", faces, &height, 0xFE70, 0xFEFF);
+	num += add_glyph_range("Half/Fullwidth", faces, &height, 0xFF00, 0xFFEF);
 	fprintf(stderr,"%d glyphs added\n", num);
 
 	printf("// ");
