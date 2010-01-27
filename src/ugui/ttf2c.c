@@ -222,6 +222,20 @@ int add_glyph_range(const char* rangename, FT_Face* faces, int* height, unsigned
 	return num;
 }
 
+int add_glyph_selection(const char* rangename, FT_Face* faces, int* height, unsigned int* unicodes, int count) {
+	unsigned int num = 0;
+	unsigned int unicode;
+	fprintf(stderr,"Adding %s: ",rangename);
+	int tmp = count;
+	while (tmp--) {
+// 		fprintf(stderr,"%04X\n", *unicodes);
+		num += generate_glyph(faces, height, *unicodes) ? 1 : 0;
+		unicodes++;
+	}
+	fprintf(stderr," %d (%d) %s\n", count, num, num ?"":"!!!");
+	return num;
+}
+
 void initialize_face(FT_Face* face, FT_Library* library, int height, const char* filename) {
 	int error;
 
