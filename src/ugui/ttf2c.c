@@ -8,7 +8,7 @@
 
 #define TTF2C
 
-#define MAX_GLYPHS 1000
+#define MAX_GLYPHS 1024*30
 
 struct aostk_glyph genglyphs[MAX_GLYPHS];
 
