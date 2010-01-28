@@ -319,7 +319,7 @@ int main(int argc, char* argv[]) {
 	// The argument is a font if it end with ".ttf"
 	for (i=1; i<argc; i++) {
 		const char* arg = strdup(argv[i]);
-		const char* base = basename(arg);
+		const char* base = (const char*)basename(arg);
 		if (strstr(base, ".ttf") == (base+strlen(base)-4)) {
 			fontfiles[i-1] = argv[i];
 		}
