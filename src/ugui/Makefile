@@ -23,7 +23,7 @@ OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
 OBJS := $(patsubst %.c, %.o, $(OBJS))
 
 
-$APP): $(OBJS) ttf2c
+$APP): $(OBJS) ttf2c render-unicode-character
 	$(AR) rcs $(APP) $(OBJS)
 #arm-elf-size -t $(APP)
 
@@ -34,8 +34,10 @@ $APP): $(OBJS) ttf2c
 	$(CXX) $(CXXFLAGS) -c $(INCLUDES) $< -o $@
 
 ttf2c: ttf2c.c
-#	gcc  -o ttf2c -I ../include -I /usr/include/freetype2 -I .. -lfreetype ttf2c.c
 	gcc  -o ttf2c $(FT_CFLAGS) $(FT_LDFLAGS) $(INCLUDES) ttf2c.c
+
+render-unicode-character: render-unicode-character.c
+	gcc  -o render-unicode-character $(FT_CFLAGS) $(FT_LDFLAGS) $(INCLUDES) render-unicode-character.c
 
 clean:
 	-rm -f $(OBJS) $(APP)
