@@ -356,7 +356,9 @@ int main(int argc, char* argv[]) {
 	unsigned int cjk_selection[] = {
 		0x4E0D,
 		0x4F4D,
+		0x5165,
 		0x52FE,
+		0x529B,
 		0x5358,
 		0x53CD,
 		0x5B9A,
@@ -365,6 +367,7 @@ int main(int argc, char* argv[]) {
 		0x65AD,
 		0x660E,
 		0x6E2C,
+		0x6B63,
 		0x793A,
 		0x826F,
 		0x8868,
