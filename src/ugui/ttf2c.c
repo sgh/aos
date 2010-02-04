@@ -284,8 +284,8 @@ void initialize_face(FT_Face* face, FT_Library* library, int height, const char*
 	error = FT_Set_Pixel_Sizes((*face), 0, height);
 
 	if (error) {
-		fprintf(stderr,"Error setting char size\n");
-		exit(1);
+		fprintf(stderr,"(fixed size) ");
+// 		exit(1);
 	}
 	
 	fprintf(stderr,"ok\n");
@@ -302,7 +302,7 @@ int main(int argc, char* argv[]) {
 	FT_Library  library;
 
 	if (argc < 4) {
-		fprintf(stderr,"ttf2c <fontA.ttf> ... <fontB.ttf> <point-size> <name>\n");
+		fprintf(stderr,"ttf2c <fontA.ttf|bdf> ... <fontB.ttf> <point-size> <name>\n");
 		exit(1);
 	}
 
@@ -316,11 +316,12 @@ int main(int argc, char* argv[]) {
 	int height = 0;
 
 	// Count the number of filenames
-	// The argument is a font if it end with ".ttf"
+	// The argument is a font if it end with ".ttf" or ".bdf"
 	for (i=1; i<argc; i++) {
 		const char* arg = strdup(argv[i]);
 		const char* base = (const char*)basename(arg);
-		if (strstr(base, ".ttf") == (base+strlen(base)-4)) {
+		if (strstr(base, ".ttf") == (base+strlen(base)-4) ||
+			strstr(base, ".bdf") == (base+strlen(base)-4)) {
 			fontfiles[i-1] = argv[i];
 		}
 		free((void*)arg);
