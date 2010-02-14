@@ -2,12 +2,6 @@
 
 #include <time.h>
 #include <sys/time.h>
-#include <unistd.h>
-#include <sched.h>
-#include <aos/kernel.h>
-
-
-// static struct timespec ref;
 
 void yield(void)
 {

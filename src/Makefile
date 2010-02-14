@@ -19,7 +19,7 @@ ifeq ($(ARCH),arm-lpc2xxx)
 endif
 
 ifeq ($(ARCH),linux)
-	ARCH_SOURCES = mutex.c
+	ARCH_SOURCES = mutex.c kernel.c
 endif
 
 ifeq ($(ARCH),)
