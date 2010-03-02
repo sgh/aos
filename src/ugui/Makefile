@@ -8,7 +8,7 @@ AR = $(TARGET)ar
 FT_CFLAGS = $(shell pkg-config --cflags freetype2)
 FT_LDFLAGS = $(shell pkg-config --libs freetype2)
 
-FLAGS =  -O2 -DNDEBUG -D__STDC_LIMIT_MACROS
+FLAGS =  -O2 -DNDEBUG -D__STDC_LIMIT_MACROS -m32
 INCLUDES = -I ../include -I ..
 
 ifeq ($(TARGET),arm-elf-)

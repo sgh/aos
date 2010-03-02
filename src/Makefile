@@ -20,6 +20,8 @@ endif
 
 ifeq ($(ARCH),linux)
 	ARCH_SOURCES = mutex.c kernel.c
+	CFLAGS = -m32
+	CPPFLAGS = -m32
 endif
 
 ifeq ($(ARCH),)
