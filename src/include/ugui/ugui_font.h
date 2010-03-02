@@ -54,6 +54,7 @@ static inline int ugui_strlen(const char* str) {
 	return strlen(str);
 }
 
+const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned int c);
 
 unsigned int ugui_font_strwidth(const struct aostk_font* f, const char* str);
 
