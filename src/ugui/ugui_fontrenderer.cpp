@@ -75,7 +75,7 @@ static signed char char_direction(unsigned int c, signed char prev_char_directio
 	return 1;
 }
 
-const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned int c) {
+static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font* f, unsigned int c) {
 	unsigned int high = f->numglyphs - 1;
 	unsigned int low = 0;
 	unsigned int pivot;
