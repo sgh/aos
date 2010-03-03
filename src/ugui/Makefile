@@ -8,11 +8,15 @@ AR = $(TARGET)ar
 FT_CFLAGS = $(shell pkg-config --cflags freetype2)
 FT_LDFLAGS = $(shell pkg-config --libs freetype2)
 
-FLAGS =  -O2 -DNDEBUG -D__STDC_LIMIT_MACROS -m32
+FLAGS =  -O2 -DNDEBUG -D__STDC_LIMIT_MACROS
 INCLUDES = -I ../include -I ..
 
 ifeq ($(TARGET),arm-elf-)
 FLAGS += -mcpu=arm7tdmi  -mthumb-interwork -mthumb
+endif
+
+ifeq ($(TARGET),)
+FLAGS += -m32
 endif
 
 CXXFLAGS = $(FLAGS) -fno-rtti -fno-exceptions -fno-default-inline
