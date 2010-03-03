@@ -95,6 +95,28 @@ static inline const struct aostk_glyph* aostk_get_glyph(const struct aostk_font*
 	return &f->glyphs[0];
 }
 
+void ugui_cursorat(const struct aostk_font* font, int x, int y, const char* buf, int cursorpos) {
+	static unsigned char showcursor = 0;
+	struct unicode_parser utf8;
+	uint32_t uc;
+	int position = 0;
+
+	unicode_init(&utf8, buf);
+	if (cursorpos != 0) {
+		do {
+			uc = unicode_current(&utf8);
+			x += aostk_get_glyph(font, uc)->advance.x;
+			position++;
+		} while (position<cursorpos && unicode_next(&utf8));
+	}
+
+	if (position == cursorpos) {
+		uc = unicode_current(&utf8);
+		ugui_fill(x-1, y+1, 3, ugui_font_height(font), 0xFF0000);
+	}
+
+}
+
 uint8_t ugui_font_charwidth(const struct aostk_font* f, unsigned int c) {
 	return aostk_get_glyph(f, c)->advance.x;
 }

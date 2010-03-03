@@ -55,6 +55,8 @@ static inline int ugui_strlen(const char* str) {
 }
 
 
+void ugui_cursorat(const struct aostk_font* font, int x, int y, const char* buf, int cursorpos);
+
 unsigned int ugui_font_strwidth(const struct aostk_font* f, const char* str);
 
 uint8_t ugui_font_charwidth(const struct aostk_font* f, unsigned int c);
