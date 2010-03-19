@@ -165,13 +165,14 @@ char generate_glyph(FT_Face* face, int* height, unsigned int unicode) {
 		return 0;
 	}
 
-	error = FT_Load_Glyph(
-												(*face),          /* handle to face object */
-						glyph_index,   /* glyph index           */
-			/*load_flags*/ FT_LOAD_DEFAULT|FT_LOAD_RENDER|FT_LOAD_FORCE_AUTOHINT|FT_LOAD_TARGET_MONO);  /* load flags, see below */
+	error = FT_Load_Glyph((*face), glyph_index, FT_LOAD_DEFAULT|FT_LOAD_RENDER|FT_LOAD_FORCE_AUTOHINT|FT_LOAD_TARGET_MONO);
+
+	// If it failed, try to load without the autohinter
+	if (error)
+		error = FT_Load_Glyph((*face), glyph_index, FT_LOAD_DEFAULT|FT_LOAD_RENDER|FT_LOAD_TARGET_MONO);
 
 	if (error) {
-		fprintf(stderr,"Error loading\n");
+		fprintf(stderr,"Error loading 0x%04X\n",unicode);
 		exit(0);
 	}
 
