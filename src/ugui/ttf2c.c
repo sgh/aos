@@ -446,7 +446,7 @@ int main(int argc, char* argv[]) {
 	unsigned int number = 0;
 	for (i=0; i<sizeof(cjk_selection)/sizeof(cjk_selection[0]); i++) {
 		if (number >= cjk_selection[i]) {
-			printf("Wront sorting at idx %d\n", i);
+			fprintf(stderr,"Wront sorting at idx %d\n", i);
 			exit(1);
 		}
 		number = cjk_selection[i];
