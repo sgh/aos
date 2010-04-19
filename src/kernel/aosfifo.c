@@ -79,12 +79,26 @@ void fifotest(void) {
 	struct aos_fifo testfifo;
 	unsigned char sbuf[32];
 	unsigned char dbuf[32];
+	int i;
 
 	// First test reading from empty list
 	aos_fifo_init(&testfifo, buf, sizeof(buf));
 #define NORMAL_TESTS
 #ifdef NORMAL_TESTS
 	assert( aos_fifo_read(&testfifo, sbuf, 1) == 0);
+
+	// Fill the buffer with 31 bytes
+	for (i=0; i<31; i++)
+		assert( aos_fifo_write(&testfifo, sbuf, 1) == 1 );
+
+	// Writing a byte more should return 0
+	assert( aos_fifo_write(&testfifo, sbuf, 1) == 0 );
+
+	// Read the 32 bytes back
+	for (i=0; i<31; i++)
+		assert( aos_fifo_read(&testfifo, dbuf, 1) == 1 );
+
+	assert( aos_fifo_read(&testfifo, dbuf, 1) == 0 );
 
 	// Now test writing one byte and reading it back
 	sbuf[0] = sbuf[1] = 'a';
@@ -122,7 +136,6 @@ void fifotest(void) {
 
 #endif
 	// Now write and read 5 byte chunks
-	int i;
 	sbuf[0] = sbuf[1] = sbuf[2] = sbuf[3] = sbuf[4] = sbuf[5] ='a';
 	dbuf[0] = dbuf[1] = dbuf[2] = dbuf[3] = dbuf[4] = dbuf[5] ='b';
 	for (i=0; i<1024*1024*50; i++) {
