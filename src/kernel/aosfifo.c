@@ -51,7 +51,7 @@ int __attribute__((optimize(3))) aos_fifo_read(struct aos_fifo* fifo, unsigned c
 int __attribute__((optimize(3))) aos_fifo_write(struct aos_fifo* fifo, unsigned char* src, unsigned int len) {
 	unsigned int l;
 
-	len = min(len, fifo->size - fifo->putidx + fifo->getidx);
+	len = min(len, fifo->size - fifo->putidx + fifo->getidx - 1);
 
 	l = min(len, fifo->size - fifo->putidx);
 
