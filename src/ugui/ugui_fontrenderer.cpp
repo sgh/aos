@@ -244,7 +244,7 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 			str = (const char*)unicode.current.ptr;
 			char_count = 0;
 			if (line_feed) {
-				state.y += y;
+				state.y += font->height;
 				state.x = x;
 				line_feed = 0;
 			}
