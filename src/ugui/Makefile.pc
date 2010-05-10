@@ -16,7 +16,7 @@ all: $(OBJS)
 ttf2c: ttf2c.c
 	gcc  -o ttf2c -I ../include -I /usr/include/freetype2 -I .. -lfreetype ttf2c.c
 
-glyphindex:
+glyphindex:glyphindex.c
 	${CC} -o glyphindex unicode.c utf8.c glyphindex.c -I ../include/
 
 %.o: %.c
