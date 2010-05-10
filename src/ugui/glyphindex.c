@@ -39,8 +39,11 @@ int main() {
 	int b;
 	for (i=0; i<65536/8; i++) {
 		for (b=0; b<8; b++) {
-			if (active_characters[i] & 1<<b)
-				printf("%d\n", i*8+b);
+			if (active_characters[i] & 1<<b) {
+				int num = i*8+b;
+				if (num > 255)
+					printf("%d\n", num);
+			}
 		}
 	}
 	return 0;
