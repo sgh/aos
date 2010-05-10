@@ -37,6 +37,9 @@ $APP): $(OBJS) ttf2c render-unicode-character
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $(INCLUDES) $< -o $@
 
+glyphindex:
+	gcc -o glyphindex $(INCLUDES) unicode.c utf8.c glyphindex.c 
+
 ttf2c: ttf2c.c
 	gcc  -o ttf2c $(FT_CFLAGS) $(FT_LDFLAGS) $(INCLUDES) ttf2c.c
 

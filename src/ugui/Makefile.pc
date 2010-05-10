@@ -16,6 +16,9 @@ all: $(OBJS)
 ttf2c: ttf2c.c
 	gcc  -o ttf2c -I ../include -I /usr/include/freetype2 -I .. -lfreetype ttf2c.c
 
+glyphindex:
+	${CC} -o glyphindex unicode.c utf8.c glyphindex.c -I ../include/
+
 %.o: %.c
 	$(CC) -I ../include `pkg-config --cflags gtk+-2.0` $(CFLAGS) -MD -c -ggdb -O0 -Wall -Wextra -o $@ $<
 
