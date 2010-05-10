@@ -344,120 +344,20 @@ int main(int argc, char* argv[]) {
 	height = 0;
 
 	int num = 0;
-
 	num += add_glyph_range("ASCII",          faces, &height, 0x0000, 0x00FF);
 	num += add_glyph_range("Pi symbol",      faces, &height, 0x03C0, 0x03C0);
-	num += add_glyph_range("Cyrillic",       faces, &height, 0x0400, 0x04FF);
-	num += add_glyph_range("Arabic",         faces, &height, 0x0600, 0x06FF);
-	num += add_glyph_range("Hindi",          faces, &height, 0x0900, 0x097F);
 	num += add_glyph_range("Permille",       faces, &height, 0x2030, 0x2030);
 	num += add_glyph_range("Degree",         faces, &height, 0x2070, 0x2070);
-	num += add_glyph_range("Hiragana",       faces, &height, 0x3040, 0x309F);
-	num += add_glyph_range("Katakana",       faces, &height, 0x30A0, 0x30FF);
 
-	unsigned int cjk_selection[] = {
-		0x4E0A,
-		0x4E0B,
-		0x4E0D,
-		0x4E21,
-		0x4E2D,
-		0x4F4D,
-		0x4F4E,
-		0x4F5C,
-		0x4F7F,
-		0x4FE1,
-		0x5024,
-		0x5165,
-		0x5225,
-		0x524A,
-		0x524D,
-		0x529B,
-		0x52D5,
-		0x52FE,
-		0x5358,
-		0x53C2,
-		0x53CD,
-		0x53D7,
-		0x53F3,
-		0X53F7,
-		0x540D,
-		0x5411,
-		0x544A,
-		0x5782,
-		0x57FA,
-		0x5834,
-		0x5909,
-		0x5927,
-		0x5B9A,
-		0x5BFE,
-		0x5C05,
-		0x5C0F,
-		0x5DE6,
-		0x5E45,
-		0x5E73,
-		0x5EA6,
-		0x5FDC,
-		0X610F,
-		0x6240,
-		0x629E,
-		0x6398,
-		0x63A5,
-		0x6574,
-		0x65AD,
-		0x65B9,
-		0x660E,
-		0x66F4,
-		0x6700,
-		0x6A2A,
-		0x6B63,
-		0x6C34,
-		0x6CE8,
-		0x6DF1,
-		0x6E2C,
-		0x6E96,
-		0x70B9,
-		0x7167,
-		0x7528,
-		0x76F4,
-		0x76F8,
-		0x78BA,
-		0x78C1,
-		0x793A,
-		0x7B54,
-		0x7D9A,
-		0x7E26,
-		0x826F,
-		0x8868,
-		0x89D2,
-		0x8A2D,
-		0x8A8D,
-		0x8ABF,
-		0x8B66,
-		0x8EF8,
-		0x8FD1,
-		0X901A,
-		0x9078,
-		0x914D,
-		0x91CF,
-		0x9577,
-		0X96FB,
-		0x9762,
-		0x97F3,
-		0x9AD8,
-	};
-	unsigned int number = 0;
-	for (i=0; i<sizeof(cjk_selection)/sizeof(cjk_selection[0]); i++) {
-		if (number >= cjk_selection[i]) {
-			fprintf(stderr,"Wront sorting at idx %d\n", i);
-			exit(1);
+	while (!feof(stdin)) {
+		unsigned int glyph;
+		char buf[32];
+		if (fgets(buf, sizeof(buf), stdin)) {
+			glyph = atoi(buf);
+			sprintf(buf,"%d", glyph);
+			num += add_glyph_range(buf, faces, &height, glyph, glyph);
 		}
-		number = cjk_selection[i];
 	}
-	num += add_glyph_selection("Selected CJK",   faces, &height, cjk_selection, sizeof(cjk_selection)/sizeof(cjk_selection[0]));
-
-	num += add_glyph_range("Arabic Forms-A", faces, &height, 0xFB50, 0xFDFF);
-	num += add_glyph_range("Arabic Forms-B", faces, &height, 0xFE70, 0xFEFF);
-	num += add_glyph_range("Half/Fullwidth", faces, &height, 0xFF00, 0xFFEF);
 	fprintf(stderr,"%d glyphs added\n", num);
 
 	printf("// ");
