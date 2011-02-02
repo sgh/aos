@@ -27,7 +27,7 @@ OBJS := $(patsubst %.cpp, %.o, $(SOURCES))
 OBJS := $(patsubst %.c, %.o, $(OBJS))
 
 
-$APP): $(OBJS) ttf2c render-unicode-character
+$APP): $(OBJS) ttf2c glyphindex render-unicode-character
 	$(AR) rcs $(APP) $(OBJS)
 #arm-elf-size -t $(APP)
 
