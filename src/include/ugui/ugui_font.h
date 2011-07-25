@@ -13,22 +13,22 @@ struct aostk_point {
   unsigned int y;
 };
 
-struct PACKED aostk_point_u8 {
+struct aostk_point_u8 {
   uint8_t x;
   uint8_t y;
 };
 
-struct PACKED aostk_size {
+struct aostk_size {
   unsigned int width;
   unsigned int height;
 };
 
-struct PACKED aostk_size_u8 {
+struct aostk_size_u8 {
   uint8_t width;
   uint8_t height;
 };
 
-struct PACKED aostk_glyph {
+struct aostk_glyph {
 	uint16_t i;
 	struct aostk_size_u8 size;
 	int8_t top;
@@ -39,7 +39,7 @@ struct PACKED aostk_glyph {
 };
 
 
-struct PACKED aostk_font {
+struct aostk_font {
 	uint16_t numglyphs;
 	uint8_t height;
 	const struct aostk_glyph* glyphs;
