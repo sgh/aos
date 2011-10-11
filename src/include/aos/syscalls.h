@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef _SYSCALLS_H_
-#define _SYSCALLS_H_
+#ifndef AOS_SYSCALLS_H
+#define AOS_SYSCALLS_H
 
 #include <aos/aos_module.h>
 

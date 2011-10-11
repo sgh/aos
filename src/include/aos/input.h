@@ -1,5 +1,5 @@
-#ifndef INPUT_H
-#define INPUT_H
+#ifndef AOS_INPUT_H
+#define AOS_INPUT_H
 
 // #define MAX_CONCURRENT_KEYS 3
 

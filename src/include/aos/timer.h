@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef TIMER_H
-#define TIMER_H
+#ifndef AOS_TIMER_H
+#define AOS_TIMER_H
 
 #define AOS_KERNEL_MODULE
 

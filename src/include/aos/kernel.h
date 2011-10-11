@@ -16,8 +16,8 @@
 	License along with this library; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-#ifndef _KERNEL_H_
-#define _KERNEL_H_
+#ifndef AOS_KERNEL_H
+#define AOS_KERNEL_H
 
 #include <aos/aos_module.h>
 

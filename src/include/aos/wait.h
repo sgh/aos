@@ -16,8 +16,8 @@
 	License along with this library; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-#ifndef WAIT_H
-#define WAIT_H
+#ifndef AOS_WAIT_H
+#define AOS_WAIT_H
 
 #include <aos/mutex.h>
 #include <aos/list.h>

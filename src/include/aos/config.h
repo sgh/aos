@@ -1,4 +1,5 @@
-#ifndef CONFIG_H
+#ifndef AOS_CONFIG_H
+#define AOS_CONFIG_H
 
 #define HZ 1000
 

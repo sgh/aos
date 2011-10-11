@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef SPI_H
-#define SPI_H
+#ifndef AOS_PLATFORM_H
+#define AOS_PLATFORM_H
 
 #include <types.h>
 #include <driver_core.h>

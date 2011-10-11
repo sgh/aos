@@ -1,5 +1,5 @@
-#ifndef STACK_H
-#define STACK_H
+#ifndef AOS_RUNTIME_CHECK_H
+#define AOS_RUNTIME_CHECK_H
 
 #include <aos/aos_module.h>
 #include <aos/bits.h>

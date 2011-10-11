@@ -1,6 +1,6 @@
 
-#ifndef UGUI_H
-#define UGUI_H
+#ifndef UGUI_UGUI_H
+#define UGUI_UGUI_H
 
 #include <aos/mutex.h>
 #include <aos/semaphore.h>

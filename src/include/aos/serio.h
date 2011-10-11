@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef SERIO_H
-#define SERIO_H
+#ifndef AOS_SERIO_H
+#define AOS_SERIO_H
 
 #include <driver_core.h>
 #include <driver_class.h>

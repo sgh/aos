@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef ERRNO_H
-#define ERRNO_H
+#ifndef AOS_ERRNO_H
+#define AOS_ERRNO_H
 
 
 #define ESUCCESS     0  /* No error */

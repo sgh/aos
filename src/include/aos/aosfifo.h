@@ -1,5 +1,5 @@
-#ifndef AOSFIFO_H
-#define AOSFIFO_H
+#ifndef AOS_AOSFIFO_H
+#define AOS_AOSFIFO_H
 
 #ifdef __cplusplus
 extern "C" {

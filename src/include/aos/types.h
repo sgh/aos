@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef _TYPES_H_
-#define _TYPES_H_
+#ifndef AOS_TYPES_H
+#define AOS_TYPES_H
 
 #include <stddef.h>
 //#include <stdint.h>

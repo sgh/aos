@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef _MACROS_H_
-#define _MACROS_H_
+#ifndef AOS_MACROS_H
+#define AOS_MACROS_H
 
 #include <aos/types.h>
 #include <aos/config.h>

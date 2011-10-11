@@ -1,5 +1,5 @@
-#ifndef AOSTK_FONT_H
-#define AOSTK_FONT_H
+#ifndef UGUI_UGUI_FONT_H
+#define UGUI_UGUI_FONT_H
 
 #include <stdint.h>
 #include <aos/macros.h>

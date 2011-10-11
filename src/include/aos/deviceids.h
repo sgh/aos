@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef DEVICEIDS_H
-#define DEVICEIDS_H
+#ifndef AOS_DEVICEIDS_H
+#define AOS_DEVICEIDS_H
 
 #include <aos_module.h>
 

@@ -1,5 +1,5 @@
-#ifndef BITS_H
-#define BITS_H
+#ifndef AOS_BITS_H
+#define AOS_BITS_H
 
 #define BIT0  (1<<0)
 #define BIT1  (1<<1)

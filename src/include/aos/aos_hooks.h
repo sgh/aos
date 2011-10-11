@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef AOS_HOOKS_H
-#define AOS_HOOKS_H
+#ifndef AOS_AOS_HOOKS_H
+#define AOS_AOS_HOOKS_H
 
 //#include <aos/task.h>
 #include <stdint.h>

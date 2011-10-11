@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef MUTEX_H
-#define MUTEX_H
+#ifndef AOS_MUTEX_H
+#define AOS_MUTEX_H
 
 #include <aos/list.h>
 #include <aos/errno.h>

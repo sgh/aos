@@ -1,5 +1,5 @@
-#ifndef DRAWABLE_H
-#define DRAWABLE_H
+#ifndef UGUI_DRAWABLE_H
+#define UGUI_DRAWABLE_H
 
 #include "gtkfb.h"
 #include <stdint.h>

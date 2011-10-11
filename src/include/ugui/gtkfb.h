@@ -1,5 +1,5 @@
-#ifndef _GTKFB_H
-#define GTKFB_H
+#ifndef UGUI_GTKFB_H
+#define UGUI_GTKFB_H
 
 #ifdef __cplusplus
 	extern "C" {

@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef ATOMIC_H
-#define ATOMIC_H
+#ifndef AOS_ATOMIC_H
+#define AOS_ATOMIC_H
 
 /**
  * \brief Atomic swap a value with a memory address

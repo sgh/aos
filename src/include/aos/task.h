@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef _TASK_H_
-#define _TASK_H_
+#ifndef AOS_TASK_H
+#define AOS_TASK_H
 
 #include <aos/types.h>
 #include <aos/list.h>

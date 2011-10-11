@@ -16,8 +16,8 @@
 		License along with this library; if not, write to the Free Software
 		Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 		*/
-#ifndef TIMER_INTERRUPT_H
-#define TIMER_INTERRUPT_H
+#ifndef AOS_CLOCK_H
+#define AOS_CLOCK_H
 
 #include <aos/aos_module.h>
 
