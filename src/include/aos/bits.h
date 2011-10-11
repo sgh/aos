@@ -34,7 +34,7 @@
 #define BIT30 (1<<30)
 #define BIT31 (1<<31)
 
-#define NOT(v) (~v)
+#define NOT(v) (~(v))
 
 #define readbit(val,bit) (((val)&(bit)) ? 1 : 0)
 
