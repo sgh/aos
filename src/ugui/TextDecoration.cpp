@@ -1,12 +1,14 @@
 #include <ugui/Drawable.h>
 #include <ugui/ugui.h>
+#include <ugui/ugui_font.h>
 
-TextDecoration::TextDecoration(const char* text) {
+TextDecoration::TextDecoration(const aostk_font* font, const char* text) {
 	_text[0] = 0;
 	_top = 16;
 	_bottom = 2;
 	_left = 2;
 	_right = 2;
+	_font = font;
 	if (text)
 		setText(text);
 }
@@ -20,7 +22,7 @@ void TextDecoration::draw(Drawable* d) {
 	ugui_fill(0, 1, width, _top-1, 0x000000);
 	ugui_line(1,0 , width - 2, 0, 0x000000);
 
-// 		aostk_putstring(&smallfont, 4, 1, _text);
+	ugui_putstring(_font, 4, 1, _text);
 
 	for (int i=0; i<2; i++) {
 		unsigned int color = 0x000000;

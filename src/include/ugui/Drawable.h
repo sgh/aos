@@ -7,6 +7,8 @@
 #include <aos/macros.h>
 #include <aos/input.h>
 
+struct aostk_font;
+
 typedef enum {UGUI_VERTICAL, UGUI_HORIZONTAL} ugui_orientation_e;
 
 struct Point {
@@ -154,8 +156,9 @@ public:
 
 class TextDecoration : public DrawableDecoration {
 	char _text[64];
+	const aostk_font* _font;
 public:
-	TextDecoration(const char* text = NULL);
+	TextDecoration(const aostk_font* font,const char* text = NULL);
 	void draw(Drawable* d);
 	void setText(const char* new_text);
 };
