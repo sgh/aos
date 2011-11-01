@@ -41,10 +41,10 @@ glyphindex: glyphindex.c
 	gcc -Wall -Wextra -o glyphindex $(INCLUDES) unicode.c utf8.c glyphindex.c 
 
 ttf2c: ttf2c.c
-	gcc -o ttf2c $(FT_CFLAGS) $(FT_LDFLAGS) $(INCLUDES) ttf2c.c
+	gcc -o ttf2c $(FT_CFLAGS) $(INCLUDES) ttf2c.c  $(FT_LDFLAGS)
 
 render-unicode-character: render-unicode-character.c
-	gcc  -o render-unicode-character $(FT_CFLAGS) $(FT_LDFLAGS) $(INCLUDES) render-unicode-character.c
+	gcc  -o render-unicode-character $(FT_CFLAGS) $(INCLUDES) render-unicode-character.c  $(FT_LDFLAGS)
 
 clean:
 	-rm -f $(OBJS) $(APP)
