@@ -109,15 +109,7 @@ static FLATTEN HOT void sched_switch(void) {
 		prev->state = READY;
 
 		if (!is_background()) {
-
-			/**
-			 * Processes with time left to run is place en front of the queue. Other
-			 * processes are placed last.
-			 */
-			if (prev->time_left || prev->prio == -127 /*|| prev->prio < next->prio*/)
-				list_push_front(&readyQ, &prev->q);
-			else
-				list_push_back(&readyQ, &prev->q);
+			add_task_to_readyQ(prev);
 			assert(current->preemptive==1);
 		}
 		prev->nonvoluntary_ctxt++;
@@ -177,24 +169,11 @@ static FLATTEN HOT void sched_switch(void) {
 
 
 void process_wakeup(struct task_t* task) {
-	uint_fast8_t inserted = 0;
-	struct list_head* it;
-
 	// Resched if task is preemptive
 	if (task->prio < current->prio)
 		current->resched = current->preemptive;
 
-	list_for_each(it, &readyQ) {
-		struct task_t* _t = get_struct_task(it);
-
-		if (task->prio < _t->prio) {
-			inserted = 1;
-			list_push_back(it, &task->q);
-			break;
-		}
-	}
-	if (likely(!inserted))
-		list_push_back(&readyQ , &task->q);
+	add_task_to_readyQ(task);
 
 	task->state = READY;
 

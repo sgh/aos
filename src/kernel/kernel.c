@@ -188,12 +188,30 @@ void sys_unblock(struct task_t* task) {
 }
 
 
+void add_task_to_readyQ(struct task_t* task) {
+	uint_fast8_t inserted = 0;
+	struct list_head* it;
+
+	list_for_each(it, &readyQ) {
+		struct task_t* _t = get_struct_task(it);
+
+		if (task->prio < _t->prio) {
+			inserted = 1;
+			list_push_back(it, &task->q);
+			break;
+		}
+	}
+	if (!inserted)
+		list_push_back(&readyQ, &task->q);
+}
+
+
 struct task_t* sys_create_task(taskFuncPtr entrypoint, const char* name, void* arg, int8_t priority) {
 	struct task_t* t;
 	t = sys_malloc(sizeof(struct task_t));
 	init_task(t, entrypoint, arg, priority);
 	t->name = name;
-	list_push_back(&readyQ, &t->q);
+	add_task_to_readyQ(t);
 	list_push_back(&process_list, &t->glist);
 	return t;
 }
