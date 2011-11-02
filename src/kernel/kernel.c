@@ -88,10 +88,10 @@ void aos_basic_init() {
 
 void aos_context_init(uint32_t timer_refclk) {
 	// Setup idle task
-  init_task(&idle_task, NULL, NULL, 127);
+	init_task(&idle_task, NULL, NULL, 127);
 	idle_task.name = "Idle";
 	list_push_back(&process_list, &idle_task.glist);
-	
+
 	current = &idle_task;
 	current->state = RUNNING;
 
@@ -189,19 +189,19 @@ void sys_unblock(struct task_t* task) {
 
 
 struct task_t* sys_create_task(taskFuncPtr entrypoint, const char* name, void* arg, int8_t priority) {
-  struct task_t* t;
-  t = sys_malloc(sizeof(struct task_t));
-  init_task(t, entrypoint, arg, priority);
+	struct task_t* t;
+	t = sys_malloc(sizeof(struct task_t));
+	init_task(t, entrypoint, arg, priority);
 	t->name = name;
-  list_push_back(&readyQ, &t->q);
+	list_push_back(&readyQ, &t->q);
 	list_push_back(&process_list, &t->glist);
-  return t;
+	return t;
 }
 
 void sys_delete_task(struct task_t* t) {
 	sched_lock();
 	list_erase(&t->glist);
-  list_erase(&t->q);
+	list_erase(&t->q);
 	sched_unlock();
 	destroy_task(t);
 	free(t);
