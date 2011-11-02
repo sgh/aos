@@ -46,7 +46,7 @@ void sched_clock(void) {
 		context if any processes in the readyQ
 	*/
 	if (!current->time_left)
-			current->resched = 1;
+			current->resched = !list_isempty(&readyQ);
 	else // Very important to avoid underflow of time_left member
 		current->time_left--;
 }
