@@ -38,13 +38,6 @@ void sched_clock(void) {
 
 	current->ticks++;
 
-	// The background-process must step aside for anybody
-	if (unlikely(is_background()))  {
-		if (!list_isempty(&readyQ))
-			current->resched = 1;
-		return;
-	}
-
 	if (!current->preemptive)
 		return;
 
