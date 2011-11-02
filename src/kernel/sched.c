@@ -181,7 +181,7 @@ void process_wakeup(struct task_t* task) {
 	struct list_head* it;
 
 	// Resched if task is preemptive
-	if (task->prio <= current->prio)
+	if (task->prio < current->prio)
 		current->resched = current->preemptive;
 
 	list_for_each(it, &readyQ) {
