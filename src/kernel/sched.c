@@ -177,28 +177,24 @@ static FLATTEN HOT void sched_switch(void) {
 
 
 void process_wakeup(struct task_t* task) {
+	uint_fast8_t inserted = 0;
 	struct list_head* it;
 
-	// Higher priority task is placed in front of the queue
-	if (task->prio < current->prio) {
-		list_push_front(&readyQ , &task->q);
-
-		// Resched if task is preemptive
+	// Resched if task is preemptive
+	if (task->prio <= current->prio)
 		current->resched = current->preemptive;
-	} else { // Place according to priority
-		uint_fast8_t inserted = 0;
-		list_for_each(it, &readyQ) {
-			struct task_t* _t = get_struct_task(it);
 
-			if (unlikely(task->prio < _t->prio)) {
-				inserted = 1;
-				list_push_back(it, &task->q);
-				break;
-			}
+	list_for_each(it, &readyQ) {
+		struct task_t* _t = get_struct_task(it);
+
+		if (task->prio < _t->prio) {
+			inserted = 1;
+			list_push_back(it, &task->q);
+			break;
 		}
-		if (likely(!inserted))
-			list_push_back(&readyQ , &task->q);
 	}
+	if (likely(!inserted))
+		list_push_back(&readyQ , &task->q);
 
 	task->state = READY;
 
