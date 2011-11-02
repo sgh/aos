@@ -199,7 +199,7 @@ void process_wakeup(struct task_t* task) {
 
 			if (unlikely(task->prio < _t->prio)) {
 				inserted = 1;
-				list_push_front(it, &task->q);
+				list_push_back(it, &task->q);
 				break;
 			}
 		}
