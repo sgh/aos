@@ -106,8 +106,6 @@ static FLATTEN HOT void sched_switch(void) {
 
 	// If process is preempted
 	if (prev->state == RUNNING) {
-		prev->state = READY;
-
 		if (!is_background()) {
 			add_task_to_readyQ(prev);
 			assert(current->preemptive==1);
@@ -174,8 +172,6 @@ void process_wakeup(struct task_t* task) {
 		current->resched = current->preemptive;
 
 	add_task_to_readyQ(task);
-
-	task->state = READY;
 
 	// Stop the timeout timer if it is active
 	timer_stop(&task->timeout_timer);

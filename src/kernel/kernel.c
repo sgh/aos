@@ -192,6 +192,7 @@ void add_task_to_readyQ(struct task_t* task) {
 	uint_fast8_t inserted = 0;
 	struct list_head* it;
 
+	task->state = READY;
 	list_for_each(it, &readyQ) {
 		struct task_t* _t = get_struct_task(it);
 
