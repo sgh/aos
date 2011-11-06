@@ -131,9 +131,6 @@ static FLATTEN HOT void sched_switch(void) {
 
 	// tell mm-system not to use scheck_lock
 	mm_schedlock(0);
-		
-	// Enable interrupts
-	interrupt_enable();
 
 	prev->stack_size = (uint32_t)&__stack_usr_top__ - prev->ctx.uregs->sp;
 
@@ -152,9 +149,6 @@ static FLATTEN HOT void sched_switch(void) {
 
 	if (next->fragment)
 		load_fragment(&__stack_usr_top__ - next->stack_size, next->fragment);
-
-	// Disable interrupts again
-	interrupt_disable();
 
 	// Tell mm-system to use schedlock
 	mm_schedlock(1);
