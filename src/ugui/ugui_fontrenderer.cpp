@@ -237,7 +237,6 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 			line_feed = 1;
 		
 		if ((tmp != direction) || line_feed) {
-			state.outline_color = tmp==1 ? 0 : ugui_alloc_color(0xFF0000);
 			if (line_feed)
 				char_count--;
 			ugui_render_glyphs(&state, str, char_count, tmp);
