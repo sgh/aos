@@ -89,6 +89,7 @@ void aos_basic_init() {
 void aos_context_init(uint32_t timer_refclk) {
 	// Setup idle task
 	init_task(&idle_task, NULL, NULL, 127);
+	idle_task.preemptive = 1;
 	idle_task.name = "Idle";
 	list_push_back(&process_list, &idle_task.glist);
 
