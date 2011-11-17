@@ -4,7 +4,7 @@
 
 #include "ugui/ugui.h"
 #include "ugui/Drawable.h"
-//#include "aos/aos.h"
+#include "aos/aos.h"
 
 #define INVALIDATE_EVENT 1
 #define SHOW_EVENT       2
@@ -21,14 +21,14 @@ Drawable::Drawable(int x, int y, int width, int height)
 }
 
 bool Drawable::redraw(void) {
-/*	if (_next_update != 0xFFFFFFFF) {
+	if (_next_update != 0xFFFFFFFF) {
 		uint32_t now;
 		get_sysmtime(&now);
 		if (_next_update <= now) {
 			invalidate();
 			_next_update = 0xFFFFFFFF;
 		}
-	}*/
+	}
 
 	if (!_dirty)
 		return false;
@@ -275,13 +275,11 @@ void Drawable::processEvents(void) {
 }
 
 void Drawable::invalidate_elapsed(int ms) {
-#warning NOT IMPLEMENTED
-#warning FIX ME. It does not work with semaphore triggered eventloop
 	uint32_t now;
 	if (_dirty) return;
-/*	get_sysmtime(&now);
+	get_sysmtime(&now);
 	if (_next_update == 0xFFFFFFFF)
-		_next_update = now + ms;*/
+		_next_update = now + ms;
 }
 
 void Drawable::real_invalidate(void) {
