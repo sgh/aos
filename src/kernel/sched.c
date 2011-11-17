@@ -38,13 +38,6 @@ void sched_clock(void) {
 
 	current->ticks++;
 
-	// The background-process must step aside for anybody
-	if (unlikely(is_background()))  {
-		if (!list_isempty(&readyQ))
-			current->resched = 1;
-		return;
-	}
-
 	if (!current->preemptive)
 		return;
 
@@ -52,9 +45,10 @@ void sched_clock(void) {
 		Check If current process has time left to run. If its time is up change
 		context if any processes in the readyQ
 	*/
-	if (!current->time_left)
+	if (!current->time_left) {
+		if (!list_isempty(&readyQ))
 			current->resched = 1;
-	else // Very important to avoid underflow of time_left member
+	} else // Very important to avoid underflow of time_left member
 		current->time_left--;
 }
 
@@ -113,18 +107,8 @@ static FLATTEN HOT void sched_switch(void) {
 
 	// If process is preempted
 	if (prev->state == RUNNING) {
-		prev->state = READY;
-
 		if (!is_background()) {
-
-			/**
-			 * Processes with time left to run is place en front of the queue. Other
-			 * processes are placed last.
-			 */
-			if (prev->time_left || prev->prio == -127 /*|| prev->prio < next->prio*/)
-				list_push_front(&readyQ, &prev->q);
-			else
-				list_push_back(&readyQ, &prev->q);
+			add_task_to_readyQ(prev);
 			assert(current->preemptive==1);
 		}
 		prev->nonvoluntary_ctxt++;
@@ -147,9 +131,6 @@ static FLATTEN HOT void sched_switch(void) {
 
 	// tell mm-system not to use scheck_lock
 	mm_schedlock(0);
-		
-	// Enable interrupts
-	interrupt_enable();
 
 	prev->stack_size = (uint32_t)&__stack_usr_top__ - prev->ctx.uregs->sp;
 
@@ -169,9 +150,6 @@ static FLATTEN HOT void sched_switch(void) {
 	if (next->fragment)
 		load_fragment(&__stack_usr_top__ - next->stack_size, next->fragment);
 
-	// Disable interrupts again
-	interrupt_disable();
-
 	// Tell mm-system to use schedlock
 	mm_schedlock(1);
 
@@ -184,30 +162,11 @@ static FLATTEN HOT void sched_switch(void) {
 
 
 void process_wakeup(struct task_t* task) {
-	struct list_head* it;
-
-	// Higher priority task is placed in front of the queue
-	if (task->prio < current->prio) {
-		list_push_front(&readyQ , &task->q);
-
-		// Resched if task is preemptive
+	// Resched if task is preemptive
+	if (task->prio < current->prio)
 		current->resched = current->preemptive;
-	} else { // Place according to priority
-		uint_fast8_t inserted = 0;
-		list_for_each(it, &readyQ) {
-			struct task_t* _t = get_struct_task(it);
 
-			if (unlikely(task->prio < _t->prio)) {
-				inserted = 1;
-				list_push_front(it, &task->q);
-				break;
-			}
-		}
-		if (likely(!inserted))
-			list_push_back(&readyQ , &task->q);
-	}
-
-	task->state = READY;
+	add_task_to_readyQ(task);
 
 	// Stop the timeout timer if it is active
 	timer_stop(&task->timeout_timer);

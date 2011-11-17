@@ -94,6 +94,7 @@ extern struct list_head process_list;
 
 void init_task(struct task_t* task,taskFuncPtr entrypoint, void* arg, int8_t priority);
 void destroy_task(struct task_t* t);
+void add_task_to_readyQ(struct task_t* task);
 
 
 /**
