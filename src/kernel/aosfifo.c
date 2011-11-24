@@ -31,6 +31,10 @@ int __attribute__((optimize(3))) aos_fifo_read(struct aos_fifo* fifo, unsigned c
 
 	l = min(len, fifo->size - fifo->getidx);
 
+	// Ensure correct len when data wraps
+	if (fifo->putidx < fifo->getidx)
+		len = l + fifo->putidx;
+
 	if (likely(l))
 		memcpy(dst, &fifo->data[fifo->getidx], l);
 
@@ -143,7 +147,7 @@ void fifotest(void) {
 // 		memcpy(sbuf, dbuf, 5);
 // 		memcpy(dbuf, sbuf, 5);
 		assert( aos_fifo_write(&testfifo, sbuf, 5) == 5 );
-		assert( aos_fifo_read(&testfifo, dbuf, 5)  == 5 );
+		assert( aos_fifo_read(&testfifo, dbuf, 6)  == 5 );
 // 		assert( dbuf[0]=='a' && dbuf[1]=='a' && dbuf[2]=='a' && dbuf[3]=='a' && dbuf[4]=='a' && dbuf[5]=='b' );
 	}
 }
