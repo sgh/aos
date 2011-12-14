@@ -17,6 +17,7 @@ Drawable::Drawable(int x, int y, int width, int height)
 	_abs_xy.x = _rel_xy.x = x;
 	_abs_xy.y = _rel_xy.y = y;
 // 	setXY(x, y);
+	_next_update = 0xFFFFFFFF;
 	_decoration = NULL;//(class DrawableDecoration*)&testdecoration;
 }
 
