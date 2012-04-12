@@ -360,6 +360,16 @@ int main(int argc, char* argv[]) {
 	}
 	fprintf(stderr,"%d glyphs added\n", num);
 
+	// Sort glyphs to ensure that binary search is possible
+	for (i=0; i<num-1; i++) {
+		if (genglyphs[i].i > genglyphs[i+1].i) {
+			struct aostk_glyph tmp = genglyphs[i];
+			genglyphs[i] = genglyphs[i+1];
+			genglyphs[i+1] = tmp;
+			i = 0; // Restart
+		}
+	}
+
 	printf("// ");
 	for (i=0; i<argc; i++)
 		printf("%s ",argv[i]);
