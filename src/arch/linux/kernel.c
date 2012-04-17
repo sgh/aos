@@ -2,6 +2,7 @@
 
 #include <time.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 void yield(void)
 {
@@ -16,24 +17,20 @@ void msleep(uint16_t ms)
 
 void get_sysmtime(uint32_t* time)
 {
-	static uint32_t offset=0;
+	static time_t sec_offset=0;
 
 	if(!time) return;
 
 	struct timespec now;
-	clock_gettime(CLOCK_REALTIME, &now);
+	clock_gettime(CLOCK_MONOTONIC_RAW, &now);
 
-	int sec = now.tv_sec/* - ref.tv_sec*/;
-	int msec = (now.tv_nsec/* - ref.tv_nsec*/)/1000000;
-// 	if(msec < 0) {
-// 		sec -= 1;
-// 		msec += 1000;
-// 	}
+	time_t sec = now.tv_sec;
+	long msec = now.tv_nsec/1000000;
 
-	if (!offset)
-		offset = sec;
+	if ( sec_offset == 0 )
+		sec_offset = sec;
 
-	sec -= offset;
+	sec -= sec_offset;
 
 	*time = 1000*sec + msec;
 }
@@ -47,5 +44,4 @@ void get_sysutime(uint32_t* time)	// not used
 
 void aos_init(void)
 {
-// 	clock_gettime(CLOCK_REALTIME, &ref);
 }

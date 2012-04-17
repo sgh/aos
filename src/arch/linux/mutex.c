@@ -29,7 +29,7 @@ uint8_t mutex_timeout_lock(mutex_t* m, uint32_t timeoutms)
 	}
 
 	struct timespec wakeup;
-	clock_gettime(CLOCK_REALTIME, &wakeup);
+	clock_gettime( CLOCK_MONOTONIC_RAW, &wakeup );
 	wakeup.tv_sec += timeoutms/1000;
 	wakeup.tv_nsec += 1000000*(timeoutms%1000);
 
