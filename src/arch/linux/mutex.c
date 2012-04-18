@@ -1,4 +1,7 @@
 #include <aos/mutex.h>
+#include <time.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 void mutex_lock(mutex_t *m)
 {
