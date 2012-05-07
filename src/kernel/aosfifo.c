@@ -11,6 +11,7 @@
 #include <aos/aosfifo.h>
 #endif
 
+// Unit test: gcc -o aostest aosfifo.c -I ../include/ && ./aostest
 
 void aos_fifo_init(struct aos_fifo* fifo, void* data, unsigned int len) {
 	fifo->putidx = 0;
@@ -33,7 +34,7 @@ int __attribute__((optimize(3))) aos_fifo_read(struct aos_fifo* fifo, unsigned c
 
 	// Ensure correct len when data wraps
 	if (fifo->putidx < fifo->getidx)
-		len = l + fifo->putidx;
+		len = min(len, l + fifo->putidx);
 
 	if (likely(l))
 		memcpy(dst, &fifo->data[fifo->getidx], l);
@@ -146,8 +147,9 @@ void fifotest(void) {
 		dbuf[0] = 'b';
 // 		memcpy(sbuf, dbuf, 5);
 // 		memcpy(dbuf, sbuf, 5);
-		assert( aos_fifo_write(&testfifo, sbuf, 5) == 5 );
-		assert( aos_fifo_read(&testfifo, dbuf, 6)  == 5 );
+		assert( aos_fifo_write(&testfifo, sbuf, 12) == 12 );
+		assert( aos_fifo_read(&testfifo, dbuf, 6)  == 6 );
+		assert( aos_fifo_read(&testfifo, dbuf, 7)  == 6 );
 // 		assert( dbuf[0]=='a' && dbuf[1]=='a' && dbuf[2]=='a' && dbuf[3]=='a' && dbuf[4]=='a' && dbuf[5]=='b' );
 	}
 }
