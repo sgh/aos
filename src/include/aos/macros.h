@@ -20,7 +20,6 @@
 #define AOS_MACROS_H
 
 #include <aos/types.h>
-#include <aos/config.h>
 
 // Macros for number-manipulation
 #if !defined(__linux__)
@@ -51,11 +50,13 @@
 #define us2ticks(us)    ((us) / 1000)            // (((us) * HZ) / 1000000)
 
 // Compiler stuff
+#ifndef WIN32
 #define PACKED     __attribute__(( packed ))
 #define UNUSED     __attribute__(( unused ))
 #define FLATTEN    __attribute__(( flatten ))
 #define DEPRECATED __attribute__(( deprecated ))
 #define HOT        __attribute__(( hot ))
+#endif
 
 #define likely(x)    __builtin_expect(x, 1)
 #define unlikely(x)  __builtin_expect(x, 0)

@@ -20,8 +20,7 @@
 #define AOS_TYPES_H
 
 #include <stddef.h>
-//#include <stdint.h>
-#include <inttypes.h>
+#include <stdint.h>
 
 typedef void (*funcPtr)(void);
 typedef void (*taskFuncPtr)(void*);

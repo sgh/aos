@@ -31,6 +31,7 @@
 #include <aos/assert.h>
 #include <aos/interrupt.h>
 #include <string.h>
+#include <aos/config.h>
 
 static FLATTEN void sched_switch(void);
 

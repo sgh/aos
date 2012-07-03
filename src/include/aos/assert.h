@@ -1,7 +1,6 @@
 #ifndef AOS_ASSERT_H
 #define AOS_ASSERT_H
 
-#include <aos/aos_hooks.h>
 #include <aos/macros.h>
 
 #ifndef NODEBUG
