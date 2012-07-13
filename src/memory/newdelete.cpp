@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-void* operator new(long unsigned int size) throw() {
+void* operator new(size_t size) throw() {
   return malloc(size);
 }
 
