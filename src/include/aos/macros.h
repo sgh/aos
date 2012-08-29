@@ -22,7 +22,7 @@
 #include <aos/types.h>
 
 // Macros for number-manipulation
-#if !defined(__linux__)
+#ifdef __GNUC__
 #define ciel(val,max)  ((val)>(max) ? (max) : (val))
 #define floor(val,min) ((val)<(min) ? (min) : (val))
 #endif
@@ -50,12 +50,20 @@
 #define us2ticks(us)    ((us) / 1000)            // (((us) * HZ) / 1000000)
 
 // Compiler stuff
-#ifndef WIN32
+#ifdef __GNUC__
 #define PACKED     __attribute__(( packed ))
 #define UNUSED     __attribute__(( unused ))
 #define FLATTEN    __attribute__(( flatten ))
 #define DEPRECATED __attribute__(( deprecated ))
 #define HOT        __attribute__(( hot ))
+#endif
+
+#ifdef WIN32
+#define PACKED
+#define UNUSED
+#define FLATTEN
+#define DEPRECATED
+#define HOT
 #endif
 
 #define likely(x)    __builtin_expect(x, 1)
@@ -66,7 +74,7 @@
  * Overflow compensated
  * @return the difference
  */
-inline static uint32_t uint32diff(uint32_t min, uint32_t max) {
+__inline static uint32_t uint32diff(uint32_t min, uint32_t max) {
 	return min<max ? max-min : (UINT32_MAX - min) + max;
 }
 
