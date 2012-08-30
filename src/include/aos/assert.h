@@ -15,7 +15,13 @@
 
 #endif
 
+#ifdef __GNUC__
 #define static_assert(test, msg) typedef char _static_assert_ ## msg [ (test) ? 1 : -1]
+#endif
+
+#ifdef WIN32
+#define static_assert(test, msg)
+#endif
 
 #ifdef __cplusplus
 	extern "C" {
