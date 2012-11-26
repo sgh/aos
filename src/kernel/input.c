@@ -156,7 +156,6 @@ static void process_keyscan(uint32_t keyscan) {
 }
 
 void aos_key_management_task(UNUSED void* arg) {
-	int i;
 // 	struct extended_char last_scancode;
 	unsigned int timedwait = 0;
 	
