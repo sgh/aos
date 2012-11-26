@@ -1,8 +1,8 @@
-APP = ../../lib$(TARGET)ugui.a
+APP = ../../lib$(TOOLCHAIN_PREFIX)ugui.a
 
-CXX = $(TARGET)g++
-CC = $(TARGET)gcc
-AR = $(TARGET)ar
+CXX = $(TOOLCHAIN_PREFIX)g++
+CC = $(TOOLCHAIN_PREFIX)gcc
+AR = $(TOOLCHAIN_PREFIX)ar
 
 # freetype2
 FT_CFLAGS = $(shell pkg-config --cflags freetype2)
@@ -11,11 +11,15 @@ FT_LDFLAGS = $(shell pkg-config --libs freetype2)
 FLAGS =  -O2 -DNDEBUG -D__STDC_LIMIT_MACROS
 INCLUDES = -I ../include -I ..
 
-ifeq ($(TARGET),arm-elf-)
+ifeq ($(TOOLCHAIN_PREFIX),arm-elf-)
 FLAGS += -mcpu=arm7tdmi  -mthumb-interwork -mthumb
 endif
 
-ifeq ($(TARGET),)
+ifeq ($(TOOLCHAIN_PREFIX),arm-eabi-)
+FLAGS += -mcpu=arm7tdmi  -mthumb-interwork -mthumb
+endif
+
+ifeq ($(TOOLCHAIN_PREFIX),)
 FLAGS += -m32
 endif
 
