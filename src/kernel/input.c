@@ -15,8 +15,6 @@
 #define TOTAL_CONCURRENT_KEYS 6
 
 // static struct extended_char char_buffer[BUFFER_SIZE];
-static unsigned int buffer_put_idx;
-static unsigned int buffer_get_idx;
 static DECLARE_MUTEX_UNLOCKED(char_buffer_lock);
 
 // static uint32_t current_keys[TOTAL_CONCURRENT_KEYS];
