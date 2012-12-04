@@ -153,8 +153,8 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 	int y = state->y;
 	struct unicode_parser unicode;
 	unsigned int current_char = 0;
-  const struct aostk_glyph* g;
-  assert(state->font != NULL);
+	const struct aostk_glyph* g;
+	assert(state->font != NULL);
 	
 	if (text_direction == -1)
 		x += state->segment_width;
@@ -164,26 +164,26 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 	unicode_init(&unicode, str);
 
 	while (count>0) {
-    g = aostk_get_glyph(state->font, unicode_current(&unicode));
+		g = aostk_get_glyph(state->font, unicode_current(&unicode));
 		unicode_next(&unicode);
 		
 		if (text_direction == -1)
 			x -= g->advance.x;
 
 		if (draw_outline) {
-  	  ugui_raster(g, x+1, y, state->outline_color);
-  	  ugui_raster(g, x-1, y, state->outline_color);
-  	  ugui_raster(g, x, y+1, state->outline_color);
-  	  ugui_raster(g, x, y-1, state->outline_color);
+			ugui_raster(g, x+1, y, state->outline_color);
+			ugui_raster(g, x-1, y, state->outline_color);
+			ugui_raster(g, x, y+1, state->outline_color);
+			ugui_raster(g, x, y-1, state->outline_color);
 		}
 
-    ugui_raster(g, x, y, state->color);
+		ugui_raster(g, x, y, state->color);
 
 		if (text_direction == 1)
 			x += g->advance.x;
 
 		count--;
-  }
+	}
 	
 	if (text_direction == -1)
 		x += state->segment_width;
@@ -208,7 +208,7 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 	 * Y-position is default not the baseline, but the topmost pixel of the font
 	 * So calculate the baseline by adding the font height
 	 */
-  y += font->height;
+	y += font->height;
 	
 	state.font           = font;
 	state.x              = x;
