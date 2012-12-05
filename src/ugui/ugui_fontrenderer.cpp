@@ -170,14 +170,15 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 		if (text_direction == -1)
 			x -= g->advance.x;
 
-		if (draw_outline) {
-			ugui_raster(g, x+1, y, state->outline_color);
-			ugui_raster(g, x-1, y, state->outline_color);
-			ugui_raster(g, x, y+1, state->outline_color);
-			ugui_raster(g, x, y-1, state->outline_color);
+		if (x >= ugui_bounds.x1 && x <= ugui_bounds.x2) {
+			if (draw_outline) {
+				ugui_raster(g, x+1, y, state->outline_color);
+				ugui_raster(g, x-1, y, state->outline_color);
+				ugui_raster(g, x, y+1, state->outline_color);
+				ugui_raster(g, x, y-1, state->outline_color);
+			}
+			ugui_raster(g, x, y, state->color);
 		}
-
-		ugui_raster(g, x, y, state->color);
 
 		if (text_direction == 1)
 			x += g->advance.x;
