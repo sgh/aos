@@ -45,6 +45,8 @@ class DrawableDecoration {
 		DrawableDecoration(void) { memset(&_ctx, 0, sizeof(_ctx)); }
 
 		virtual void draw( UNUSED class Drawable* d) {};
+
+		virtual ~DrawableDecoration() {}
 };
 
 class Drawable {
