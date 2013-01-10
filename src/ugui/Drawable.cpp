@@ -36,21 +36,16 @@ bool Drawable::redraw(void) {
 
 	// Setup for drawing decoration
 	if (_decoration) {
-// 		x1 = _abs_xy.x - _decoration->_left;
-// 		y1 = _abs_xy.y - _decoration->_top;
-// 		x2 = _abs_xy.x + _width  - 1 + _decoration->_right;
-// 		y2 = _abs_xy.y + _height - 1 + _decoration->_bottom;
-		int x1 = absx_deco();
-		int y1 = absy_deco();
-		int x2 = x1 + width_deco() - 1;
-		int y2 = y1 + height_deco() -1;
 		current_context = &_decoration->_ctx;
 		#warning we must obey parent boundaries too
-		ugui_bounds.x1 = x1;
-		ugui_bounds.y1 = y1;
-		ugui_bounds.x2 = x2;
-		ugui_bounds.y2 = y2;
-		ugui_set_bounds(x1, y1, x2, y2);
+		ugui_bounds.x1 = 0;
+		ugui_bounds.y1 = 0;
+		ugui_bounds.x2 = width_deco();
+		ugui_bounds.y2 = height_deco();
+		ugui_set_bounds(ugui_bounds.x1 + absx_deco(),
+		                ugui_bounds.y1 + absy_deco(),
+		                ugui_bounds.x2 + absx_deco(),
+		                ugui_bounds.y2 + absy_deco());
 		_decoration->draw(this);
 	}
 
