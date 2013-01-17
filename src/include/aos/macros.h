@@ -22,10 +22,6 @@
 #include <aos/types.h>
 
 // Macros for number-manipulation
-#ifdef __GNUC__
-#define ciel(val,max)  ((val)>(max) ? (max) : (val))
-#define floor(val,min) ((val)<(min) ? (min) : (val))
-#endif
 #define max(a,b) ((a)>(b) ? (a) : (b))
 #define min(a,b) ((a)<(b) ? (a) : (b))
 

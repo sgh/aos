@@ -24,6 +24,8 @@
 #include <aos/syscalls.h>
 #include <aos/assert.h>
 
+#define ciel(val,max)  ((val)>(max) ? (max) : (val))
+
 struct fragment_store* create_fragment(unsigned int size) {
 	struct fragment_store* fragment;
 	struct fragment_store* retval;
