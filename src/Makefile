@@ -15,7 +15,6 @@ ifeq ($(ARCH),arm-lpc2xxx)
 	THUMB = -mthumb
 	LDFLAGS = -mthumb-interwork
 	ASFLAGS = -mthumb-interwork -gdwarf2
-	TOOLCHAIN_PREFIX=arm-elf-
 endif
 
 ifeq ($(ARCH),linux)
