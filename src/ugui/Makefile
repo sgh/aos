@@ -23,8 +23,11 @@ ifeq ($(TOOLCHAIN_PREFIX),)
 FLAGS += -m32
 endif
 
-CXXFLAGS = $(FLAGS) -fno-rtti -fno-exceptions -fno-default-inline
-CFLAGS = $(FLAGS)
+CXXFLAGS += $(FLAGS) -fno-rtti -fno-exceptions -fno-default-inline
+CFLAGS += $(FLAGS)
+
+CFLAGS += -Wno-error
+CXXFLAGS += -Wno-error
 
 SOURCES = Drawable.cpp ugui.cpp ugui_fontrenderer.cpp utf8.cpp LineDecoration.cpp TextDecoration.cpp unicode.c
 OBJS := $(patsubst %.cpp, %.o, $(SOURCES))

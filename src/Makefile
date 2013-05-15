@@ -10,8 +10,8 @@ ifeq ($(ARCH),arm-lpc2xxx)
 	MM_SOURCES = mm.c fragment.c newdelete.c
 	ASMLIST = -Wa,-alhmsd
 	FLAGS = -mcpu=arm7tdmi -O2 -nostartfiles -nostdlib -gdwarf-2 -Wall -Wextra -mthumb-interwork $(ASMLIST)=$@.lst
-	CFLAGS = $(FLAGS) -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes
-	CPPFLAGS = $(FLAGS) 
+	CFLAGS += $(FLAGS) -Werror-implicit-function-declaration -Wmissing-prototypes -Wmissing-declarations -Wstrict-prototypes
+	CXXFLAGS += $(FLAGS)
 	THUMB = -mthumb
 	LDFLAGS = -mthumb-interwork
 	ASFLAGS = -mthumb-interwork -gdwarf2
@@ -19,13 +19,14 @@ endif
 
 ifeq ($(ARCH),linux)
 	ARCH_SOURCES = mutex.c kernel.c
-	CFLAGS = -m32
-	CPPFLAGS = -m32
 endif
 
 ifeq ($(ARCH),)
 	ARCH_ERROR = $(error error Please set ARCH to (arm-lpc2xxx|linux))
 endif
+
+CFLAGS += -Wno-error
+CXXFLAGS += -Wno-error
 
 CC      = $(TOOLCHAIN_PREFIX)gcc
 AS      = $(TOOLCHAIN_PREFIX)as
