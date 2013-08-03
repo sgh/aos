@@ -36,7 +36,7 @@ void cpuusage_idle() {
 
 int main() {
 	int i;
-	float usage;
+	float usage = 0;
 
 	for (i=0; i<10; i++) {
 		usage = usage * 0.9 +  (i&1)*0.1;

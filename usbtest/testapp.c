@@ -212,7 +212,7 @@ void uart0_isr(void* arg) {
 
 void AOS_TASK uart0_task(void) {
 	unsigned int errors;
-	unsigned char state;
+	unsigned char state = 0;
 	char c = 'A';
 	char buf[] = "abcdefghijklmnopqrstuvxyz";
 // 	buf [0] = 5;
