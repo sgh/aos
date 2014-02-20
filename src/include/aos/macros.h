@@ -22,8 +22,10 @@
 #include <aos/types.h>
 
 // Macros for number-manipulation
+#ifndef __cplusplus
 #define max(a,b) ((a)>(b) ? (a) : (b))
 #define min(a,b) ((a)<(b) ? (a) : (b))
+#endif
 
 // String manipulation
 #define __STRING(x) #x
