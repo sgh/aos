@@ -196,7 +196,7 @@ static void ugui_render_glyphs(struct ugui_fontrender_state* state, const char* 
 
 void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str) {
 	unsigned int current_char = 0;
-	signed char direction;
+	signed char direction = 1;
 	signed char tmp;
 	char line_feed = 0;
 	int char_count = 0;

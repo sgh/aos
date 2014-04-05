@@ -51,12 +51,10 @@ void context_destroy(struct context* ctx) {
 }
 
 void context_set(struct context* ctx, uint8_t type, uint32_t val) {
-	struct kern_regs* k;
 	struct cpu_regs* u;
 	uint32_t cpsr = 0x0000001F; // System-mode
 	//REGISTER_TYPE cpsr = 0x00000010; // User-mode
 
-	k = &ctx->kregs;
 	u = ctx->uregs;
 
 	switch (type) {
