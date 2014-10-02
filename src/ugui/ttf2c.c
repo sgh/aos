@@ -378,7 +378,11 @@ int main(int argc, char* argv[]) {
 	printf("#include \"ugui/ugui_font.h\"\n" );
 #endif
 
+	int last_glyph = -1;
 	for (i=0; i<genfont.numglyphs; i++) {
+		if (last_glyph == genglyphs[i].i)
+			continue;
+		last_glyph = genglyphs[i].i;
 #ifdef TTF2C
 		printf("static const unsigned char sym_%d[] = {", genglyphs[i].i);
 #endif
