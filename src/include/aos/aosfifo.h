@@ -1,3 +1,9 @@
+/*
+	AOS - ARM Operating System
+	Copyright (C) 2007  Søren Holm (sgh@sgh.dk)
+
+	License: wxWindows Library Licence, Version 3.1
+*/
 #ifndef AOS_AOSFIFO_H
 #define AOS_AOSFIFO_H
 
