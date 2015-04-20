@@ -22,7 +22,9 @@
 #endif
 
 #ifdef __GNUC__
-#define static_assert(test, msg) typedef char _static_assert_ ## msg [ (test) ? 1 : -1]
+	#ifndef __cplusplus // static_assert keyword is already included with the same name in c++11, so we only need to rename it for C
+		#define static_assert _Static_assert
+	#endif
 #endif
 
 #ifdef WIN32
