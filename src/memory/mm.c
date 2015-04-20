@@ -58,7 +58,7 @@ struct PACKED mm_header {
 #endif
 
 #ifndef PCDEBUG
-static_assert(sizeof(struct mm_header) == 4, MM_HEADER_MUST_BE_4_BYTES);
+static_assert( sizeof(struct mm_header) == 4, "MM HEADER MUST BE 4 BYTES" );
 
 /* Memory-functions */
 _syscall2(void, aos_mm_init, void*,  start, void*, end);
