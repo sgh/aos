@@ -19,6 +19,12 @@ endif
 
 ifeq ($(ARCH),linux)
 	ARCH_SOURCES = mutex.c kernel.c
+
+	# Always build 32bit version on linux even when we are on a 64bit system
+	# (Ideally none of the FLAGS needs to be set in this file but should instead be inherited)
+	CFLAGS += -m32
+	CXXFLAGS += -m32
+	LDFLAGS += -m32
 endif
 
 ifeq ($(ARCH),)
