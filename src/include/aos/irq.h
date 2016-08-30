@@ -9,6 +9,10 @@
 
 #include <aos/types.h>
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 #define IRQ_EXCLUSIVE 1
 
 extern volatile int irq_nesting;
@@ -46,5 +50,8 @@ void irq_unlock(void);
 
 void irq_init(void);
 
+#ifdef __cplusplus
+	}
+#endif
 
 #endif

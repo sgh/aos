@@ -10,6 +10,10 @@
 //#include <aos/task.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 /**
  * \brief This struct contains hook-functions to call at different conditions.
  *
@@ -75,6 +79,10 @@ extern struct aos_hooks* _aos_hooks;
 
 // #define AOS_WARNING(str) if (_aos_hooks && _aos_hooks->warning_event) { _aos_hooks->warning_event(str); }
 
+#endif
+
+#ifdef __cplusplus
+	}
 #endif
 
 #endif
