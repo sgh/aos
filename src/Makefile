@@ -35,6 +35,7 @@ CFLAGS += -Wno-error
 CXXFLAGS += -Wno-error
 
 CC      = $(TOOLCHAIN_PREFIX)gcc
+CXX     = $(TOOLCHAIN_PREFIX)g++
 AS      = $(TOOLCHAIN_PREFIX)as
 AR      = $(TOOLCHAIN_PREFIX)ar
 LD      = $(TOOLCHAIN_PREFIX)ld
@@ -78,7 +79,7 @@ lint:
 
 %.o: %.cpp
 	@echo "Compiling (C++) $< ..."
-	@$(CC) -MD $(THUMB) $(CPPFLAGS) -c $(INCLUDE) -o $@ $<
+	@$(CXX) -MD $(THUMB) $(CXXFLAGS) -c $(INCLUDE) -o $@ $<
 
 kernel/sched.o:  kernel/sched.c
 	@echo "Compiling (ARM) $<  ..."
