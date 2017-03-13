@@ -23,6 +23,17 @@ void operator delete[] (void* p) {
   free(p);
 }
 
+// Additional delete operators with size parameters required by the C++14 standard
+void operator delete (void* p, unsigned int size) {
+	(void) size; // currently unused
+	free(p);
+}
+
+void operator delete[] (void* p, unsigned int size) {
+	(void) size; // currently unused
+	free(p);
+}
+
 void abort(void) {
   // this function is called when an exception occurs.
   // For production code you need to log the message and go to fail-safe
