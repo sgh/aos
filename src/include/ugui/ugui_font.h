@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <aos/macros.h>
 #include <string.h>
+#include <utf8.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,14 +72,6 @@ void ugui_putstring(const struct aostk_font* font, int x, int y, const char* str
 
 void ugui_putchar(const struct aostk_font* font, int x, int y, unsigned int ch);
 
-// UTF-8 relative functions
-
-
-struct utf8_parser {
-	const uint8_t* str;    /** \brief Pointer to the string */
-	const uint8_t* ptr;    /** \brief Current location in the string */
-	uint32_t unicode;      /** \brief Current unicode symbol */
-};
 
 struct unicode_parser {
 	struct utf8_parser prev;
@@ -87,18 +80,9 @@ struct unicode_parser {
 	uint32_t unicode;
 };
 
-
-void utf8_init(struct utf8_parser* parser, const char* str);
-char utf8_next(struct utf8_parser* parser);
-char utf8_prev(struct utf8_parser* parser);
-
 void unicode_init(struct unicode_parser* parser, const char* str);
 char unicode_next(struct unicode_parser* parser);
 char unicode_prev(struct unicode_parser* parser);
-
-static inline uint32_t utf8_current(const struct utf8_parser* parser) {
-	return parser->unicode;
-}
 
 static inline uint32_t unicode_current(const struct unicode_parser* parser) {
 	return parser->unicode;
